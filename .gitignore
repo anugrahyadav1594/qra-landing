@@ -1,0 +1,22 @@
+# ── dependencies ─────────────────────────────────────────────
+node_modules/
+frontend/.next/
+backend/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+frontend/coverage/
+
+# ── local environment & data (never commit secrets) ──────────
+.env
+.env.*
+!.env.example
+backend/data/
+backend/uploads/
+
+# ── misc ──────────────────────────────────────────────────────
+.DS_Store
+*.log
+frontend/out/
+*.tsbuildinfo
+frontend/next-env.d.ts
