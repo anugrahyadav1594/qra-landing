@@ -12,15 +12,10 @@ describe("emailSchema", () => {
 });
 
 describe("waitlistSchema", () => {
-  const valid = { email: "a@example.com", productId: "p1", consentWaitlistContact: true };
+  const valid = { email: "a@example.com", consentWaitlistContact: true };
 
   it("accepts a valid payload", () => {
     expect(waitlistSchema.safeParse(valid).success).toBe(true);
-  });
-
-  it("requires a product", () => {
-    const result = waitlistSchema.safeParse({ ...valid, productId: "" });
-    expect(result.success).toBe(false);
   });
 
   it("requires waitlist-contact consent", () => {

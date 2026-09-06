@@ -53,21 +53,28 @@ export function FeedbackForm({
 
     setSubmitting(true);
     try {
+      // Honeypot (§10.3): a trap field, not part of the strict JSON
+      // contract — sent only when a bot has filled the hidden input.
+      const honeypotValue =
+        ((event.currentTarget as HTMLFormElement).elements.namedItem(HONEYPOT_FIELD_NAME) as
+          | HTMLInputElement
+          | null)?.value ?? "";
+      const payload: Record<string, unknown> = {
+        category: mode === "contact" ? topic : category,
+        message,
+        rating: mode === "feedback" ? rating : null,
+        page_slug:
+          defaultPageSlug || (typeof window !== "undefined" ? window.location.pathname : ""),
+        contact_name: mode === "contact" ? name || null : null,
+        contact_email: mode === "contact" ? contactEmail || null : null,
+        turnstile_token: turnstileToken || null,
+        client_ts: startedAtRef.current,
+      };
+      if (honeypotValue) payload[HONEYPOT_FIELD_NAME] = honeypotValue;
       const response = await fetch("/api/v1/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          category: mode === "contact" ? topic : category,
-          message,
-          rating: mode === "feedback" ? rating : null,
-          page_slug:
-            defaultPageSlug || (typeof window !== "undefined" ? window.location.pathname : ""),
-          contact_name: mode === "contact" ? name || null : null,
-          contact_email: mode === "contact" ? contactEmail || null : null,
-          turnstile_token: turnstileToken || null,
-          [HONEYPOT_FIELD_NAME]: "",
-          client_ts: startedAtRef.current,
-        }),
+        body: JSON.stringify(payload),
       });
       const body = await response.json().catch(() => ({}));
       if (response.ok) {
@@ -102,7 +109,7 @@ export function FeedbackForm({
       <div
         data-testid="feedback-success"
         role="status"
-        className="rounded-xl border border-accent-500/30 bg-accent-500/10 p-5 text-sm text-accent-400"
+        className="rounded-xl border border-aqua-500/30 bg-aqua-500/10 p-5 text-sm text-aqua-300"
       >
         <p className="font-semibold">
           {mode === "contact" ? "Message sent." : "Thanks for the feedback!"}
@@ -232,8 +239,8 @@ export function FeedbackForm({
                 aria-label={`Rate ${value} out of 5`}
                 className={`h-10 w-10 rounded-lg border text-sm font-semibold transition ${
                   rating === value
-                    ? "border-brand-500 bg-brand-500/20 text-white"
-                    : "border-white/10 bg-white/5 text-zinc-400 hover:border-white/25"
+                    ? "border-signal-500 bg-signal-500/20 text-paper"
+                    : "border-white/10 bg-white/5 text-paper-dim/60 hover:border-white/25"
                 }`}
               >
                 {value}

@@ -1,9 +1,16 @@
-# QRA — Landing Page & Platform
+# Quantrelic Analytics — QRA Website
 
-The **QRA company website**: public marketing pages, waitlist, feedback, contact and
-careers-application flows — built to the specification in
-**[`ARCHITECTURE.md`](./ARCHITECTURE.md)** (the single source of technical truth for
-this platform).
+The **Quantrelic Analytics** website: public marketing pages for **QRA — the
+Quantrelic Research Agent** (Quantrelic Analytics Private Limited's first
+product, an AI-powered financial research tool) — plus waitlist, feedback,
+contact and careers-application flows. Built to the specification in
+**[`ARCHITECTURE.md`](./ARCHITECTURE.md)** (the single source of technical truth
+for this platform).
+
+> **Logo:** the brand mark is referenced at `frontend/public/image.png` and is
+> always rendered at its original proportions. The committed file is a
+> **placeholder** — replace it with the official `image.png` and it appears
+> everywhere automatically (nav, footer, metadata, JSON-LD).
 
 | Layer | Stack | Where |
 |---|---|---|
@@ -164,7 +171,7 @@ pytest -v              # verbose
 pytest tests/test_rate_limits.py   # just the rate-limit suite
 ```
 
-### Frontend — 21 Vitest tests (zod schemas, form behaviour, 429 handling,
+### Frontend — 20 Vitest tests (zod schemas, form behaviour, 429 handling,
 XSS-safe Markdown renderer)
 
 ```bash
@@ -187,7 +194,7 @@ make typecheck         # tsc --noEmit
 # happy path
 curl -s -X POST http://localhost:8000/api/v1/waitlist \
   -H 'Content-Type: application/json' \
-  -d '{"slug":"aurora","email":"you@example.com","consent_waitlist_contact":true,"honeypot":"","client_ts":1757100000000}'
+  -d '{"slug":"qra","email":"you@example.com","consent_waitlist_contact":true,"honeypot":"","client_ts":1757100000000}'
 # duplicate → 200 {"already_present": true}
 # honeypot filled → 200 {"screened": true, "status": "dropped"}
 # disposable email → 422 {"error":{"code":"disposable_email", ...}}
@@ -223,9 +230,10 @@ qra-landing/
     ├── .env.example
     ├── next.config.js       # /api/* → FastAPI rewrite + prod security headers
     ├── app/                 # all public routes from §6.1 (+ robots/sitemap/security.txt)
-    ├── components/          # Nav, Footer, forms (waitlist/feedback/apply), Markdown
+    ├── public/image.png     # brand mark (placeholder — replace with official)
+    ├── components/          # Nav, Footer, home sections, forms (waitlist/feedback/apply), Markdown
     ├── lib/                 # API client w/ fallback seed, zod schemas, constants
-    └── __tests__/           # 21 tests
+    └── __tests__/           # 20 tests
 ```
 
 ## 7. API surface (implemented)

@@ -10,23 +10,38 @@ const config: Config = {
     extend: {
       colors: {
         ink: {
-          950: "#09090f",
-          900: "#0e0e17",
-          800: "#161624",
-          700: "#1f1f31",
+          950: "#07080C",
+          900: "#0B0D12",
+          850: "#0E1118",
+          800: "#12151D",
+          750: "#161A24",
+          700: "#1B202C",
+          600: "#242B3A",
         },
-        brand: {
-          400: "#8b7cf6",
-          500: "#6d5ceb",
-          600: "#5b4bd4",
+        paper: {
+          DEFAULT: "#F2F0E9",
+          dim: "#C9CCD4",
         },
-        accent: {
-          400: "#38e1c2",
-          500: "#19c8a6",
+        signal: {
+          300: "#8FA3FF",
+          400: "#6E87FF",
+          500: "#4C6FFF",
+          600: "#3D55D6",
+          700: "#33449F",
         },
+        aqua: {
+          300: "#6FE3F0",
+          400: "#3ED0E0",
+          500: "#22B7C9",
+        },
+      },
+      letterSpacing: {
+        tightest: "-0.045em",
       },
       fontFamily: {
         sans: [
+          "'Inter Variable'",
+          "Inter",
           "ui-sans-serif",
           "system-ui",
           "-apple-system",
@@ -34,6 +49,13 @@ const config: Config = {
           "Roboto",
           "Helvetica Neue",
           "Arial",
+          "sans-serif",
+        ],
+        display: [
+          "'Space Grotesk Variable'",
+          "Space Grotesk",
+          "ui-sans-serif",
+          "system-ui",
           "sans-serif",
         ],
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],

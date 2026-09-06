@@ -4,13 +4,12 @@ import { SITE_URL } from "@/lib/constants";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
-  const staticRoutes = [
+  const routes = [
     "",
+    "/product",
+    "/research",
     "/about",
-    "/products",
-    "/team",
     "/careers",
-    "/updates",
     "/contact",
     "/feedback",
     "/waitlist",
@@ -18,10 +17,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/terms",
     "/security",
   ];
-  return staticRoutes.map((route) => ({
+  return routes.map((route) => ({
     url: `${SITE_URL}${route}`,
     lastModified: now,
-    changeFrequency: route === "/updates" ? "weekly" : "monthly",
+    changeFrequency: "monthly" as const,
     priority: route === "" ? 1 : 0.7,
   }));
 }
