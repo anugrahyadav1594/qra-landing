@@ -1,18 +1,62 @@
 /** Public site constants. Placeholder company domain — replace with the
  * real domain per ARCHITECTURE.md §24 / open question O1. */
 
-export const SITE_NAME = "QRA";
+export const COMPANY_NAME = "Quantrelic Analytics Private Limited";
+export const PRODUCT_FULL_NAME = "Quantrelic Research Agent";
+export const SITE_NAME = "Quantrelic Analytics";
 export const SITE_DESCRIPTION =
-  "QRA builds privacy-first products for modern teams — one account, one identity, every product.";
+  "QRA — the Quantrelic Research Agent — turns a ticker into a thesis: investigating financial statements, filings, news and market signals so investors can decide with clarity.";
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
+/** Single real product — the waitlist posts with this slug (§9). */
+export const WAITLIST_PRODUCT_SLUG = "qra";
+
 export const NAV_LINKS = [
-  { href: "/products", label: "Products" },
+  { href: "/product", label: "Product" },
+  { href: "/#how-it-works", label: "How it works" },
+  { href: "/research", label: "Research" },
   { href: "/about", label: "About" },
-  { href: "/team", label: "Team" },
   { href: "/careers", label: "Careers" },
-  { href: "/updates", label: "Updates" },
   { href: "/contact", label: "Contact" },
+];
+
+export const FOOTER_COLUMNS = [
+  {
+    title: "Product",
+    links: [
+      { href: "/product", label: "Product" },
+      { href: "/research", label: "Research" },
+      { href: "/waitlist", label: "Join the waitlist" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
+      { href: "/about", label: "About" },
+      { href: "/careers", label: "Careers" },
+      { href: "/contact", label: "Contact" },
+      { href: "/feedback", label: "Feedback" },
+    ],
+  },
+  {
+    title: "Legal & trust",
+    links: [
+      { href: "/privacy", label: "Privacy Policy" },
+      { href: "/terms", label: "Terms of Service" },
+      { href: "/security", label: "Security" },
+    ],
+  },
+] as const;
+
+export const FOOTER_TAGLINE =
+  "AI-powered financial research. Built for better questions, deeper investigation, and clearer thinking.";
+
+export const WAITLIST_INTERESTS = [
+  "Prefer not to say",
+  "Deep company research",
+  "Faster due diligence",
+  "Tracking filings & news",
+  "Just exploring",
 ];
 
 export const FEEDBACK_CATEGORIES = [

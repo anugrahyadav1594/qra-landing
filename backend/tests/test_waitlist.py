@@ -25,7 +25,7 @@ def test_join_waitlist_creates_entry(client, product_id, waitlist_payload):
 
 def test_join_by_slug(client, waitlist_payload):
     payload = waitlist_payload(product_id=None)
-    payload["slug"] = "aurora"
+    payload["slug"] = "qra"
     response = client.post("/api/v1/waitlist", json=payload)
     assert response.status_code == 201
 

@@ -11,19 +11,235 @@ html {
 }
 
 body {
-  @apply bg-ink-950 text-zinc-300 antialiased;
+  @apply bg-ink-950 font-sans text-paper-dim antialiased;
 }
 
 ::selection {
-  background: rgba(109, 92, 235, 0.4);
-  color: #fff;
+  background: rgba(76, 111, 255, 0.35);
+  color: #f2f0e9;
 }
 
-/* Respect reduced-motion preferences (WCAG 2.3.3) */
+/* ── Backdrops ─────────────────────────────────────────────────────── */
+
+/* Subtle grid backdrop used on the hero */
+.hero-grid {
+  background-image:
+    linear-gradient(rgba(242, 240, 233, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(242, 240, 233, 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 90% 65% at 50% 0%, black 35%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 65% at 50% 0%, black 35%, transparent 100%);
+}
+
+/* ── Reveal (IntersectionObserver-gated) ───────────────────────────── */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.7s ease-out,
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Hero load-in (runs once, staged delays inline) ────────────────── */
+
+.hero-rise {
+  opacity: 0;
+  transform: translateY(28px);
+  animation: hero-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes hero-rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Staged steps inside the conceptual research workspace */
+.workspace-step {
+  opacity: 0;
+  transform: translateY(14px);
+  animation: step-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes step-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Thesis chips — enter from left or right */
+.chip-flow {
+  opacity: 0;
+  animation: chip-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.chip-flow.chip-left {
+  transform: translateX(-16px);
+}
+
+.chip-flow.chip-right {
+  transform: translateX(16px);
+}
+
+@keyframes chip-in {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ── Ambient motion ────────────────────────────────────────────────── */
+
+.drift-dot {
+  animation: drift 9s ease-in-out infinite alternate;
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(var(--drift-x, 14px), var(--drift-y, -18px), 0);
+  }
+}
+
+.pulse-dot {
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+}
+
+.pulse-soft {
+  animation: pulse-soft 3.2s ease-in-out infinite;
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* Continuous dash flow along a chart line */
+.chart-line {
+  stroke-dasharray: 5 9;
+  animation: dash-flow 1.6s linear infinite;
+}
+
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -14;
+  }
+}
+
+/* One-shot connector draw, gated on .is-visible (Reveal wrapper) */
+.flow-line {
+  stroke-dasharray: 140;
+  stroke-dashoffset: 140;
+}
+
+.is-visible .flow-line {
+  animation: flow-draw 1.2s ease-out forwards;
+}
+
+@keyframes flow-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Evidence-chain arrows, gated on .is-visible */
+.chain-arrow {
+  stroke-dasharray: 44;
+  stroke-dashoffset: 44;
+}
+
+.is-visible .chain-arrow {
+  animation: draw-arrow 0.7s ease-out forwards;
+}
+
+@keyframes draw-arrow {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Vertical timeline rail, gated on .is-visible */
+.rail-draw {
+  transform: scaleY(0);
+  transform-origin: top;
+}
+
+.is-visible .rail-draw {
+  animation: rail-grow 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes rail-grow {
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* Showcase evidence items, gated on .is-visible */
+.ev-item {
+  opacity: 0;
+  transform: translateX(18px);
+}
+
+.is-visible .ev-item {
+  animation: ev-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes ev-in {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ── Marquee (signal strip) ────────────────────────────────────────── */
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 38s linear infinite;
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* ── Reduced motion (WCAG 2.3.3) — everything still, content visible ─ */
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
+
   *,
   *::before,
   *::after {
@@ -31,20 +247,22 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-}
 
-/* Subtle grid backdrop used on the hero */
-.hero-grid {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
-}
+  .reveal,
+  .hero-rise,
+  .workspace-step,
+  .chip-flow,
+  .ev-item {
+    opacity: 1;
+    transform: none;
+  }
 
-.gradient-text {
-  background: linear-gradient(100deg, #a78bfa 0%, #6d5ceb 45%, #38e1c2 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  .flow-line,
+  .chain-arrow {
+    stroke-dashoffset: 0;
+  }
+
+  .rail-draw {
+    transform: scaleY(1);
+  }
 }

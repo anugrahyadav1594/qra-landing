@@ -1,33 +1,35 @@
 /** Waitlist join form (§9). Posts to /api/v1/waitlist (proxied to the
- * FastAPI backend). Handles: strict client validation, honeypot field,
- * submit timing, optional Turnstile, 429 retry guidance, dedupe. */
+ * FastAPI backend) for the single real product — QRA (slug "qra").
+ * Handles: strict client validation, honeypot field, submit timing,
+ * optional Turnstile, 429 retry guidance, dedupe.
+ *
+ * Honeypot note: the backend's spam screen keys on HONEYPOT_FIELD_NAME,
+ * which is a trap field, not part of the strict JSON contract. A clean
+ * (human) submission therefore omits the key; the key is included only
+ * when the hidden field has been filled — which is the bot case — and is
+ * then silently dropped server-side (§10.3). */
 "use client";
 
 import { useRef, useState } from "react";
 
-import { HONEYPOT_FIELD_NAME, TURNSTILE_SITE_KEY } from "@/lib/constants";
-import { errorMessage, retryAfterSeconds, waitlistSchema } from "@/lib/schemas";
 import { FieldError, inputClass, labelClass } from "@/components/ui";
 import { useTurnstile } from "@/components/useTurnstile";
-
-export type WaitlistProduct = { id: string; slug: string; name: string };
+import {
+  HONEYPOT_FIELD_NAME,
+  TURNSTILE_SITE_KEY,
+  WAITLIST_INTERESTS,
+  WAITLIST_PRODUCT_SLUG,
+} from "@/lib/constants";
+import { errorMessage, retryAfterSeconds, waitlistSchema } from "@/lib/schemas";
 
 type State =
   | { kind: "idle" }
   | { kind: "success"; alreadyPresent: boolean }
   | { kind: "error"; message: string };
 
-export function WaitlistForm({
-  products,
-  defaultProductId,
-  compact = false,
-}: {
-  products: WaitlistProduct[];
-  defaultProductId?: string;
-  compact?: boolean;
-}) {
+export function WaitlistForm({ compact = false }: { compact?: boolean }) {
   const [email, setEmail] = useState("");
-  const [productId, setProductId] = useState(defaultProductId || products[0]?.id || "");
+  const [interest, setInterest] = useState("");
   const [consent, setConsent] = useState(false);
   const [marketing, setMarketing] = useState(false);
   const [state, setState] = useState<State>({ kind: "idle" });
@@ -44,7 +46,7 @@ export function WaitlistForm({
 
     const parsed = waitlistSchema.safeParse({
       email,
-      productId,
+      interest: interest || undefined,
       consentWaitlistContact: consent,
     });
     if (!parsed.success) {
@@ -59,24 +61,33 @@ export function WaitlistForm({
 
     setSubmitting(true);
     try {
+      const honeypotValue =
+        ((event.currentTarget as HTMLFormElement).elements.namedItem(HONEYPOT_FIELD_NAME) as
+          | HTMLInputElement
+          | null)?.value ?? "";
+      const payload: Record<string, unknown> = {
+        slug: WAITLIST_PRODUCT_SLUG,
+        email,
+        consent_waitlist_contact: consent,
+        consent_marketing_email: marketing,
+        turnstile_token: turnstileToken || null,
+        client_ts: startedAtRef.current,
+        source: {
+          utm_source: interest,
+          page: typeof window !== "undefined" ? window.location.pathname : "",
+        },
+      };
+      if (honeypotValue) payload[HONEYPOT_FIELD_NAME] = honeypotValue;
       const response = await fetch("/api/v1/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product_id: productId,
-          email,
-          consent_waitlist_contact: consent,
-          consent_marketing_email: marketing,
-          turnstile_token: turnstileToken || null,
-          [HONEYPOT_FIELD_NAME]: "",
-          client_ts: startedAtRef.current,
-          source: { page: typeof window !== "undefined" ? window.location.pathname : "" },
-        }),
+        body: JSON.stringify(payload),
       });
       const body = await response.json().catch(() => ({}));
       if (response.ok) {
         setState({ kind: "success", alreadyPresent: Boolean(body.already_present) });
         setEmail("");
+        setInterest("");
         resetTurnstile();
       } else if (response.status === 429) {
         const retry = retryAfterSeconds(response);
@@ -101,15 +112,15 @@ export function WaitlistForm({
       <div
         data-testid="waitlist-success"
         role="status"
-        className="rounded-xl border border-accent-500/30 bg-accent-500/10 p-5 text-sm text-accent-400"
+        className="rounded-xl border border-aqua-500/30 bg-aqua-500/10 p-5 text-sm text-aqua-300"
       >
         <p className="font-semibold">
-          {state.alreadyPresent ? "You're already on the list." : "You're on the list! 🎉"}
+          {state.alreadyPresent ? "You're already on the list." : "You're on the list!"}
         </p>
-        <p className="mt-1 text-zinc-300">
+        <p className="mt-1 text-paper-dim/80">
           {state.alreadyPresent
-            ? "We already have this email for this product — no action needed."
-            : "We'll email you when early access opens. First come, first served — no spam."}
+            ? "We already have this email for QRA — no action needed."
+            : "We'll email you when early access opens. Waitlist updates only — no spam."}
         </p>
       </div>
     );
@@ -138,48 +149,51 @@ export function WaitlistForm({
       </div>
 
       <div>
-        <label htmlFor="waitlist-product" className={labelClass}>
-          Which product are you interested in?
+        <label htmlFor="waitlist-interest" className={labelClass}>
+          What are you most interested in?{" "}
+          <span className="text-paper-dim/40">(optional)</span>
         </label>
         <select
-          id="waitlist-product"
-          data-testid="waitlist-product"
-          value={productId}
-          onChange={(e) => setProductId(e.target.value)}
+          id="waitlist-interest"
+          data-testid="waitlist-interest"
+          value={interest}
+          onChange={(e) => setInterest(e.target.value)}
           className={inputClass}
         >
-          {products.map((product) => (
-            <option key={product.id} value={product.id} className="bg-ink-900">
-              {product.name}
+          <option value="" className="bg-ink-900">
+            Choose an area
+          </option>
+          {WAITLIST_INTERESTS.map((option) => (
+            <option key={option} value={option} className="bg-ink-900">
+              {option}
             </option>
           ))}
         </select>
-        <FieldError id="waitlist-product-error">{fieldErrors.productId}</FieldError>
       </div>
 
       <div className="space-y-2">
-        <label className="flex items-start gap-2.5 text-sm text-zinc-300">
+        <label className="flex items-start gap-2.5 text-sm text-paper-dim/90">
           <input
             type="checkbox"
             data-testid="waitlist-consent"
             checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 accent-brand-500"
+            className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 accent-signal-500"
             aria-describedby={fieldErrors.consentWaitlistContact ? "waitlist-consent-error" : undefined}
           />
           <span>
-            I agree to be contacted about waitlist updates and early access for this
-            product. <span className="text-zinc-500">(required)</span>
+            I agree to be contacted about waitlist updates and early access for QRA.{" "}
+            <span className="text-paper-dim/40">(required)</span>
           </span>
         </label>
         <FieldError id="waitlist-consent-error">{fieldErrors.consentWaitlistContact}</FieldError>
-        <label className="flex items-start gap-2.5 text-sm text-zinc-400">
+        <label className="flex items-start gap-2.5 text-sm text-paper-dim/70">
           <input
             type="checkbox"
             data-testid="waitlist-marketing"
             checked={marketing}
             onChange={(e) => setMarketing(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 accent-brand-500"
+            className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 accent-signal-500"
           />
           <span>Optional: send me occasional product news (marketing consent, separate).</span>
         </label>
@@ -199,7 +213,7 @@ export function WaitlistForm({
         type="submit"
         data-testid="waitlist-submit"
         disabled={submitting}
-        className={`${compact ? "w-full" : "w-full sm:w-auto"} inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink-950 transition hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-white/40 disabled:opacity-60`}
+        className={`${compact ? "w-full" : "w-full sm:w-auto"} inline-flex items-center justify-center gap-2 rounded-full bg-paper px-6 py-3 text-sm font-semibold text-ink-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-paper/40 disabled:opacity-60`}
       >
         {submitting ? "Joining…" : "Join the waitlist"}
       </button>
@@ -209,9 +223,9 @@ export function WaitlistForm({
           {state.message}
         </p>
       )}
-      <p className="text-xs text-zinc-500">
+      <p className="text-xs text-paper-dim/40">
         Protected by rate limits, bot checks and spam filters. Read the{" "}
-        <a href="/privacy" className="underline hover:text-zinc-300">privacy policy</a>.
+        <a href="/privacy" className="underline hover:text-paper-dim">privacy policy</a>.
       </p>
     </form>
   );

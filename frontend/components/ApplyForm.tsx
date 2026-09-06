@@ -5,7 +5,7 @@
 
 import { useRef, useState } from "react";
 
-import { HONEYPOT_FIELD_NAME, MAX_RESUME_SIZE_MB, TURNSTILE_SITE_KEY } from "@/lib/constants";
+import { MAX_RESUME_SIZE_MB, TURNSTILE_SITE_KEY } from "@/lib/constants";
 import { applySchema, errorMessage, retryAfterSeconds } from "@/lib/schemas";
 import { FieldError, inputClass, labelClass } from "@/components/ui";
 import { useTurnstile } from "@/components/useTurnstile";
@@ -74,6 +74,10 @@ export function ApplyForm({ slug, title }: { slug: string; title: string }) {
 
     setSubmitting(true);
     try {
+      const honeypotValue =
+        ((event.currentTarget as HTMLFormElement).elements.namedItem("honeypot") as
+          | HTMLInputElement
+          | null)?.value ?? "";
       const form = new FormData();
       form.append("name", name);
       form.append("email", email);
@@ -81,7 +85,9 @@ export function ApplyForm({ slug, title }: { slug: string; title: string }) {
       form.append("cover_note", coverNote);
       form.append("consent_careers", String(consent));
       form.append("turnstile_token", turnstileToken || "");
-      form.append(HONEYPOT_FIELD_NAME, "");
+      // The careers endpoint declares the trap field literally as
+      // `honeypot` (§10.3) — the form field name must match exactly.
+      form.append("honeypot", honeypotValue);
       form.append("client_ts", String(startedAtRef.current));
       form.append("resume", file);
 
@@ -118,7 +124,7 @@ export function ApplyForm({ slug, title }: { slug: string; title: string }) {
       <div
         data-testid="apply-success"
         role="status"
-        className="rounded-xl border border-accent-500/30 bg-accent-500/10 p-5 text-sm text-accent-400"
+        className="rounded-xl border border-aqua-500/30 bg-aqua-500/10 p-5 text-sm text-aqua-300"
       >
         <p className="font-semibold">Application received.</p>
         <p className="mt-1 text-zinc-300">
@@ -226,12 +232,12 @@ export function ApplyForm({ slug, title }: { slug: string; title: string }) {
           data-testid="apply-consent"
           checked={consent}
           onChange={(e) => setConsent(e.target.checked)}
-          className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 accent-brand-500"
+          className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 accent-signal-500"
           aria-describedby={fieldErrors.consent ? "apply-consent-error" : undefined}
         />
         <span>
-          I agree that QRA may process my application data, including my resume,
-          for this recruitment process. <span className="text-zinc-500">(required)</span>
+          I agree that Quantrelic Analytics may process my application data, including
+          my resume, for this recruitment process. <span className="text-paper-dim/40">(required)</span>
         </span>
       </label>
       <FieldError id="apply-consent-error">{fieldErrors.consent}</FieldError>
@@ -240,7 +246,7 @@ export function ApplyForm({ slug, title }: { slug: string; title: string }) {
       <div className="absolute -left-[9999px] top-auto" aria-hidden="true">
         <label>
           Leave this field empty
-          <input tabIndex={-1} autoComplete="off" name={HONEYPOT_FIELD_NAME} />
+          <input tabIndex={-1} autoComplete="off" name="honeypot" />
         </label>
       </div>
 

@@ -49,7 +49,7 @@ def client(app_factory):
 
 @pytest.fixture
 def product_id(client):
-    """Id of the first seeded product (Aurora)."""
+    """Id of the first seeded product (QRA)."""
     data = client.get("/api/v1/products").json()
     return data["products"][0]["id"]
 

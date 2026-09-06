@@ -13,7 +13,7 @@ export const emailSchema = z
 
 export const waitlistSchema = z.object({
   email: emailSchema,
-  productId: z.string().min(1, "Choose a product"),
+  interest: z.string().optional(),
   consentWaitlistContact: z.literal(true, {
     errorMap: () => ({ message: "Consent to waitlist contact is required" }),
   }),
