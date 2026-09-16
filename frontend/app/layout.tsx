@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { ClerkProvider } from "@clerk/nextjs";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/constants";
@@ -35,9 +36,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className="flex min-h-screen flex-col">
-        <Nav />
-        <main className="flex-1">{children}</main>
-        <Footer />
+        {/* ClerkProvider goes inside <body> — never wraps <html> (Clerk docs). */}
+        <ClerkProvider>
+          <Nav />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </ClerkProvider>
       </body>
     </html>
   );
