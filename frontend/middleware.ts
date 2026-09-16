@@ -11,6 +11,10 @@ export const config = {
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|__clerk|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webm)).*)",
+    // Bare root path — the catch-all above does NOT match "/", and the
+    // __clerk_handshake session hand-back arrives on it (Clerk's own
+    // DEFAULT_CONFIG_MATCHER includes it for this reason).
+    "/",
     // API/TRPC matcher, then Clerk's auto-proxy path (once, after the API matcher)
     "/(api|trpc)(.*)",
     "/__clerk/:path*",
