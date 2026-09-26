@@ -1,46 +1,52 @@
 import Link from "next/link";
 
 import { Reveal } from "@/components/Reveal";
-import { Eyebrow } from "@/components/ui";
+import { Section } from "@/components/ui";
 
 export function AboutSection() {
   return (
-    <section className="mx-auto max-w-6xl px-6 py-24">
+    <Section id="about" tone="sunken" labelledBy="about-heading">
       <Reveal>
-        <div className="grid gap-14 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
+        <div className="grid gap-12 lg:grid-cols-[1fr_1.2fr] lg:gap-20">
           <div>
-            <Eyebrow>The company</Eyebrow>
-            <h2 className="mt-5 font-display text-4xl font-semibold leading-[1.08] tracking-tightest text-paper sm:text-5xl">
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-accent">
+              The company
+            </p>
+            <h2
+              id="about-heading"
+              className="mt-4 font-display text-3xl font-semibold leading-[1.12] tracking-tightest text-ink sm:text-[2.5rem]"
+            >
               Quantrelic Analytics
             </h2>
           </div>
-          <div className="space-y-6 text-base leading-relaxed text-paper-dim/80">
-            <p>
-              Quantrelic Analytics Private Limited builds intelligent financial research
-              infrastructure and products. QRA — the Quantrelic Research Agent — is its first.
+
+          <div className="space-y-6 text-lg leading-relaxed text-muted">
+            <p className="text-ink-800">
+              Quantrelic Analytics Private Limited is building technology to make financial
+              information easier to understand and investing simpler for everyday investors.
             </p>
-            <p>
-              We're a small, remote-first team based in India, building research software for
-              serious questions. QRA is in early access development; if you'd like to help shape
-              it, join the waitlist or write to us.
+            <p>We believe access to investing should come with access to understanding.</p>
+            <p className="text-base text-muted">
+              QRA is in early development and we&rsquo;re sharing it early so it can be built with
+              the people it&rsquo;s meant for.
             </p>
             <div className="flex flex-col gap-3 pt-2 sm:flex-row">
               <Link
                 href="/about"
-                className="inline-flex items-center justify-center rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-paper transition hover:border-white/30 hover:bg-white/5"
+                className="inline-flex items-center justify-center rounded-md border border-ink/15 bg-white px-6 py-3 text-base font-semibold text-ink transition-colors hover:border-ink/30"
               >
                 About the company
               </Link>
               <Link
                 href="/careers"
-                className="inline-flex items-center justify-center rounded-full border border-white/15 px-6 py-3 text-sm font-semibold text-paper transition hover:border-white/30 hover:bg-white/5"
+                className="inline-flex items-center justify-center rounded-md border border-ink/15 bg-white px-6 py-3 text-base font-semibold text-ink transition-colors hover:border-ink/30"
               >
-                We're hiring
+                We&rsquo;re hiring
               </Link>
             </div>
           </div>
         </div>
       </Reveal>
-    </section>
+    </Section>
   );
 }

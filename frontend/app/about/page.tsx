@@ -2,83 +2,111 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Reveal } from "@/components/Reveal";
-import { Eyebrow } from "@/components/ui";
-import { COMPANY_NAME, PRODUCT_FULL_NAME, SITE_NAME } from "@/lib/constants";
+import { COMPANY_NAME, PRODUCT_NAME, SITE_NAME } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "About",
-  description: `${COMPANY_NAME} builds intelligent financial research infrastructure and products.`,
+  description:
+    "Quantrelic Analytics Private Limited is building technology that makes financial information easier to understand and investing simpler for everyday investors.",
+  openGraph: {
+    title: "About · Quantrelic Analytics",
+    description:
+      "Quantrelic Analytics Private Limited is building technology that makes financial information easier to understand.",
+  },
 };
 
-const VALUES = [
+const PRINCIPLES = [
   {
-    title: "Evidence before opinion",
-    body: "Every statement QRA produces is designed to trace back to the source it came from — filings, statements, news, market data. No source, no statement.",
+    title: "Clarity before complexity",
+    body: "If a sentence needs a finance degree to read, it needs rewriting. Plain-language explanations come first; the numbers are always there underneath.",
   },
   {
-    title: "Research, not advice",
-    body: "QRA is built to investigate and organize — never to tell you what to do. The investment decision stays with the investor, always.",
+    title: "We explain. You decide.",
+    body: `${PRODUCT_NAME} is being built to explain financial information — never to tell you what to buy or sell. The decision always stays with the investor.`,
+  },
+  {
+    title: "Evidence over opinion",
+    body: "An explanation is only useful if you can see where it came from. Statements are designed to trace back to the document behind them — an annual report, a result, a filing.",
   },
   {
     title: "Consent is explicit",
-    body: "Joining the waitlist is not signing up for marketing. Every purpose gets its own opt-in, its own record, and its own off switch.",
-  },
-  {
-    title: "Boring architecture, serious controls",
-    body: "Rate limits on every surface, hashed IPs, audit trails, honest error messages. The controls live in the code, not the pitch.",
+    body: "Joining the waitlist is not signing up for marketing. Every purpose gets its own opt-in, its own record and its own off switch.",
   },
 ];
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-6xl px-6 py-20">
+    <div className="mx-auto max-w-shell px-5 py-14 sm:px-6 sm:py-20">
       <Reveal>
         <div className="max-w-3xl">
-          <Eyebrow>About</Eyebrow>
-          <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tightest text-paper sm:text-6xl">
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-accent">About</p>
+          <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.08] tracking-tightest text-ink sm:text-5xl">
             {SITE_NAME}
           </h1>
         </div>
-        <div className="mt-10 max-w-3xl space-y-6 text-base leading-relaxed text-paper-dim/80">
-          <p>
-            {COMPANY_NAME} builds intelligent financial research infrastructure and products.
-            QRA — the {PRODUCT_FULL_NAME} — is its first.
+
+        <div className="mt-8 max-w-3xl space-y-6 text-lg leading-relaxed text-muted">
+          <p className="text-ink-800">
+            {COMPANY_NAME} is building technology to make financial information easier to understand
+            and investing simpler for everyday investors.
           </p>
-          <p>
-            The company started from a simple observation: researching a company today means
-            stitching together filings, terminals, news feeds and PDFs — and the connections
-            between them are made by hand, in a notebook, in a spreadsheet. The information
-            exists. The process doesn't.
+          <p>We believe access to investing should come with access to understanding.</p>
+          <p className="text-base">
+            {PRODUCT_NAME} is our product, and it is in early development. Most people who invest
+            aren&rsquo;t financial professionals: the reports are written for analysts, the numbers
+            are spread across documents, and it can be hard to tell which part actually matters.
+            We&rsquo;re building for that gap — explaining the information behind an investment in
+            language anyone can follow, with the source behind every explanation.
           </p>
-          <p>
-            QRA is our answer: an evidence-first research companion that investigates, organizes
-            and cites — so you can spend your attention on reasoning, not gathering. We're
-            pre-launch and building it in the open, with early access rolling out in cohorts.
-          </p>
-          <p>
-            We're a small, remote-first team based in India. If any of this sounds like the kind
-            of thing you want to build,{" "}
+          <p className="text-base">
+            We&rsquo;re a small, remote-first team based in India, building in the open. If that
+            sounds like work you&rsquo;d like to do,{" "}
             <Link
               href="/careers"
-              className="text-signal-300 underline decoration-signal-400/40 underline-offset-2 hover:text-signal-400"
+              className="text-accent underline decoration-accent/40 underline-offset-2 hover:text-accent-700"
             >
-              come work with us
+              see our open roles
             </Link>
             .
           </p>
         </div>
       </Reveal>
 
-      <div className="mt-16 grid gap-6 sm:grid-cols-2">
-        {VALUES.map((value, index) => (
-          <Reveal key={value.title} delay={index * 70}>
-            <div className="h-full rounded-2xl border border-white/5 bg-ink-900/60 p-6">
-              <h2 className="font-display text-lg font-semibold tracking-tight text-paper">{value.title}</h2>
-              <p className="mt-3 text-sm leading-relaxed text-paper-dim/70">{value.body}</p>
-            </div>
-          </Reveal>
-        ))}
-      </div>
+      <Reveal>
+        <ul className="mt-16 grid gap-10 border-t border-ink/10 pt-12 md:grid-cols-2 md:gap-x-16 md:gap-y-12">
+          {PRINCIPLES.map((principle) => (
+            <li key={principle.title}>
+              <h2 className="font-display text-lg font-semibold tracking-tight text-ink">
+                {principle.title}
+              </h2>
+              <p className="mt-3 text-base leading-relaxed text-muted">{principle.body}</p>
+            </li>
+          ))}
+        </ul>
+      </Reveal>
+
+      <Reveal>
+        <div className="mt-16 border-t border-ink/10 pt-10">
+          <p className="max-w-2xl text-base leading-relaxed text-muted">
+            {PRODUCT_NAME} does not provide investment advice, does not recommend what to buy or
+            sell, and does not make decisions for anyone. It explains — you decide.
+          </p>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/waitlist"
+              className="inline-flex items-center justify-center rounded-md bg-accent px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-accent-700"
+            >
+              Join the waitlist
+            </Link>
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center rounded-md border border-ink/15 bg-white px-6 py-3.5 text-base font-semibold text-ink transition-colors hover:border-ink/30"
+            >
+              Contact us
+            </Link>
+          </div>
+        </div>
+      </Reveal>
     </div>
   );
 }

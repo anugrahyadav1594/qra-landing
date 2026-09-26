@@ -6,26 +6,25 @@ export const FALLBACK_PRODUCT = {
   id: "fallback-qra",
   slug: "qra",
   name: "QRA",
-  tagline: "Quantrelic Research Agent — AI-powered financial research.",
+  tagline: "Making financial information easier to understand.",
   description_md:
-    "QRA — the Quantrelic Research Agent — turns a ticker into a thesis. " +
-    "It investigates financial statements, filings, news and market signals " +
-    "so investors can research with greater depth and clarity.\n\n" +
-    "### From ticker to thesis\n" +
-    "Start with a company or ticker. QRA assembles the information that " +
-    "matters — fundamentals, financial statements, filings and disclosures, " +
-    "recent developments — and organizes it into a structured view: " +
-    "evidence, context, risks, catalysts, and the shape of an investment " +
-    "thesis.\n\n" +
+    "QRA is being built to make the financial information behind an " +
+    "investment easier to understand. Financial statements, results, " +
+    "filings and developments are explained in plain language, with the " +
+    "source behind every explanation.\n\n" +
+    "### What it is being built to do\n" +
+    "Start with a company. The information that matters — the business, the " +
+    "numbers, what changed, and what could change the picture — is brought " +
+    "together and explained in language you don't need to be a financial " +
+    "professional to follow.\n\n" +
     "### What QRA is not\n" +
-    "- Not a chatbot — it runs a structured investigation, not a " +
-    "conversation.\n" +
-    "- Not a stock screener — it goes deep on a company instead of ranking " +
-    "thousands.\n" +
+    "- Not a tip service — it does not tell you what to buy or sell.\n" +
+    "- Not a prediction engine — it does not forecast prices or promise " +
+    "returns.\n" +
     "- Not an advisor — QRA does not provide investment advice and does not " +
-    "make investment decisions for you. QRA investigates. You decide.\n\n" +
+    "make investment decisions for anyone. It explains; you decide.\n\n" +
     "### Status\n" +
-    "**Early access — waitlist open.**",
+    "**Early development — waitlist open.**",
   domain: null,
   status: "waitlist_only",
   accepts_waitlist: true,
@@ -37,8 +36,8 @@ export const FALLBACK_UPDATES = [
     slug: "waitlist-open",
     title: "Early access to QRA is open",
     body_md:
-      "The waitlist for QRA — the Quantrelic Research Agent — is open. " +
-      "Early access opens in cohorts, in waitlist order.\n\n" +
+      "The waitlist for QRA is open. Early access opens in cohorts, in " +
+      "waitlist order.\n\n" +
       "Joining takes ten seconds: one email, and you're in line. Waitlist " +
       "updates only — no spam.",
     published_at: new Date().toISOString(),
@@ -48,13 +47,14 @@ export const FALLBACK_UPDATES = [
     slug: "why-we-built-qra",
     title: "Why we're building QRA",
     body_md:
-      "Financial research is scattered across filings, terminals, news feeds " +
-      "and PDFs — and the connections between them are made by hand, in a " +
-      "notebook, in a spreadsheet.\n\n" +
-      "We're building QRA because the work of research should be about " +
-      "connecting what already exists, not gathering it. QRA is designed to " +
-      "be an evidence-first research companion: it investigates, it " +
-      "organizes, it cites its sources — and the decision is always yours.",
+      "Investing has become easier to access. Understanding it is still " +
+      "difficult.\n\n" +
+      "Financial information is scattered across annual reports, results, " +
+      "filings, news and financial websites — and for someone investing for " +
+      "the first time, turning all of that into something understandable is " +
+      "overwhelming. QRA is being built to close that gap: explain the " +
+      "information behind an investment in plain language, show where each " +
+      "explanation came from, and leave the decision with the investor.",
     published_at: new Date().toISOString(),
   },
   {
@@ -80,9 +80,9 @@ export const FALLBACK_POSTINGS = [
     employment_type: "full_time",
     description_md:
       "You'll build the systems that power QRA: the pipelines that collect " +
-      "and normalize financial information, the research engine that " +
-      "connects it, and the interface where the investigation happens — " +
-      "alongside the founding team.\n\n" +
+      "and normalize financial information, the layer that explains it, and " +
+      "the interface where people read those explanations — alongside the " +
+      "founding team.\n\n" +
       "### The stack\n" +
       "Next.js (App Router, TypeScript) frontend, FastAPI/PostgreSQL " +
       "backend, data pipelines for filings, statements and news, managed " +
@@ -105,8 +105,9 @@ export const FALLBACK_POSTINGS = [
     location: "India (remote)",
     employment_type: "full_time",
     description_md:
-      "Design the research workspace: how evidence, context, risks and " +
-      "catalysts are presented so a researcher can reason, not skim. " +
+      "Design how financial information is explained: how the business, the " +
+      "numbers, the risks and what changed are presented so someone " +
+      "investing for the first time can actually understand them. " +
       "Accessibility is a hard target, not a stretch goal.",
     requirements_md:
       "- Strong portfolio of shipped web product work\n" +

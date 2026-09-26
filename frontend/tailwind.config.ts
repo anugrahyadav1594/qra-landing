@@ -1,5 +1,12 @@
 import type { Config } from "tailwindcss";
 
+/**
+ * Editorial financial technology palette.
+ *
+ * Warm off-white canvas, deep navy/charcoal text, one restrained blue accent
+ * and a muted green used only for positive financial context. No neon, no
+ * gradients as a primary language, no glassmorphism.
+ */
 const config: Config = {
   content: [
     "./app/**/*.{ts,tsx}",
@@ -9,34 +16,45 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        canvas: {
+          DEFAULT: "#F7F6F2",
+          raised: "#FFFFFF",
+          sunken: "#F2F0EA",
+          deep: "#EDEAE2",
+        },
         ink: {
-          950: "#07080C",
-          900: "#0B0D12",
-          850: "#0E1118",
-          800: "#12151D",
-          750: "#161A24",
-          700: "#1B202C",
-          600: "#242B3A",
+          DEFAULT: "#101828",
+          900: "#101828",
+          800: "#1D2939",
+          700: "#344054",
+          600: "#475467",
         },
-        paper: {
-          DEFAULT: "#F2F0E9",
-          dim: "#C9CCD4",
+        muted: {
+          DEFAULT: "#667085",
+          400: "#98A2B3",
+          200: "#D0D5DD",
         },
-        signal: {
-          300: "#8FA3FF",
-          400: "#6E87FF",
-          500: "#4C6FFF",
-          600: "#3D55D6",
-          700: "#33449F",
+        accent: {
+          DEFAULT: "#3157D5",
+          700: "#274AB8",
+          600: "#2C4EC4",
+          200: "#C9D3F6",
+          100: "#DFE5FB",
+          50: "#EFF2FD",
         },
-        aqua: {
-          300: "#6FE3F0",
-          400: "#3ED0E0",
-          500: "#22B7C9",
+        positive: {
+          DEFAULT: "#16805C",
+          100: "#D8EFE6",
+          50: "#EEF7F3",
+        },
+        caution: {
+          DEFAULT: "#B54708",
+          100: "#FAEBDD",
+          50: "#FDF6EF",
         },
       },
-      letterSpacing: {
-        tightest: "-0.045em",
+      borderColor: {
+        DEFAULT: "rgba(16, 24, 40, 0.10)",
       },
       fontFamily: {
         sans: [
@@ -59,6 +77,18 @@ const config: Config = {
           "sans-serif",
         ],
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
+      },
+      letterSpacing: {
+        tightest: "-0.035em",
+      },
+      maxWidth: {
+        shell: "1152px",
+        contact: "1100px",
+        measure: "68ch",
+      },
+      boxShadow: {
+        card: "0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.03)",
+        panel: "0 24px 48px -32px rgba(16, 24, 40, 0.28)",
       },
     },
   },

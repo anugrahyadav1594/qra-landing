@@ -21,7 +21,7 @@ function renderInline(text: string): ReactNode[] {
         <a
           key={`a${key++}`}
           href={match[2]}
-          className="text-signal-300 underline decoration-signal-400/40 underline-offset-2 hover:text-signal-400"
+          className="text-accent underline decoration-accent/40 underline-offset-2 hover:text-accent-700"
           rel="noopener noreferrer ugc"
         >
           {match[1]}
@@ -46,14 +46,14 @@ export function Markdown({ source }: { source: string }) {
   const flushList = () => {
     if (listItems.length === 0) return;
     blocks.push(
-      <ul key={`ul${key++}`} className="my-3 list-disc space-y-1 pl-5 text-paper-dim/85">
+      <ul key={`ul${key++}`} className="my-3 list-disc space-y-1.5 pl-5 text-ink-700 marker:text-muted-400">
         {listItems.map((item, i) => (
           <li key={i}>{renderInline(item)}</li>
         ))}
       </ul>,
     );
     listItems = [];
-  }
+  };
 
   for (const rawLine of source.split("\n")) {
     const line = rawLine.trimEnd();
@@ -64,21 +64,21 @@ export function Markdown({ source }: { source: string }) {
     if (line.startsWith("### ")) {
       flushList();
       blocks.push(
-        <h3 key={`h3${key++}`} className="mt-6 text-lg font-semibold text-paper">
+        <h3 key={`h3${key++}`} className="mt-7 text-lg font-semibold text-ink">
           {renderInline(line.slice(4))}
         </h3>,
       );
     } else if (line.startsWith("## ")) {
       flushList();
       blocks.push(
-        <h2 key={`h2${key++}`} className="mt-8 text-xl font-semibold text-paper">
+        <h2 key={`h2${key++}`} className="mt-8 text-xl font-semibold text-ink">
           {renderInline(line.slice(3))}
         </h2>,
       );
     } else if (line.startsWith("# ")) {
       flushList();
       blocks.push(
-        <h1 key={`h1${key++}`} className="mt-8 text-2xl font-bold text-paper">
+        <h1 key={`h1${key++}`} className="mt-8 text-2xl font-semibold text-ink">
           {renderInline(line.slice(2))}
         </h1>,
       );
@@ -87,7 +87,7 @@ export function Markdown({ source }: { source: string }) {
     } else {
       flushList();
       blocks.push(
-        <p key={`p${key++}`} className="my-3 leading-relaxed text-paper-dim/85">
+        <p key={`p${key++}`} className="my-3 leading-relaxed text-ink-700">
           {renderInline(line)}
         </p>,
       );

@@ -1,9 +1,12 @@
 # Quantrelic Analytics — QRA Website
 
-The **Quantrelic Analytics** website: public marketing pages for **QRA — the
-Quantrelic Research Agent** (Quantrelic Analytics Private Limited's first
-product, an AI-powered financial research tool) — plus waitlist, feedback,
-contact and careers-application flows. Built to the specification in
+The **Quantrelic Analytics** website: public marketing pages for **QRA**
+(Quantrelic Analytics Private Limited's product, technology that makes
+financial information easier to understand) — plus waitlist, feedback,
+contact and careers-application flows.
+
+> **Brand note:** QRA is simply the short form of **QuantRelic Analytics**. It is
+> not an acronym and must never be expanded into a longer product name. Built to the specification in
 **[`ARCHITECTURE.md`](./ARCHITECTURE.md)** (the single source of technical truth
 for this platform).
 
@@ -260,8 +263,10 @@ all rate limits return `429` + `Retry-After` + `X-RateLimit-*` headers.
   `backend/uploads/` (git-ignored); production targets Cloudflare R2 + ClamAV.
 - **Redis sharing:** optional via `REDIS_URL`; local default is per-process memory.
 - **Legal texts:** `/privacy` and `/terms` are placeholder copy pending counsel
-  review (§16.1), and `company.com` / `security@company.com` references are
-  placeholders (§24, open question O1).
+  review (§16.1). No contact address is hard-coded: set
+  `NEXT_PUBLIC_CONTACT_EMAIL` / `NEXT_PUBLIC_SECURITY_EMAIL` to publish real
+  addresses, otherwise the UI and `/security.txt` route people through the
+  contact form.
 
 ## 9. Troubleshooting (WSL)
 

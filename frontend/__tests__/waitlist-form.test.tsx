@@ -1,4 +1,4 @@
-/** WaitlistForm behaviour: validation, submission payload, success/429/error.
+/* WaitlistForm behaviour: validation, submission payload, success/429/error.
  * The form posts for the single real product — QRA (slug "qra") — with the
  * optional interest mapped into source.utm_source. */
 
@@ -33,7 +33,10 @@ describe("WaitlistForm", () => {
 
     render(<WaitlistForm />);
     await userEvent.type(screen.getByTestId("waitlist-email"), "ada@example.com");
-    await userEvent.selectOptions(screen.getByTestId("waitlist-interest"), "Faster due diligence");
+    await userEvent.selectOptions(
+      screen.getByTestId("waitlist-interest"),
+      "Researching a company before I invest",
+    );
     await userEvent.click(screen.getByTestId("waitlist-consent"));
     await userEvent.click(screen.getByTestId("waitlist-submit"));
 
@@ -43,7 +46,7 @@ describe("WaitlistForm", () => {
     const body = JSON.parse(options.body);
     expect(body.email).toBe("ada@example.com");
     expect(body.slug).toBe("qra");
-    expect(body.source.utm_source).toBe("Faster due diligence");
+    expect(body.source.utm_source).toBe("Researching a company before I invest");
     expect(body.consent_waitlist_contact).toBe(true);
     // clean (human) submission — the honeypot trap key stays out of the
     // strict JSON payload; it is only sent when a bot fills the field

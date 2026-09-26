@@ -1,14 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { Reveal } from "@/components/Reveal";
-import { Badge, SectionHeading } from "@/components/ui";
+import { Badge } from "@/components/ui";
 import { apiGet } from "@/lib/api";
+import { SITE_NAME } from "@/lib/constants";
 import { FALLBACK_POSTINGS } from "@/lib/seed";
 
 export const metadata: Metadata = {
   title: "Careers",
-  description: "Open roles at Quantrelic Analytics — build QRA, the Quantrelic Research Agent.",
+  description: `Open roles at Quantrelic Analytics — building QRA, technology that makes financial information easier to understand.`,
+  openGraph: {
+    title: `Careers · ${SITE_NAME}`,
+    description: "Open roles at Quantrelic Analytics.",
+  },
 };
 
 export const dynamic = "force-dynamic";
@@ -30,43 +34,57 @@ export default async function CareersPage() {
   });
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-20">
-      <Reveal>
-        <SectionHeading
-          eyebrow="Careers"
-          title="Build the research infrastructure"
-          description="Remote-first, India-based. Every role ships to production in week one and touches QRA's data, product and security surfaces."
-        />
-      </Reveal>
-      <div className="mx-auto max-w-3xl space-y-4">
+    <div className="mx-auto max-w-shell px-5 py-14 sm:px-6 sm:py-20">
+      <header className="max-w-2xl">
+        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-accent">
+          Careers
+        </p>
+        <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.08] tracking-tightest text-ink sm:text-5xl">
+          Build something that makes investing easier to understand.
+        </h1>
+        <p className="mt-5 text-lg leading-relaxed text-muted">
+          We&rsquo;re a small, remote-first team based in India. Small team, real ownership, and
+          work that ships.
+        </p>
+      </header>
+
+      <div className="mt-14 max-w-3xl">
         {data.postings.length === 0 && (
-          <p className="text-center text-paper-dim/60">
-            No open roles right now — check back soon, or say hi via the{" "}
-            <a href="/contact" className="underline">contact page</a>.
+          <p className="text-base leading-relaxed text-muted">
+            No open roles right now — check back soon, or say hello via the{" "}
+            <Link href="/contact" className="text-accent underline decoration-accent/40 underline-offset-2">
+              contact page
+            </Link>
+            .
           </p>
         )}
-        {data.postings.map((posting) => (
-          <Link
-            key={posting.id}
-            href={`/careers/${posting.slug}`}
-            className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-ink-900/60 p-6 transition hover:border-signal-500/40 hover:bg-ink-850 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <div>
-              <h3 className="font-display text-lg font-semibold tracking-tight text-paper">
-                {posting.title}
-              </h3>
-              <p className="mt-1 text-sm text-paper-dim/60">
-                {posting.department} · {posting.location} · {posting.employment_type.replace("_", " ")}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              {posting.compensation_range && (
-                <Badge tone="muted">{posting.compensation_range}</Badge>
-              )}
-              <span className="text-sm font-medium text-signal-300">Apply →</span>
-            </div>
-          </Link>
-        ))}
+
+        <ul className="border-t border-ink/15">
+          {data.postings.map((posting) => (
+            <li key={posting.id} className="border-b border-ink/10">
+              <Link
+                href={`/careers/${posting.slug}`}
+                className="flex flex-col gap-3 py-6 transition-colors hover:bg-white sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+              >
+                <div>
+                  <h2 className="font-display text-lg font-semibold tracking-tight text-ink">
+                    {posting.title}
+                  </h2>
+                  <p className="mt-1.5 text-sm text-muted">
+                    {posting.department} · {posting.location} ·{" "}
+                    {posting.employment_type.replace("_", " ")}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {posting.compensation_range && (
+                    <Badge tone="muted">{posting.compensation_range}</Badge>
+                  )}
+                  <span className="text-sm font-semibold text-accent">View role →</span>
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );

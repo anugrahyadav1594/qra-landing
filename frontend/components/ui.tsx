@@ -1,8 +1,53 @@
-/** Small shared UI primitives (no icon library, no client state). */
+/** Shared UI primitives — light editorial theme, no icon library. */
 
-export function Eyebrow({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+/** Page container. Every section shares the same measure and gutters. */
+export const shellClass = "mx-auto w-full max-w-shell px-5 sm:px-6";
+
+/**
+ * Homepage section wrapper: consistent vertical rhythm, a full-bleed tone and
+ * a stable anchor id (used by the navbar scroll-spy and hash links).
+ */
+export function Section({
+  id,
+  children,
+  tone = "canvas",
+  className = "",
+  labelledBy,
+}: {
+  id: string;
+  children: React.ReactNode;
+  tone?: "canvas" | "sunken" | "dark";
+  className?: string;
+  labelledBy?: string;
+}) {
+  const tones = {
+    canvas: "",
+    sunken: "bg-canvas-sunken",
+    dark: "bg-ink-900 text-white",
+  };
   return (
-    <p className={`text-xs font-semibold uppercase tracking-[0.28em] text-signal-400 ${className}`}>
+    <section
+      id={id}
+      data-section={id}
+      aria-labelledby={labelledBy}
+      className={`${tones[tone]} ${className}`}
+    >
+      <div className={`${shellClass} py-20 sm:py-24`}>{children}</div>
+    </section>
+  );
+}
+
+export function Eyebrow({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <p
+      className={`text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-accent ${className}`}
+    >
       {children}
     </p>
   );
@@ -10,57 +55,38 @@ export function Eyebrow({ children, className = "" }: { children: React.ReactNod
 
 export function Badge({
   children,
-  tone = "brand",
+  tone = "muted",
 }: {
   children: React.ReactNode;
-  tone?: "brand" | "success" | "muted";
+  tone?: "accent" | "positive" | "muted";
 }) {
   const tones = {
-    brand: "border-signal-500/40 bg-signal-500/10 text-signal-300",
-    success: "border-aqua-500/40 bg-aqua-500/10 text-aqua-300",
-    muted: "border-white/10 bg-white/5 text-paper-dim/70",
+    accent: "border-accent/25 bg-accent-50 text-accent-700",
+    positive: "border-positive/25 bg-positive-50 text-positive",
+    muted: "border-ink/10 bg-white text-muted",
   };
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium tracking-wide ${tones[tone]}`}
+      className={`inline-flex items-center gap-1.5 rounded border px-2.5 py-1 text-xs font-medium tracking-wide ${tones[tone]}`}
     >
       {children}
     </span>
   );
 }
 
-export function SectionHeading({
-  eyebrow,
-  title,
-  description,
-}: {
-  eyebrow?: string;
-  title: React.ReactNode;
-  description?: string;
-}) {
-  return (
-    <div className="mx-auto mb-12 max-w-2xl text-center">
-      {eyebrow && <Eyebrow className="mb-3">{eyebrow}</Eyebrow>}
-      <h2 className="font-display text-3xl font-semibold tracking-tightest text-paper sm:text-4xl">
-        {title}
-      </h2>
-      {description && <p className="mt-4 text-base leading-relaxed text-paper-dim/80">{description}</p>}
-    </div>
-  );
-}
-
 export function FieldError({ id, children }: { id: string; children?: React.ReactNode }) {
   if (!children) return null;
   return (
-    <p id={id} role="alert" className="mt-1.5 text-sm text-red-400">
+    <p id={id} role="alert" className="mt-1.5 text-sm text-[#B42318]">
       {children}
     </p>
   );
 }
 
 export const inputClass =
-  "w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm text-paper " +
-  "placeholder:text-paper-dim/40 focus:border-signal-500 focus:outline-none focus:ring-2 focus:ring-signal-500/30 " +
-  "disabled:cursor-not-allowed disabled:opacity-60";
+  "w-full rounded-md border border-ink/15 bg-white px-3.5 py-3 text-base text-ink " +
+  "placeholder:text-muted-400 focus:border-accent focus:outline-none " +
+  "focus:ring-2 focus:ring-accent/20 disabled:cursor-not-allowed disabled:opacity-60";
 
-export const labelClass = "mb-1.5 block text-sm font-medium text-paper-dim";
+export const labelClass = "mb-1.5 block text-sm font-medium text-ink-700";
+

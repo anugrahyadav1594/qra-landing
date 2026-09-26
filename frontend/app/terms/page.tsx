@@ -1,43 +1,101 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
-import { Reveal } from "@/components/Reveal";
-import { SectionHeading } from "@/components/ui";
+import { COMPANY_NAME, PRODUCT_NAME } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Terms of service",
-  description: "Terms that govern the use of the Quantrelic Analytics website.",
+  description: `Terms that govern use of the ${COMPANY_NAME} website.`,
 };
 
-const SECTIONS = [
-  ["Using this website", "The website and its products are provided as-is and pre-launch. Joining a waitlist does not guarantee access to any product; access is granted in cohorts, in waitlist order. QRA is a research tool — it does not provide investment advice."],
-  ["Your content", "Feedback, contact messages and applications are submitted voluntarily. You grant us a limited license to use them for the purpose they were submitted for (support, product improvement, recruitment)."],
-  ["Acceptable use", "Do not abuse the forms: no automated submissions, no scraping, no attempts to bypass rate limits or bot checks. We rate-limit and screen submissions and may block abusive traffic."],
-  ["Service changes", "We may change, pause or discontinue the website or any product at any time. Pre-launch details — product names, features, timelines — are indicative and may change."],
-  ["Liability", "To the maximum extent permitted by law, the website is provided without warranties, and our liability is limited to the fullest extent applicable law allows."],
-  ["Governing law", "These terms are governed by the laws of India. Disputes are subject to the jurisdiction of the courts of [City] — placeholder until the legal entity is finalized."],
+const SECTIONS: { title: string; body: React.ReactNode }[] = [
+  {
+    title: "Using this website",
+    body: (
+      <>
+        The website and its products are provided as-is and pre-launch. Joining a waitlist does not
+        guarantee access to any product; access is granted in cohorts, in waitlist order.{" "}
+        {PRODUCT_NAME} explains financial information — it does not provide investment advice and
+        does not tell anyone what to buy or sell.
+      </>
+    ),
+  },
+  {
+    title: "Your content",
+    body: (
+      <>
+        Feedback, contact messages and applications are submitted voluntarily. You grant us a limited
+        license to use them for the purpose they were submitted for (support, product improvement,
+        recruitment).
+      </>
+    ),
+  },
+  {
+    title: "Acceptable use",
+    body: (
+      <>
+        Do not abuse the forms: no automated submissions, no scraping, no attempts to bypass rate
+        limits or bot checks. We rate-limit and screen submissions and may block abusive traffic.
+      </>
+    ),
+  },
+  {
+    title: "Service changes",
+    body: (
+      <>
+        We may change, pause or discontinue the website or any product at any time. Pre-launch
+        details — product features, timelines, availability — are indicative and may change.
+      </>
+    ),
+  },
+  {
+    title: "Liability",
+    body: (
+      <>
+        To the maximum extent permitted by law, the website is provided without warranties, and our
+        liability is limited to the fullest extent applicable law allows.
+      </>
+    ),
+  },
+  {
+    title: "Governing law",
+    body: <>These terms are governed by the laws of India.</>,
+  },
 ];
 
 export default function TermsPage() {
   return (
-    <div className="mx-auto max-w-6xl px-6 py-20">
-      <Reveal>
-        <SectionHeading eyebrow="Legal" title="Terms of service" />
-        <div className="mx-auto max-w-3xl space-y-6 rounded-3xl border border-white/5 bg-ink-900/60 p-8 text-sm leading-relaxed text-paper-dim/85">
-          <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 p-4 text-amber-200">
-            <strong>Placeholder text.</strong> Final terms are pending legal counsel
-            review before launch (ARCHITECTURE.md §16.1).
-          </div>
-          {SECTIONS.map(([title, body]) => (
-            <div key={title}>
-              <h2 className="text-base font-semibold text-paper">{title}</h2>
-              <p className="mt-2">{body}</p>
-            </div>
+    <div className="mx-auto max-w-shell px-5 py-14 sm:px-6 sm:py-20">
+      <div className="max-w-3xl">
+        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-accent">Legal</p>
+        <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.08] tracking-tightest text-ink sm:text-5xl">
+          Terms of service
+        </h1>
+
+        <p className="mt-6 rounded-md border border-caution/25 bg-caution-50 p-4 text-sm leading-relaxed text-ink-800">
+          <strong className="font-semibold">Placeholder text.</strong> Final terms are pending legal
+          review before launch.
+        </p>
+
+        <div className="mt-10 space-y-8">
+          {SECTIONS.map((section) => (
+            <section key={section.title}>
+              <h2 className="font-display text-lg font-semibold tracking-tight text-ink">
+                {section.title}
+              </h2>
+              <div className="mt-2 text-base leading-relaxed text-muted">{section.body}</div>
+            </section>
           ))}
-          <p className="text-paper-dim/50">
-            Last updated: {new Date().toISOString().slice(0, 10)}
-          </p>
         </div>
-      </Reveal>
+
+        <p className="mt-10 text-sm text-muted">
+          Questions about these terms?{" "}
+          <Link href="/contact" className="text-accent underline decoration-accent/40 underline-offset-2">
+            Contact us
+          </Link>
+          .
+        </p>
+      </div>
     </div>
   );
 }

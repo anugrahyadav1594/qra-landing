@@ -1,66 +1,68 @@
 import { Reveal } from "@/components/Reveal";
-import { Eyebrow } from "@/components/ui";
+import { Section } from "@/components/ui";
 
-const CHAIN = ["Question", "Evidence", "Context", "Analysis", "Thesis"];
+const CHAIN = [
+  {
+    label: "Number",
+    value: "Revenue increased",
+    detail: "What you see first.",
+  },
+  {
+    label: "What it means",
+    value: "What changed?",
+    detail: "The explanation, in plain language.",
+  },
+  {
+    label: "Where it came from",
+    value: "Source: annual report / financial statement",
+    detail: "The document the number is from, so you can check it yourself.",
+  },
+];
 
+/** Evidence: teaching the visitor how to trust what they read. */
 export function EvidenceSection() {
   return (
-    <section className="mx-auto max-w-6xl px-6 py-24">
+    <Section id="evidence" tone="sunken" labelledBy="evidence-heading">
       <Reveal>
-        <div className="mx-auto max-w-2xl text-center">
-          <Eyebrow className="mb-3">Evidence-first</Eyebrow>
-          <h2 className="font-display text-4xl font-semibold leading-[1.08] tracking-tightest text-paper sm:text-5xl">
-            Answers without evidence are just opinions.
+        <div className="max-w-2xl">
+          <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-accent">
+            Evidence
+          </p>
+          <h2
+            id="evidence-heading"
+            className="mt-4 font-display text-3xl font-semibold leading-[1.12] tracking-tightest text-ink sm:text-[2.5rem]"
+          >
+            Every number should have a reason.
           </h2>
+          <p className="mt-6 text-lg leading-relaxed text-muted">
+            If you can&rsquo;t see where a number came from, you can&rsquo;t decide how much to
+            trust it. So each explanation is meant to be traceable to the document behind it.
+          </p>
         </div>
-      </Reveal>
 
-      <Reveal delay={140}>
-        <div className="mt-16 flex flex-col items-center justify-center gap-2 sm:flex-row sm:items-stretch sm:gap-0">
+        <ol className="mt-14 grid gap-8 md:grid-cols-3 md:gap-6">
           {CHAIN.map((node, index) => (
-            <div key={node} className="flex flex-col items-center sm:flex-row sm:items-center">
-              <div
-                className={`flex min-w-[120px] flex-col items-center justify-center gap-1 rounded-xl border px-5 py-4 sm:min-w-[130px] ${
-                  index === CHAIN.length - 1
-                    ? "border-aqua-500/40 bg-aqua-500/10"
-                    : "border-white/10 bg-ink-900/70"
-                }`}
-              >
-                <span className="font-mono text-[10px] text-paper-dim/40">
+            <li key={node.label} className="border-t border-ink/15 pt-6">
+              <div className="flex items-center gap-3">
+                <span className="font-mono text-xs text-accent">
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                <span
-                  className={`font-display text-sm font-semibold tracking-tight ${
-                    index === CHAIN.length - 1 ? "text-aqua-300" : "text-paper"
-                  }`}
-                >
-                  {node}
-                </span>
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                  {node.label}
+                </p>
               </div>
-              {index < CHAIN.length - 1 && (
-                <svg
-                  className="mx-1 hidden h-5 w-10 text-signal-400/60 sm:block"
-                  viewBox="0 0 40 20"
-                  fill="none"
-                  aria-hidden="true"
-                >
-                  <path
-                    className="chain-arrow"
-                    d="M2 10h30M28 4l6 6-6 6"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    style={{ animationDelay: `${0.3 + index * 0.25}s` }}
-                  />
-                </svg>
-              )}
-            </div>
+              <p className="mt-4 font-display text-lg font-semibold leading-snug tracking-tight text-ink">
+                {node.value}
+              </p>
+              <p className="mt-2 text-base leading-relaxed text-muted">{node.detail}</p>
+            </li>
           ))}
-        </div>
-        <p className="mx-auto mt-8 max-w-xl text-center text-sm leading-relaxed text-paper-dim/60">
-          Every statement QRA produces is designed to trace back to the source it came from —
-          filings, statements, news, market data.
+        </ol>
+
+        <p className="mt-12 max-w-2xl text-base leading-relaxed text-muted">
+          The goal isn&rsquo;t more information. It&rsquo;s information you can check.
         </p>
       </Reveal>
-    </section>
+    </Section>
   );
 }

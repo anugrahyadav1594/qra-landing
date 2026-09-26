@@ -2,10 +2,10 @@
 
 import { useEffect, useRef, type ReactNode } from "react";
 
-/** IntersectionObserver wrapper: adds `.is-visible` to `.reveal` when the
- * element scrolls into view (gates the scroll-driven motion in
- * globals.css). Runs once per element; reduced-motion and no-observer
- * environments get the visible state immediately. */
+/** IntersectionObserver wrapper: adds `.is-visible` to `.reveal` once the
+ * element scrolls into view. This is the site's only decorative motion —
+ * one quiet fade per section, never per element. Reduced-motion and
+ * no-observer environments get the visible state immediately. */
 export function Reveal({
   children,
   className = "",
@@ -40,7 +40,7 @@ export function Reveal({
           }
         }
       },
-      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" },
+      { threshold: 0.1, rootMargin: "0px 0px -60px 0px" },
     );
     observer.observe(el);
     return () => observer.disconnect();

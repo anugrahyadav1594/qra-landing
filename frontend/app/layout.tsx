@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
-import { ClerkProvider } from "@clerk/nextjs";
+import { AuthProvider } from "@/components/AuthProvider";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/constants";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/constants";
 
 // Self-hosted variable fonts — offline-safe, no runtime font fetches.
 import "@fontsource-variable/inter";
@@ -11,24 +11,35 @@ import "@fontsource-variable/space-grotesk";
 
 import "./globals.css";
 
-const DEFAULT_TITLE = `${SITE_NAME} — QRA: AI-Powered Financial Research`;
-
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: DEFAULT_TITLE,
+    default: SITE_TITLE,
     template: `%s · ${SITE_NAME}`,
   },
   description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
   openGraph: {
     type: "website",
     siteName: SITE_NAME,
-    title: DEFAULT_TITLE,
+    title: SITE_TITLE,
     description: SITE_DESCRIPTION,
     locale: "en_IN",
-    images: [{ url: "/image.png", width: 512, height: 512, alt: "Quantrelic QRA logo" }],
+    images: [
+      {
+        url: "/image.png",
+        width: 512,
+        height: 512,
+        alt: "Quantrelic Analytics logo",
+      },
+    ],
   },
-  twitter: { card: "summary", title: DEFAULT_TITLE, description: SITE_DESCRIPTION },
+  twitter: {
+    card: "summary",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [{ url: "/image.png", alt: "Quantrelic Analytics logo" }],
+  },
   robots: { index: true, follow: true },
 };
 
@@ -37,11 +48,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="flex min-h-screen flex-col">
         {/* ClerkProvider goes inside <body> — never wraps <html> (Clerk docs). */}
-        <ClerkProvider>
+        <AuthProvider>
           <Nav />
           <main className="flex-1">{children}</main>
           <Footer />
-        </ClerkProvider>
+        </AuthProvider>
       </body>
     </html>
   );

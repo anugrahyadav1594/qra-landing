@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
-import { Reveal } from "@/components/Reveal";
-import { SectionHeading } from "@/components/ui";
+import { COMPANY_NAME, SECURITY_CONTACT_EMAIL } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Security",
-  description: "Quantrelic Analytics' security posture and disclosure policy.",
+  description: `Security practices at ${COMPANY_NAME}, and how to report a vulnerability responsibly.`,
 };
 
 const PRACTICES = [
-  "No passwords at launch — authentication uses email/phone one-time codes and Google sign-in, handled by a hardened provider.",
   "Rate limits and bot checks on every public form; spam screened with honeypots and timing checks.",
   "UUIDv7 identifiers everywhere — never sequential, so records can't be enumerated.",
   "IP addresses hashed at rest; uploads restricted to PDF and size-capped.",
@@ -19,39 +18,74 @@ const PRACTICES = [
 
 export default function SecurityPage() {
   return (
-    <div className="mx-auto max-w-6xl px-6 py-20">
-      <Reveal>
-        <SectionHeading
-          eyebrow="Trust"
-          title="Security"
-          description="We treat security as an engineering property — controls are in the code, not in a slide deck."
-        />
-        <div className="mx-auto max-w-3xl space-y-8 rounded-3xl border border-white/5 bg-ink-900/60 p-8">
-          <ul className="space-y-3 text-sm leading-relaxed text-paper-dim/85">
-            {PRACTICES.map((item) => (
-              <li key={item} className="flex gap-3">
-                <span aria-hidden="true" className="mt-0.5 text-aqua-300">✓</span>
-                {item}
-              </li>
-            ))}
-          </ul>
-          <div>
-            <h2 className="text-base font-semibold text-paper">Responsible disclosure</h2>
-            <p className="mt-2 text-sm leading-relaxed text-paper-dim/85">
-              Found a vulnerability? Email{" "}
-              <span className="font-mono text-signal-300">security@company.com</span> (placeholder).
-              Please give us a reasonable window before public disclosure. We respond
-              within 5 working days, and we credit researchers in our changelog.
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-paper-dim/85">
-              Machine-readable policy:{" "}
-              <a href="/security.txt" className="underline decoration-signal-400/40 underline-offset-2 hover:text-signal-300">
-                security.txt
-              </a>
-            </p>
-          </div>
-        </div>
-      </Reveal>
+    <div className="mx-auto max-w-shell px-5 py-14 sm:px-6 sm:py-20">
+      <div className="max-w-3xl">
+        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-accent">Trust</p>
+        <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.08] tracking-tightest text-ink sm:text-5xl">
+          Security
+        </h1>
+        <p className="mt-5 text-lg leading-relaxed text-muted">
+          We treat security as an engineering property — controls live in the code, not in a slide
+          deck.
+        </p>
+
+        <ul className="mt-10 border-t border-ink/15">
+          {PRACTICES.map((practice) => (
+            <li key={practice} className="border-b border-ink/10 py-4 text-base leading-relaxed text-ink-700">
+              {practice}
+            </li>
+          ))}
+        </ul>
+
+        <section className="mt-12">
+          <h2 className="font-display text-xl font-semibold tracking-tight text-ink">
+            Responsible disclosure
+          </h2>
+          <p className="mt-3 text-base leading-relaxed text-muted">
+            Found a vulnerability?{" "}
+            {SECURITY_CONTACT_EMAIL ? (
+              <>
+                Email{" "}
+                <a
+                  href={`mailto:${SECURITY_CONTACT_EMAIL}`}
+                  className="text-accent underline decoration-accent/40 underline-offset-2"
+                >
+                  {SECURITY_CONTACT_EMAIL}
+                </a>
+                , or use our{" "}
+                <Link
+                  href="/feedback"
+                  className="text-accent underline decoration-accent/40 underline-offset-2"
+                >
+                  feedback form
+                </Link>{" "}
+                and choose the Security topic.
+              </>
+            ) : (
+              <>
+                use our{" "}
+                <Link
+                  href="/feedback"
+                  className="text-accent underline decoration-accent/40 underline-offset-2"
+                >
+                  feedback form
+                </Link>{" "}
+                and choose the Security topic — it reaches the same place.
+              </>
+            )}{" "}
+            Please give us a reasonable window before public disclosure.
+          </p>
+          <p className="mt-3 text-base leading-relaxed text-muted">
+            Machine-readable policy:{" "}
+            <a
+              href="/security.txt"
+              className="text-accent underline decoration-accent/40 underline-offset-2"
+            >
+              security.txt
+            </a>
+          </p>
+        </section>
+      </div>
     </div>
   );
 }

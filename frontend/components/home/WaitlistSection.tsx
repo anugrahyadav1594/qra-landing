@@ -1,39 +1,45 @@
 import { Reveal } from "@/components/Reveal";
 import { WaitlistForm } from "@/components/WaitlistForm";
-import { Eyebrow } from "@/components/ui";
+import { Section } from "@/components/ui";
 
 export function WaitlistSection() {
   return (
-    <section id="waitlist" className="relative mx-auto max-w-6xl scroll-mt-24 overflow-hidden px-6 py-24">
-      <div
-        className="absolute right-[-15%] top-[-30%] h-[380px] w-[380px] rounded-full bg-signal-600/10 blur-[120px] motion-safe:block"
-        aria-hidden="true"
-      />
-      <div className="relative grid gap-14 lg:grid-cols-2 lg:gap-20">
-        <Reveal>
-          <Eyebrow>Early access</Eyebrow>
-          <h2 className="mt-5 font-display text-4xl font-semibold leading-[1.08] tracking-tightest text-paper sm:text-5xl">
-            Your next
-            <br />
-            <span className="bg-gradient-to-r from-signal-300 to-aqua-300 bg-clip-text text-transparent">
-              research
-            </span>
-            <br />
-            starts here.
-          </h2>
-          <p className="mt-7 max-w-md text-base leading-relaxed text-paper-dim/75">
-            We're building a new way to research companies — one that helps investors move from
-            scattered information to a clearer investment thesis. Early access opens in cohorts,
-            in waitlist order.
-          </p>
-        </Reveal>
+    <Section id="waitlist" labelledBy="waitlist-heading">
+      <Reveal>
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
+          <div>
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-accent">
+              Early access
+            </p>
+            <h2
+              id="waitlist-heading"
+              className="mt-4 font-display text-3xl font-semibold leading-[1.12] tracking-tightest text-ink sm:text-[2.5rem]"
+            >
+              Be among the first to experience a simpler way to understand investing.
+            </h2>
+            <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted">
+              We&rsquo;re building QRA now. Join the waitlist and we&rsquo;ll let you know when early
+              access opens.
+            </p>
+            <ul className="mt-8 space-y-3 text-base text-muted">
+              {[
+                "Waitlist updates only — no marketing unless you ask for it.",
+                "One email per person; duplicates are ignored.",
+                "You can ask us to remove your details at any time.",
+              ].map((item) => (
+                <li key={item} className="flex gap-3">
+                  <span aria-hidden="true" className="mt-2.5 h-1 w-1 shrink-0 rounded-full bg-positive" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        <Reveal delay={140}>
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-7 sm:p-9">
+          <div className="rounded-lg border border-ink/10 bg-white p-6 shadow-card sm:p-8">
             <WaitlistForm />
           </div>
-        </Reveal>
-      </div>
-    </section>
+        </div>
+      </Reveal>
+    </Section>
   );
 }
