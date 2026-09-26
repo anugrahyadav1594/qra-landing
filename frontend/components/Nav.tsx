@@ -4,6 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+<<<<<<< HEAD
+=======
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+>>>>>>> origin/arena/01a07569-qra-landing
 import { Logo } from "@/components/Logo";
 import { NAV_LINKS } from "@/lib/constants";
 
@@ -41,7 +45,11 @@ export function Nav() {
           </span>
         </Link>
 
+<<<<<<< HEAD
         <div className="hidden items-center gap-6 lg:flex">
+=======
+        <div className="hidden items-center gap-5 lg:flex">
+>>>>>>> origin/arena/01a07569-qra-landing
           {NAV_LINKS.map((link) => {
             const active = isActive(link.href);
             return (
@@ -59,10 +67,30 @@ export function Nav() {
           })}
         </div>
 
+<<<<<<< HEAD
         <div className="hidden lg:block">
           <Link
             href="/waitlist"
             className="rounded-full bg-paper px-4 py-2 text-sm font-semibold text-ink-950 transition hover:bg-white"
+=======
+        <div className="hidden items-center gap-3 lg:flex">
+          <SignedOut>
+            <SignInButton mode="modal">
+              <span className="text-sm text-paper-dim/70 transition hover:text-paper">Sign in</span>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <span className="rounded-full bg-paper px-4 py-2 text-sm font-semibold text-ink-950 transition hover:bg-white">
+                Sign up
+              </span>
+            </SignUpButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton />
+          </SignedIn>
+          <Link
+            href="/waitlist"
+            className="rounded-full border border-white/15 px-4 py-2 text-sm font-semibold text-paper transition hover:border-white/30 hover:bg-white/5"
+>>>>>>> origin/arena/01a07569-qra-landing
           >
             Join the waitlist
           </Link>
@@ -98,6 +126,19 @@ export function Nav() {
                 {link.label}
               </Link>
             ))}
+            <div className="mt-2 flex items-center gap-3">
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <span className="text-sm text-paper-dim/80">Sign in</span>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <span className="text-sm font-semibold text-signal-300">Sign up</span>
+                </SignUpButton>
+              </SignedOut>
+              <SignedIn>
+                <UserButton />
+              </SignedIn>
+            </div>
             <Link
               href="/waitlist"
               onClick={() => setOpen(false)}
