@@ -1,14 +1,32 @@
+import { ImageAsset } from "@/components/ImageAsset";
 import { Reveal } from "@/components/Reveal";
 import { Section, SectionLabel } from "@/components/ui";
 import { TRUST } from "@/lib/content";
+import { IMAGE_ALTS, IMAGE_ASSETS } from "@/lib/images";
 
 /**
  * Trust as a brand philosophy, not a disclaimer: three statements, one
- * principle and the line the whole product rests on.
+ * principle and the line the whole product rests on — set against a dark
+ * atmospheric layer rather than a legal footnote.
  */
 export function TrustSection() {
   return (
-    <Section id="trust" tone="deep" labelledBy="trust-heading">
+    <Section id="trust" tone="deep" labelledBy="trust-heading" className="overflow-hidden">
+      {/* Atmosphere: dark, quiet, lit by precision rather than colour */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <ImageAsset
+          src={IMAGE_ASSETS.trust}
+          alt={IMAGE_ALTS.trust}
+          decorative
+          sizes="100vw"
+          className="absolute inset-0 h-full w-full"
+          imageClassName="object-center"
+          fallbackClassName="bg-[linear-gradient(180deg,#0D131D_0%,#111925_50%,#070A0F_100%)]"
+        />
+        <div className="absolute inset-0 bg-ink-950/[0.72]" />
+        <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-ink-850 to-transparent" />
+      </div>
+
       {/* Slow vertical rules — structure, not decoration */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden lg:block">
         <div className="mx-auto grid h-full max-w-shell grid-cols-4 px-6">

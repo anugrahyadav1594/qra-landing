@@ -17,24 +17,24 @@ const config: Config = {
     extend: {
       colors: {
         ink: {
-          950: "#070B14", // page background
-          900: "#0D1320", // raised section background
-          850: "#111827", // panels
-          800: "#151D2B", // elevated panels
-          750: "#1B2434", // hover / inset
-          700: "#232E42", // borders strong, chips
+          950: "#070A0F", // page background
+          900: "#0D131D", // raised section background
+          850: "#111925", // panels
+          800: "#151E2A", // elevated panels
+          750: "#1A2334", // hover / inset
+          700: "#222C3E", // borders strong, chips
         },
         paper: {
           DEFAULT: "#F5F7FA", // primary text
-          dim: "#9AA6B8", // secondary text
-          mute: "#8B98AC", // tertiary text (contrast-safe on ink-950)
-          faint: "#6F7C91", // micro labels, decorations
+          dim: "#9AA8BA", // secondary text
+          mute: "#8B99AB", // tertiary text (contrast-safe on ink-950)
+          faint: "#6F7D91", // micro labels, decorations
         },
         brand: {
-          300: "#9DB1FF",
-          400: "#6E8CFF",
-          500: "#3B66FF", // primary accent
-          600: "#2F55E0",
+          300: "#9DB4FF",
+          400: "#6F94FF",
+          500: "#3F6FFF", // primary accent
+          600: "#2F58E0",
           700: "#2545BE",
         },
         positive: {
@@ -43,11 +43,11 @@ const config: Config = {
           700: "#0F7A5C",
         },
         amber: {
-          DEFAULT: "#F5B942",
+          DEFAULT: "#F2B84B",
           300: "#FFD27A",
         },
         danger: {
-          DEFAULT: "#FF6B6B",
+          DEFAULT: "#FF5B6E",
         },
         line: {
           DEFAULT: "rgba(245, 247, 250, 0.10)",

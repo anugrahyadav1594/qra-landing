@@ -2,25 +2,41 @@
 
 import { useRef } from "react";
 
+import { ImageAsset } from "@/components/ImageAsset";
 import { Section, SectionLabel, SectionStatement } from "@/components/ui";
 import { useScrollPhase } from "@/components/useScrollPhase";
 import { PROBLEM } from "@/lib/content";
+import { IMAGE_ALTS, IMAGE_ASSETS } from "@/lib/images";
 
 /**
- * The problem, told visually: eight sources of financial information start
- * scattered and disorganised, then align. It is the site's signature
- * transformation — fragmented information becoming a structure you can read.
+ * The problem, told visually: seven sources of financial information start
+ * scattered and disorganised, then align. Fragmented information becoming a
+ * structure you can read is the whole company in one picture.
  *
  * The alignment is driven by scroll phase (state changes only when the phase
- * changes, the movement itself is CSS transform/opacity).
+ * changes; the movement itself is CSS transform/opacity).
  */
 export function ProblemSection() {
   const ref = useRef<HTMLDivElement>(null);
   const phase = useScrollPhase(ref, 3);
 
   return (
-    <Section id="problem" tone="raised" labelledBy="problem-heading">
-      <div ref={ref} data-phase={phase}>
+    <Section id="problem" tone="raised" labelledBy="problem-heading" className="overflow-hidden">
+      {/* Information overload, as atmosphere rather than illustration */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <ImageAsset
+          src={IMAGE_ASSETS.informationOverload}
+          alt={IMAGE_ALTS.informationOverload}
+          decorative
+          sizes="100vw"
+          className="absolute inset-0 h-full w-full img-mask-bottom"
+          imageClassName="object-center"
+          fallbackClassName="bg-[linear-gradient(165deg,#111925_0%,#0D131D_58%,#070A0F_100%)]"
+        />
+        <div className="absolute inset-0 bg-ink-900/55" />
+      </div>
+
+      <div ref={ref} data-phase={phase} className="relative">
         <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
           <div>
             <SectionLabel tone="brand">{PROBLEM.label}</SectionLabel>
@@ -34,7 +50,7 @@ export function ProblemSection() {
               {PROBLEM.fragments.map((fragment, index) => (
                 <div
                   key={fragment.label}
-                  className="fragment seq rounded-md border border-line bg-ink-850/80 px-3 py-3"
+                  className="fragment seq rounded-md border border-line bg-ink-850/85 px-3 py-3 backdrop-blur-sm"
                   style={
                     {
                       "--fx": fragment.fx,

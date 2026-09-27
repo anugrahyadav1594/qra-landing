@@ -14,8 +14,10 @@ export const CONCEPT_LABEL = "Concept interface";
 
 export const HERO = {
   eyebrow: "Quantrelic Analytics",
-  headline: ["Investing shouldn’t", "be this complicated."],
-  support: "Understand the numbers. Understand the story. Decide for yourself.",
+  headline: ["Make sense of", "your investments."],
+  support:
+    "Financial information is everywhere. We’re building a simpler way to understand " +
+    "what it all means — before you invest.",
   tagline: "Making investing simpler for the masses.",
   primaryCta: "Join the waitlist",
   secondaryCta: "See how it works",
@@ -27,18 +29,15 @@ export type Direction = "up" | "down" | "flat";
 export const HERO_PANEL = {
   company: "RELIANCE INDUSTRIES",
   metrics: [
-    { label: "Revenue", value: "₹ X,XXX Cr", direction: "up" },
-    { label: "Profit", value: "₹ X,XXX Cr", direction: "up" },
-    { label: "Margins", value: "XX.X%", direction: "flat" },
-    { label: "Debt", value: "₹ X,XXX Cr", direction: "down" },
-    { label: "Cash flow", value: "₹ X,XXX Cr", direction: "up" },
+    { label: "Revenue", value: "₹XX,XXX Cr", direction: "up" },
+    { label: "Profit", value: "₹XX,XXX Cr", direction: "up" },
+    { label: "Debt", value: "₹XX,XXX Cr", direction: "down" },
+    { label: "Cash flow", value: "₹XX,XXX Cr", direction: "up" },
   ] as { label: string; value: string; direction: Direction }[],
   meaningLabel: "What does this mean?",
-  meaning: [
-    "Revenue has grown steadily.",
-    "Margins changed as costs moved.",
-    "Cash generation supported investment.",
-  ],
+  meaning: ["Revenue has grown steadily while margins have changed with costs."],
+  /** The signature interaction, named: complexity becoming understanding. */
+  phases: ["Scattered information", "Organized information", "Explained information", "Understood"],
   source: { label: "Source", value: "Annual Report · FY25" },
   disclaimer:
     "Concept interface. Figures are placeholders — not real company data, and not live market information.",
@@ -57,7 +56,6 @@ export const PROBLEM = {
     { label: "News", fx: "24px", fy: "16px", fr: "-1.6deg" },
     { label: "Charts", fx: "-30px", fy: "6px", fr: "1.2deg" },
     { label: "Ratios", fx: "28px", fy: "-6px", fr: "-2deg" },
-    { label: "Presentations", fx: "-20px", fy: "-12px", fr: "1.4deg" },
     { label: "Financial Statements", fx: "16px", fy: "24px", fr: "-1.2deg" },
   ],
   overload: "Too much information.",
@@ -74,17 +72,17 @@ export const IDEA = {
     {
       n: "01",
       title: "Find it",
-      body: "The reports, results, filings and developments that matter — for one company, in one place.",
+      body: "Bring relevant information together.",
     },
     {
       n: "02",
       title: "Explain it",
-      body: "Financial language and spreadsheets turned into sentences you can actually read.",
+      body: "Turn financial language into plain language.",
     },
     {
       n: "03",
       title: "Understand it",
-      body: "What changed, why it matters, and where every explanation came from.",
+      body: "Show what changed, why it matters and where it came from.",
     },
   ],
   closing: "Understanding first. Your decision second.",
@@ -106,7 +104,7 @@ export const PRODUCT = {
   statement: ["See the numbers.", "Understand the story."],
   company: "RELIANCE INDUSTRIES",
   questionsLabel: "What should I understand?",
-  meaningLabel: "What the numbers are saying",
+  meaningLabel: "What this means",
   sourceCta: "See the source",
   sourceClose: "Hide source",
   support:
@@ -134,9 +132,10 @@ export const PRODUCT = {
         "Margins have moved, so profit has not grown at the same pace.",
       ],
       metrics: [
-        { label: "Revenue", value: "₹ X,XXX Cr", direction: "up" },
-        { label: "Profit", value: "₹ X,XXX Cr", direction: "up" },
+        { label: "Revenue", value: "₹XX,XXX Cr", direction: "up" },
+        { label: "Profit", value: "₹XX,XXX Cr", direction: "up" },
         { label: "Margins", value: "XX.X%", direction: "flat" },
+        { label: "Cash flow", value: "₹XX,XXX Cr", direction: "up" },
       ],
       source: {
         label: "Financial statements",
@@ -189,11 +188,23 @@ export const PRODUCT = {
 
 export const AUDIENCE = {
   label: "For investors",
-  statement: "Does this sound like you?",
-  quotes: [
-    "I know the basics. But financial statements still feel confusing.",
-    "I want to understand a company before I invest.",
-    "I don’t have hours to connect everything myself.",
+  statement: "Built for people who want to understand before they invest.",
+  people: [
+    {
+      n: "01",
+      title: "The beginner",
+      quote: "I’ve started investing. Financial terms still feel confusing.",
+    },
+    {
+      n: "02",
+      title: "The curious investor",
+      quote: "I want to understand a company before putting my money into it.",
+    },
+    {
+      n: "03",
+      title: "The busy investor",
+      quote: "I know the basics. I don’t have hours to connect everything myself.",
+    },
   ],
   closing: "QRA is being built for you.",
   cta: "Join the waitlist",

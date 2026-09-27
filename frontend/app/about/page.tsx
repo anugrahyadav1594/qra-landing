@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 
+import { ImageAsset } from "@/components/ImageAsset";
 import { Reveal } from "@/components/Reveal";
 import { Button, SectionLabel, SectionStatement } from "@/components/ui";
 import { ABOUT } from "@/lib/content";
 import { COMPANY_NAME, SITE_NAME } from "@/lib/constants";
+import { IMAGE_ALTS, IMAGE_ASSETS } from "@/lib/images";
 
 export const metadata: Metadata = {
   title: "About",
@@ -24,6 +26,17 @@ export default function AboutPage() {
           <SectionLabel tone="brand">{ABOUT.eyebrow}</SectionLabel>
           <SectionStatement id="about-heading" as="h2" lines={ABOUT.headline} className="mt-5" />
         </div>
+      </Reveal>
+
+      <Reveal variant="scale" className="mt-10">
+        <ImageAsset
+          src={IMAGE_ASSETS.about}
+          alt={IMAGE_ALTS.about}
+          sizes="(min-width: 1240px) 1200px, 100vw"
+          className="h-[200px] w-full rounded-xl border border-line img-mask-bottom sm:h-[280px] lg:h-[340px]"
+          imageClassName="object-center"
+          fallback={<span className="micro absolute bottom-4 left-4">QRA · concept visual</span>}
+        />
       </Reveal>
 
       <div className="mt-12 grid gap-12 lg:grid-cols-[1.1fr_minmax(0,420px)] lg:gap-16">
