@@ -124,10 +124,10 @@ export function ApplyForm({ slug, title }: { slug: string; title: string }) {
       <div
         data-testid="apply-success"
         role="status"
-        className="rounded-lg border border-positive/25 bg-positive-50 p-5 text-sm"
+        className="rounded-lg border border-positive/30 bg-positive/[0.08] p-5 text-sm"
       >
-        <p className="font-semibold text-ink">Application received.</p>
-        <p className="mt-1.5 leading-relaxed text-ink-700">
+        <p className="font-semibold text-paper">Application received.</p>
+        <p className="mt-1.5 leading-relaxed text-paper-dim">
           Thanks for applying to {title}. We read every application and reply within a week —
           usually much sooner.
         </p>
@@ -178,7 +178,7 @@ export function ApplyForm({ slug, title }: { slug: string; title: string }) {
 
       <div>
         <label htmlFor="apply-phone" className={labelClass}>
-          Phone <span className="font-normal text-muted">(optional)</span>
+          Phone <span className="font-normal text-paper-mute">(optional)</span>
         </label>
         <input
           id="apply-phone"
@@ -194,7 +194,7 @@ export function ApplyForm({ slug, title }: { slug: string; title: string }) {
 
       <div>
         <label htmlFor="apply-cover" className={labelClass}>
-          Cover note <span className="font-normal text-muted">(optional)</span>
+          Cover note <span className="font-normal text-paper-mute">(optional)</span>
         </label>
         <textarea
           id="apply-cover"
@@ -218,26 +218,26 @@ export function ApplyForm({ slug, title }: { slug: string; title: string }) {
           type="file"
           accept="application/pdf"
           onChange={handleFile}
-          className="block w-full text-sm text-muted file:mr-4 file:cursor-pointer file:rounded-md file:border-0 file:bg-accent-50 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-accent-700 hover:file:bg-accent-100"
+          className="block w-full text-sm text-paper-mute file:mr-4 file:cursor-pointer file:rounded-md file:border-0 file:bg-brand-500/[0.12] file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-brand-300 hover:file:bg-ink-750"
         />
         {resumeName && !fileError && (
-          <p className="mt-1.5 text-xs text-muted">Attached: {resumeName}</p>
+          <p className="mt-1.5 text-xs text-paper-mute">Attached: {resumeName}</p>
         )}
         <FieldError id="apply-resume-error">{fileError}</FieldError>
       </div>
 
-      <label className="flex items-start gap-2.5 text-sm leading-relaxed text-ink-700">
+      <label className="flex items-start gap-2.5 text-sm leading-relaxed text-paper-dim">
         <input
           type="checkbox"
           data-testid="apply-consent"
           checked={consent}
           onChange={(e) => setConsent(e.target.checked)}
-          className="mt-0.5 h-4 w-4 rounded border-ink/30 accent-accent"
+          className="mt-0.5 h-4 w-4 rounded border-line-strong accent-brand-500"
           aria-describedby={fieldErrors.consent ? "apply-consent-error" : undefined}
         />
         <span>
           I agree that Quantrelic Analytics may process my application data, including
-          my resume, for this recruitment process. <span className="text-muted">(required)</span>
+          my resume, for this recruitment process. <span className="text-paper-mute">(required)</span>
         </span>
       </label>
       <FieldError id="apply-consent-error">{fieldErrors.consent}</FieldError>
@@ -256,18 +256,18 @@ export function ApplyForm({ slug, title }: { slug: string; title: string }) {
         type="submit"
         data-testid="apply-submit"
         disabled={submitting}
-        className="inline-flex items-center justify-center rounded-md bg-accent px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-accent-700 disabled:opacity-60"
+        className="inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-600 disabled:opacity-60"
       >
         {submitting ? "Submitting…" : "Submit application"}
       </button>
 
       {state.kind === "error" && (
-        <p data-testid="apply-error" role="alert" className="text-sm text-[#B42318]">
+        <p data-testid="apply-error" role="alert" className="text-sm text-danger">
           {state.message}
         </p>
       )}
-      <p className="text-xs leading-relaxed text-muted">
-        Your data is handled per our <a href="/privacy" className="underline hover:text-ink-700">privacy policy</a>.
+      <p className="text-xs leading-relaxed text-paper-mute">
+        Your data is handled per our <a href="/privacy" className="underline hover:text-paper-dim">privacy policy</a>.
       </p>
     </form>
   );

@@ -1,11 +1,11 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Editorial financial technology palette.
+ * Dark-first design system for Quantrelic Analytics.
  *
- * Warm off-white canvas, deep navy/charcoal text, one restrained blue accent
- * and a muted green used only for positive financial context. No neon, no
- * gradients as a primary language, no glassmorphism.
+ * Deep navy surfaces, white typography and three meaningful accents:
+ * cobalt blue (information / action), emerald (positive financial movement)
+ * and amber (attention / context). No neon, no purple, no glassmorphism.
  */
 const config: Config = {
   content: [
@@ -16,45 +16,44 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        canvas: {
-          DEFAULT: "#F7F6F2",
-          raised: "#FFFFFF",
-          sunken: "#F2F0EA",
-          deep: "#EDEAE2",
-        },
         ink: {
-          DEFAULT: "#101828",
-          900: "#101828",
-          800: "#1D2939",
-          700: "#344054",
-          600: "#475467",
+          950: "#070B14", // page background
+          900: "#0D1320", // raised section background
+          850: "#111827", // panels
+          800: "#151D2B", // elevated panels
+          750: "#1B2434", // hover / inset
+          700: "#232E42", // borders strong, chips
         },
-        muted: {
-          DEFAULT: "#667085",
-          400: "#98A2B3",
-          200: "#D0D5DD",
+        paper: {
+          DEFAULT: "#F5F7FA", // primary text
+          dim: "#9AA6B8", // secondary text
+          mute: "#8B98AC", // tertiary text (contrast-safe on ink-950)
+          faint: "#6F7C91", // micro labels, decorations
         },
-        accent: {
-          DEFAULT: "#3157D5",
-          700: "#274AB8",
-          600: "#2C4EC4",
-          200: "#C9D3F6",
-          100: "#DFE5FB",
-          50: "#EFF2FD",
+        brand: {
+          300: "#9DB1FF",
+          400: "#6E8CFF",
+          500: "#3B66FF", // primary accent
+          600: "#2F55E0",
+          700: "#2545BE",
         },
         positive: {
-          DEFAULT: "#16805C",
-          100: "#D8EFE6",
-          50: "#EEF7F3",
+          DEFAULT: "#20C997",
+          300: "#5FDDB6",
+          700: "#0F7A5C",
         },
-        caution: {
-          DEFAULT: "#B54708",
-          100: "#FAEBDD",
-          50: "#FDF6EF",
+        amber: {
+          DEFAULT: "#F5B942",
+          300: "#FFD27A",
         },
-      },
-      borderColor: {
-        DEFAULT: "rgba(16, 24, 40, 0.10)",
+        danger: {
+          DEFAULT: "#FF6B6B",
+        },
+        line: {
+          DEFAULT: "rgba(245, 247, 250, 0.10)",
+          strong: "rgba(245, 247, 250, 0.18)",
+          faint: "rgba(245, 247, 250, 0.06)",
+        },
       },
       fontFamily: {
         sans: [
@@ -79,16 +78,19 @@ const config: Config = {
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
       },
       letterSpacing: {
-        tightest: "-0.035em",
+        tightest: "-0.04em",
+        microl: "0.22em",
       },
       maxWidth: {
-        shell: "1152px",
+        shell: "1200px",
         contact: "1100px",
-        measure: "68ch",
+      },
+      transitionTimingFunction: {
+        editorial: "cubic-bezier(0.16, 1, 0.3, 1)",
       },
       boxShadow: {
-        card: "0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.03)",
-        panel: "0 24px 48px -32px rgba(16, 24, 40, 0.28)",
+        panel: "0 30px 60px -40px rgba(0, 0, 0, 0.9)",
+        glow: "0 0 0 1px rgba(59, 102, 255, 0.25), 0 24px 60px -30px rgba(59, 102, 255, 0.35)",
       },
     },
   },

@@ -109,12 +109,12 @@ export function FeedbackForm({
       <div
         data-testid="feedback-success"
         role="status"
-        className="rounded-lg border border-positive/25 bg-positive-50 p-5 text-sm"
+        className="rounded-lg border border-positive/30 bg-positive/[0.08] p-5 text-sm"
       >
-        <p className="font-semibold text-ink">
+        <p className="font-semibold text-paper">
           {mode === "contact" ? "Message sent." : "Thanks for the feedback!"}
         </p>
-        <p className="mt-1.5 leading-relaxed text-ink-700">
+        <p className="mt-1.5 leading-relaxed text-paper-dim">
           {mode === "contact"
             ? "A person at Quantrelic Analytics will read this. We usually reply within two working days."
             : "Every submission lands in our queue and is read by a human."}
@@ -239,8 +239,8 @@ export function FeedbackForm({
                 aria-label={`Rate ${value} out of 5`}
                 className={`h-11 w-11 rounded-md border text-sm font-semibold transition-colors ${
                   rating === value
-                    ? "border-accent bg-accent-50 text-accent-700"
-                    : "border-ink/15 bg-white text-muted hover:border-ink/30"
+                    ? "border-brand-500 bg-brand-500/[0.12] text-brand-300"
+                    : "border-line-strong bg-ink-850 text-paper-mute hover:border-line-strong"
                 }`}
               >
                 {value}
@@ -250,7 +250,7 @@ export function FeedbackForm({
               <button
                 type="button"
                 onClick={() => setRating(null)}
-                className="ml-2 text-sm text-muted underline hover:text-ink"
+                className="ml-2 text-sm text-paper-mute underline hover:text-paper"
               >
                 clear
               </button>
@@ -273,13 +273,13 @@ export function FeedbackForm({
         type="submit"
         data-testid="feedback-submit"
         disabled={submitting}
-        className="inline-flex w-full items-center justify-center rounded-md bg-accent px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-accent-700 disabled:opacity-60 sm:w-auto"
+        className="inline-flex w-full items-center justify-center rounded-md bg-brand-500 px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-600 disabled:opacity-60 sm:w-auto"
       >
         {submitting ? "Sending…" : mode === "contact" ? "Send message" : "Submit feedback"}
       </button>
 
       {state.kind === "error" && (
-        <p data-testid="feedback-error" role="alert" className="text-sm text-[#B42318]">
+        <p data-testid="feedback-error" role="alert" className="text-sm text-danger">
           {state.message}
         </p>
       )}

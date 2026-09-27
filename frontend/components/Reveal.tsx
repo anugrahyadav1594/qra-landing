@@ -1,21 +1,32 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { createElement, useEffect, useRef, type ReactNode } from "react";
 
-/** IntersectionObserver wrapper: adds `.is-visible` to `.reveal` once the
- * element scrolls into view. This is the site's only decorative motion —
- * one quiet fade per section, never per element. Reduced-motion and
+type Variant = "up" | "fade" | "scale";
+
+const VARIANT_CLASS: Record<Variant, string> = {
+  up: "",
+  fade: "reveal--fade",
+  scale: "reveal--scale",
+};
+
+/** IntersectionObserver reveal: the site's standard section entry motion.
+ * One reveal per block, optional stagger delay, and reduced-motion or
  * no-observer environments get the visible state immediately. */
 export function Reveal({
   children,
   className = "",
   delay = 0,
+  variant = "up",
+  as = "div",
 }: {
   children: ReactNode;
   className?: string;
   delay?: number;
+  variant?: Variant;
+  as?: "div" | "li" | "section";
 }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     const el = ref.current;
@@ -40,19 +51,19 @@ export function Reveal({
           }
         }
       },
-      { threshold: 0.1, rootMargin: "0px 0px -60px 0px" },
+      { threshold: 0.12, rootMargin: "0px 0px -70px 0px" },
     );
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
 
-  return (
-    <div
-      ref={ref}
-      className={`reveal ${className}`}
-      style={delay ? { transitionDelay: `${delay}ms` } : undefined}
-    >
-      {children}
-    </div>
+  return createElement(
+    as,
+    {
+      ref,
+      className: `reveal ${VARIANT_CLASS[variant]} ${className}`.trim(),
+      style: delay ? ({ "--reveal-delay": `${delay}ms` } as React.CSSProperties) : undefined,
+    },
+    children,
   );
 }

@@ -1,61 +1,63 @@
 import { Reveal } from "@/components/Reveal";
-import { Section } from "@/components/ui";
+import { Section, SectionLabel } from "@/components/ui";
+import { TRUST } from "@/lib/content";
 
-const PRINCIPLES = [
-  { n: "01", line: "No guaranteed returns." },
-  { n: "02", line: "No stock tips." },
-  { n: "03", line: "No pretending to know the future." },
-];
-
-/** Trust: a product philosophy, not a legal footnote. */
+/**
+ * Trust as a brand philosophy, not a disclaimer: three statements, one
+ * principle and the line the whole product rests on.
+ */
 export function TrustSection() {
   return (
-    <Section id="trust" tone="dark" labelledBy="trust-heading">
-      <Reveal>
-        <div className="grid gap-14 lg:grid-cols-[1fr_1.1fr] lg:gap-20">
-          <div>
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-accent-200">
-              Trust
-            </p>
+    <Section id="trust" tone="deep" labelledBy="trust-heading">
+      {/* Slow vertical rules — structure, not decoration */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden lg:block">
+        <div className="mx-auto grid h-full max-w-shell grid-cols-4 px-6">
+          {[0, 1, 2, 3].map((column) => (
+            <div key={column} className="border-l border-line-faint last:border-r" />
+          ))}
+        </div>
+      </div>
+
+      <div className="relative">
+        <Reveal>
+          <div className="max-w-2xl">
+            <SectionLabel tone="brand">{TRUST.label}</SectionLabel>
             <h2
               id="trust-heading"
-              className="mt-4 font-display text-3xl font-semibold leading-[1.12] tracking-tightest text-white sm:text-[2.5rem]"
+              className="mt-5 font-display text-[2.4rem] font-semibold leading-[1.04] tracking-tightest text-paper sm:text-5xl lg:text-[3.6rem]"
             >
-              Clarity over hype.
-            </h2>
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-white/70">
-              Just clearer financial information to help you understand what you&rsquo;re looking at.
-            </p>
-          </div>
-
-          <div>
-            <ul>
-              {PRINCIPLES.map((principle) => (
-                <li
-                  key={principle.n}
-                  className="flex items-baseline gap-5 border-t border-white/15 py-6 first:border-t-0 first:pt-1"
-                >
-                  <span className="font-mono text-xs text-accent-200">{principle.n}</span>
-                  <p className="font-display text-xl font-semibold tracking-tight text-white sm:text-2xl">
-                    {principle.line}
-                  </p>
-                </li>
+              {TRUST.statement.map((line) => (
+                <span key={line} className="block">
+                  {line}
+                </span>
               ))}
-            </ul>
-
-            <div className="mt-10 border-t border-white/15 pt-8">
-              <p className="font-display text-2xl font-semibold tracking-tight text-white">
-                QRA explains. You decide.
-              </p>
-              <p className="mt-4 max-w-lg text-base leading-relaxed text-white/65">
-                QRA is a product of Quantrelic Analytics Private Limited. It is being built to
-                explain financial information — not to provide investment advice, recommend
-                investments, or make decisions for anyone.
-              </p>
-            </div>
+            </h2>
           </div>
-        </div>
-      </Reveal>
+        </Reveal>
+
+        <ul className="mt-16 max-w-3xl">
+          {TRUST.principles.map((principle, index) => (
+            <Reveal as="li" key={principle.n} delay={index * 110}>
+              <div className="flex items-baseline gap-5 border-t border-line py-6 sm:gap-8">
+                <span className="font-mono text-xs text-brand-400">{principle.n}</span>
+                <p className="font-display text-xl font-semibold tracking-tight text-paper sm:text-3xl">
+                  {principle.line}
+                </p>
+              </div>
+            </Reveal>
+          ))}
+        </ul>
+
+        <Reveal delay={100}>
+          <div className="mt-14 max-w-2xl border-t border-line pt-8">
+            <p className="text-lg leading-relaxed text-paper-dim">{TRUST.closing[0]}</p>
+            <p className="mt-6 font-display text-2xl font-semibold tracking-tight text-paper sm:text-3xl">
+              {TRUST.closing[1]}
+            </p>
+            <p className="mt-6 max-w-xl text-sm leading-relaxed text-paper-faint">{TRUST.note}</p>
+          </div>
+        </Reveal>
+      </div>
     </Section>
   );
 }

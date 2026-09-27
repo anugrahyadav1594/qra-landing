@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { Badge } from "@/components/ui";
 import { apiGet } from "@/lib/api";
+import { SectionLabel } from "@/components/ui";
 import { SITE_NAME } from "@/lib/constants";
 import { FALLBACK_POSTINGS } from "@/lib/seed";
 
 export const metadata: Metadata = {
   title: "Careers",
-  description: `Open roles at Quantrelic Analytics — building QRA, technology that makes financial information easier to understand.`,
+  description:
+    "Open roles at Quantrelic Analytics \u2014 building QRA, technology that makes financial information easier to understand.",
   openGraph: {
-    title: `Careers · ${SITE_NAME}`,
+    title: `Careers \u00b7 ${SITE_NAME}`,
     description: "Open roles at Quantrelic Analytics.",
   },
 };
@@ -34,53 +35,45 @@ export default async function CareersPage() {
   });
 
   return (
-    <div className="mx-auto max-w-shell px-5 py-14 sm:px-6 sm:py-20">
+    <div className="mx-auto max-w-shell px-5 pb-20 pt-14 sm:px-6 sm:pt-20">
       <header className="max-w-2xl">
-        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-accent">
-          Careers
-        </p>
-        <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.08] tracking-tightest text-ink sm:text-5xl">
+        <SectionLabel tone="brand">Careers</SectionLabel>
+        <h1 className="mt-5 font-display text-[2.2rem] font-semibold leading-[1.06] tracking-tightest text-paper sm:text-5xl">
           Build something that makes investing easier to understand.
         </h1>
-        <p className="mt-5 text-lg leading-relaxed text-muted">
-          We&rsquo;re a small, remote-first team based in India. Small team, real ownership, and
-          work that ships.
+        <p className="mt-5 text-base leading-relaxed text-paper-dim">
+          Small team, real ownership, work that ships. Remote-first, based in India.
         </p>
       </header>
 
       <div className="mt-14 max-w-3xl">
         {data.postings.length === 0 && (
-          <p className="text-base leading-relaxed text-muted">
-            No open roles right now — check back soon, or say hello via the{" "}
-            <Link href="/contact" className="text-accent underline decoration-accent/40 underline-offset-2">
+          <p className="text-base leading-relaxed text-paper-dim">
+            No open roles right now \u2014 check back soon, or say hello via the{" "}
+            <Link href="/contact" className="text-brand-300 underline decoration-brand-500/40 underline-offset-2">
               contact page
             </Link>
             .
           </p>
         )}
 
-        <ul className="border-t border-ink/15">
+        <ul className="border-t border-line">
           {data.postings.map((posting) => (
-            <li key={posting.id} className="border-b border-ink/10">
+            <li key={posting.id} className="border-b border-line">
               <Link
                 href={`/careers/${posting.slug}`}
-                className="flex flex-col gap-3 py-6 transition-colors hover:bg-white sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+                className="flex flex-col gap-3 py-6 transition-colors hover:bg-ink-850/60 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-2"
               >
                 <div>
-                  <h2 className="font-display text-lg font-semibold tracking-tight text-ink">
+                  <h2 className="font-display text-lg font-semibold tracking-tight text-paper">
                     {posting.title}
                   </h2>
-                  <p className="mt-1.5 text-sm text-muted">
-                    {posting.department} · {posting.location} ·{" "}
+                  <p className="mt-1.5 text-sm text-paper-mute">
+                    {posting.department} \u00b7 {posting.location} \u00b7{" "}
                     {posting.employment_type.replace("_", " ")}
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  {posting.compensation_range && (
-                    <Badge tone="muted">{posting.compensation_range}</Badge>
-                  )}
-                  <span className="text-sm font-semibold text-accent">View role →</span>
-                </div>
+                <span className="text-sm font-semibold text-brand-300">View role \u2192</span>
               </Link>
             </li>
           ))}

@@ -5,10 +5,10 @@ import { useEffect, useState } from "react";
 /**
  * Scroll-spy for the homepage navbar.
  *
- * Observes the given section ids and reports the one currently under the
- * reading line (a thin band around the middle of the viewport). Only the
- * first intersecting section in document order wins, so a short section can
- * never leave the navbar without an active item.
+ * Observes the given section ids and reports the one under the reading line
+ * (a thin band around the middle of the viewport). Only the first intersecting
+ * section in document order wins, so a short section can never leave the
+ * navbar without an active item.
  *
  * Runs only when `ids` is non-empty (i.e. on the homepage) and degrades to
  * `null` where IntersectionObserver is unavailable.
@@ -40,8 +40,8 @@ export function useActiveSection(ids: readonly string[]): string | null {
         // `null` keeps the previous item highlighted between sections.
         if (next) setActiveId((current) => (current === next ? current : next));
       },
-      // A 10%-tall band across the middle of the viewport acts as the
-      // reading line the user is currently looking at.
+      // A 10%-tall band across the middle of the viewport acts as the reading
+      // line the user is currently looking at.
       { rootMargin: "-45% 0px -45% 0px", threshold: 0 },
     );
 

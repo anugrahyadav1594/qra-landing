@@ -1,74 +1,83 @@
-import { Reveal } from "@/components/Reveal";
-import { Section } from "@/components/ui";
+"use client";
 
-const SOURCES = [
-  "Annual report",
-  "Quarterly results",
-  "News",
-  "Exchange filings",
-  "Shareholding data",
-  "Charts",
-  "Financial ratios",
-  "Analyst notes",
-];
+import { useRef } from "react";
 
-/** The real problem: information is easy to find, understanding is not. */
+import { Section, SectionLabel, SectionStatement } from "@/components/ui";
+import { useScrollPhase } from "@/components/useScrollPhase";
+import { PROBLEM } from "@/lib/content";
+
+/**
+ * The problem, told visually: eight sources of financial information start
+ * scattered and disorganised, then align. It is the site's signature
+ * transformation — fragmented information becoming a structure you can read.
+ *
+ * The alignment is driven by scroll phase (state changes only when the phase
+ * changes, the movement itself is CSS transform/opacity).
+ */
 export function ProblemSection() {
+  const ref = useRef<HTMLDivElement>(null);
+  const phase = useScrollPhase(ref, 3);
+
   return (
-    <Section id="problem" labelledBy="problem-heading">
-      <Reveal>
-        <div className="grid gap-14 lg:grid-cols-[1fr_1fr] lg:gap-20">
+    <Section id="problem" tone="raised" labelledBy="problem-heading">
+      <div ref={ref} data-phase={phase}>
+        <div className="grid gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
           <div>
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-accent">
-              The problem
-            </p>
-            <h2
-              id="problem-heading"
-              className="mt-4 font-display text-3xl font-semibold leading-[1.12] tracking-tightest text-ink sm:text-[2.5rem]"
-            >
-              Investing is easy to start.
-              <br />
-              <span className="text-muted">Understanding what you&rsquo;re buying is harder.</span>
-            </h2>
-            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
-              Annual reports. Results. Filings. News. Ratios. Charts.
-            </p>
-            <p className="mt-4 max-w-xl text-lg leading-relaxed text-ink-800">
-              The information exists. Understanding how it connects is the difficult part.
-            </p>
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted">
-              Financial information is scattered across annual reports, earnings results, filings,
-              news, charts and financial websites. For a new investor, turning all of that into
-              something understandable can be overwhelming.
-            </p>
+            <SectionLabel tone="brand">{PROBLEM.label}</SectionLabel>
+            <SectionStatement id="problem-heading" lines={PROBLEM.statement} as="h2" className="mt-5" />
+            <p className="mt-6 max-w-md text-base leading-relaxed text-paper-dim">{PROBLEM.note}</p>
           </div>
 
-          <div className="lg:pt-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-              What you would read today
-            </p>
-            <ul className="mt-4 divide-y divide-ink/10 border-y border-ink/10">
-              {SOURCES.map((source) => (
-                <li key={source} className="flex items-center justify-between gap-4 py-3">
-                  <span className="text-sm text-ink-700">{source}</span>
-                  <span aria-hidden="true" className="text-sm text-muted-400">
-                    —
+          {/* The fragment field (clipped: the scatter offsets are decorative) */}
+          <div className="overflow-x-clip">
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
+              {PROBLEM.fragments.map((fragment, index) => (
+                <div
+                  key={fragment.label}
+                  className="fragment seq rounded-md border border-line bg-ink-850/80 px-3 py-3"
+                  style={
+                    {
+                      "--fx": fragment.fx,
+                      "--fy": fragment.fy,
+                      "--fr": fragment.fr,
+                      "--fd": `${index * 45}ms`,
+                      "--d": `${index * 45}ms`,
+                    } as React.CSSProperties
+                  }
+                >
+                  <span className="micro !tracking-[0.14em] !text-paper-faint">
+                    {String(index + 1).padStart(2, "0")}
                   </span>
-                </li>
+                  <p className="mt-2 text-xs leading-snug text-paper-dim sm:text-sm">
+                    {fragment.label}
+                  </p>
+                </div>
               ))}
-            </ul>
+            </div>
 
-            <div className="mt-8 border-l-2 border-ink/15 pl-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-                Too much information
-              </p>
-              <p className="mt-3 font-display text-xl font-semibold leading-snug tracking-tight text-ink">
-                Now what does all of this actually mean?
-              </p>
+            {/* Structure emerging from the noise */}
+            <div className="mt-8 flex flex-col items-center">
+              <div className="connector h-10 w-px bg-brand-500/40" aria-hidden="true" />
+              <div className="understood flex flex-col items-center gap-3">
+                <span className="rounded-md border border-brand-500/40 bg-brand-500/[0.08] px-4 py-2 font-display text-sm font-semibold tracking-[0.08em] text-paper">
+                  QRA
+                </span>
+                <span aria-hidden="true" className="h-6 w-px bg-line-strong" />
+                <span className="micro !tracking-[0.24em] !text-brand-400">Understand</span>
+              </div>
+
+              <div className="understood mt-8 grid w-full gap-2 text-center sm:grid-cols-2 sm:text-left">
+                <p className="border-t border-line pt-3 text-sm font-medium text-paper">
+                  {PROBLEM.overload}
+                </p>
+                <p className="border-t border-line pt-3 text-sm font-medium text-brand-300">
+                  {PROBLEM.clarity}
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </Reveal>
+      </div>
     </Section>
   );
 }

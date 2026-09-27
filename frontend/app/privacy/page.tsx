@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { SectionLabel } from "@/components/ui";
 import { COMPANY_NAME, CONTACT_GENERAL_EMAIL } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -15,7 +16,7 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
       <>
         On this website we collect only what forms ask for: your email address for the waitlist,
         feedback and contact messages, and application details (including your resume) for careers.
-        We store IP addresses in hashed form for abuse prevention, never raw.
+        IP addresses are stored in hashed form for abuse prevention, never raw.
       </>
     ),
   },
@@ -34,19 +35,16 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
     body: (
       <>
         <ul className="mt-2 list-disc space-y-1.5 pl-5">
-          <li>Withdraw any consent at any time — it takes effect immediately.</li>
+          <li>Withdraw any consent at any time \u2014 it takes effect immediately.</li>
           <li>Request a copy of everything we hold about you.</li>
-          <li>Request deletion — with a reversible 30-day cooling-off window.</li>
+          <li>Request deletion \u2014 with a reversible 30-day cooling-off window.</li>
         </ul>
         <p className="mt-3">
           To make a data request,{" "}
           {CONTACT_GENERAL_EMAIL ? (
             <>
               email{" "}
-              <a
-                href={`mailto:${CONTACT_GENERAL_EMAIL}`}
-                className="text-accent underline decoration-accent/40 underline-offset-2"
-              >
+              <a href={`mailto:${CONTACT_GENERAL_EMAIL}`} className="text-brand-300 underline decoration-brand-500/40 underline-offset-2">
                 {CONTACT_GENERAL_EMAIL}
               </a>
               .
@@ -54,13 +52,10 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
           ) : (
             <>
               use our{" "}
-              <Link
-                href="/contact"
-                className="text-accent underline decoration-accent/40 underline-offset-2"
-              >
+              <Link href="/contact" className="text-brand-300 underline decoration-brand-500/40 underline-offset-2">
                 contact form
               </Link>{" "}
-              and start your message with &ldquo;data request&rdquo;.
+              and start your message with \u201cdata request\u201d.
             </>
           )}
         </p>
@@ -72,8 +67,8 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
     body: (
       <>
         We never sell or rent personal data, and we never use it for advertising profiling.
-        Processors (hosting, email delivery, analytics) are bound by data-processing agreements and
-        listed in the final policy.
+        Processors (hosting, email delivery) are bound by data-processing agreements and listed in
+        the final policy.
       </>
     ),
   },
@@ -90,25 +85,25 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
 
 export default function PrivacyPage() {
   return (
-    <div className="mx-auto max-w-shell px-5 py-14 sm:px-6 sm:py-20">
+    <div className="mx-auto max-w-shell px-5 pb-20 pt-14 sm:px-6 sm:pt-20">
       <div className="max-w-3xl">
-        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-accent">Legal</p>
-        <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.08] tracking-tightest text-ink sm:text-5xl">
+        <SectionLabel tone="brand">Legal</SectionLabel>
+        <h1 className="mt-5 font-display text-[2.2rem] font-semibold leading-[1.06] tracking-tightest text-paper sm:text-5xl">
           Privacy policy
         </h1>
 
-        <p className="mt-6 rounded-md border border-caution/25 bg-caution-50 p-4 text-sm leading-relaxed text-ink-800">
-          <strong className="font-semibold">Placeholder text.</strong> Final policy language is
-          pending legal review before launch.
+        <p className="mt-6 rounded-md border border-amber/30 bg-amber/[0.08] p-4 text-sm leading-relaxed text-paper-dim">
+          <strong className="font-semibold text-paper">Placeholder text.</strong> Final policy
+          language is pending legal review before launch.
         </p>
 
         <div className="mt-10 space-y-8">
           {SECTIONS.map((section) => (
             <section key={section.title}>
-              <h2 className="font-display text-lg font-semibold tracking-tight text-ink">
+              <h2 className="font-display text-lg font-semibold tracking-tight text-paper">
                 {section.title}
               </h2>
-              <div className="mt-2 text-base leading-relaxed text-muted">{section.body}</div>
+              <div className="mt-2 text-base leading-relaxed text-paper-dim">{section.body}</div>
             </section>
           ))}
         </div>

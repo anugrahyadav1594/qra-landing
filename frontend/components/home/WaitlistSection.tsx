@@ -1,45 +1,41 @@
 import { Reveal } from "@/components/Reveal";
 import { WaitlistForm } from "@/components/WaitlistForm";
-import { Section } from "@/components/ui";
+import { Section, SectionLabel } from "@/components/ui";
+import { EARLY_ACCESS } from "@/lib/content";
 
 export function WaitlistSection() {
   return (
     <Section id="waitlist" labelledBy="waitlist-heading">
-      <Reveal>
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-20">
-          <div>
-            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-accent">
-              Early access
-            </p>
-            <h2
-              id="waitlist-heading"
-              className="mt-4 font-display text-3xl font-semibold leading-[1.12] tracking-tightest text-ink sm:text-[2.5rem]"
-            >
-              Be among the first to experience a simpler way to understand investing.
-            </h2>
-            <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted">
-              We&rsquo;re building QRA now. Join the waitlist and we&rsquo;ll let you know when early
-              access opens.
-            </p>
-            <ul className="mt-8 space-y-3 text-base text-muted">
-              {[
-                "Waitlist updates only — no marketing unless you ask for it.",
-                "One email per person; duplicates are ignored.",
-                "You can ask us to remove your details at any time.",
-              ].map((item) => (
-                <li key={item} className="flex gap-3">
-                  <span aria-hidden="true" className="mt-2.5 h-1 w-1 shrink-0 rounded-full bg-positive" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
+      <div className="grid gap-12 lg:grid-cols-[1fr_minmax(0,520px)] lg:gap-20">
+        <Reveal>
+          <SectionLabel tone="brand">{EARLY_ACCESS.label}</SectionLabel>
+          <h2
+            id="waitlist-heading"
+            className="mt-5 font-display text-[2.2rem] font-semibold leading-[1.06] tracking-tightest text-paper sm:text-5xl"
+          >
+            {EARLY_ACCESS.statement.map((line) => (
+              <span key={line} className="block">
+                {line}
+              </span>
+            ))}
+          </h2>
+          <p className="mt-6 text-lg leading-relaxed text-paper-dim">{EARLY_ACCESS.support}</p>
+          <ul className="mt-8 space-y-3">
+            {EARLY_ACCESS.points.map((point) => (
+              <li key={point} className="flex gap-3 text-sm text-paper-mute">
+                <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 rounded-full bg-positive" />
+                {point}
+              </li>
+            ))}
+          </ul>
+        </Reveal>
 
-          <div className="rounded-lg border border-ink/10 bg-white p-6 shadow-card sm:p-8">
+        <Reveal delay={120} variant="scale">
+          <div className="rounded-xl border border-line bg-ink-850/80 p-6 shadow-panel sm:p-7">
             <WaitlistForm />
           </div>
-        </div>
-      </Reveal>
+        </Reveal>
+      </div>
     </Section>
   );
 }

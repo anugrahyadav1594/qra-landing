@@ -1,16 +1,12 @@
 import type { Metadata } from "next";
 
-import { AboutSection } from "@/components/home/AboutSection";
-import { EvidenceSection } from "@/components/home/EvidenceSection";
-import { ForInvestorsSection } from "@/components/home/ForInvestorsSection";
+import { AudienceSection } from "@/components/home/AudienceSection";
 import { Hero } from "@/components/home/Hero";
-import { HowItWorksSection } from "@/components/home/HowItWorksSection";
+import { IdeaSection } from "@/components/home/IdeaSection";
 import { ProblemSection } from "@/components/home/ProblemSection";
 import { ProductSection } from "@/components/home/ProductSection";
-import { SolutionSection } from "@/components/home/SolutionSection";
 import { TrustSection } from "@/components/home/TrustSection";
 import { WaitlistSection } from "@/components/home/WaitlistSection";
-import { WhyHardSection } from "@/components/home/WhyHardSection";
 import {
   COMPANY_NAME,
   PRODUCT_NAME,
@@ -50,6 +46,10 @@ const ORGANIZATION_JSONLD = {
   brand: { "@type": "Brand", name: PRODUCT_NAME },
 };
 
+/**
+ * The homepage is deliberately short: problem → idea → product → trust → CTA.
+ * Each section answers one question and says the important thing once.
+ */
 export default function HomePage() {
   return (
     <>
@@ -59,15 +59,11 @@ export default function HomePage() {
       />
       <Hero />
       <ProblemSection />
-      <WhyHardSection />
-      <SolutionSection />
-      <HowItWorksSection />
+      <IdeaSection />
       <ProductSection />
-      <EvidenceSection />
-      <ForInvestorsSection />
+      <AudienceSection />
       <TrustSection />
       <WaitlistSection />
-      <AboutSection />
     </>
   );
 }

@@ -1,13 +1,14 @@
-/** Public site constants — brand identity, navigation and shared copy.
+/** Public site constants — brand identity, navigation and shared configuration.
  *
  * Brand note (important): **QRA** is simply the short form of
  * **QuantRelic Analytics**. It is not an acronym and must never be expanded
- * into a longer product name (it is not a "Research Agent"). The company is
- * Quantrelic Analytics Private Limited; QRA is the product.
+ * into a longer product name. The company is Quantrelic Analytics Private
+ * Limited; QRA is the product.
  */
 
 export const COMPANY_NAME = "Quantrelic Analytics Private Limited";
 export const SITE_NAME = "Quantrelic Analytics";
+export const SITE_SHORT_NAME = "Quantrelic";
 
 /** Product name only — never expanded. */
 export const PRODUCT_NAME = "QRA";
@@ -30,15 +31,11 @@ export const WAITLIST_PRODUCT_SLUG = "qra";
 export const HOME_SECTIONS = [
   "hero",
   "problem",
-  "why",
-  "solution",
   "how-it-works",
   "product",
-  "evidence",
   "for-investors",
   "trust",
   "waitlist",
-  "about",
 ] as const;
 
 export type HomeSectionId = (typeof HOME_SECTIONS)[number];
@@ -55,12 +52,13 @@ export const NAV_LINKS: readonly NavLink[] = [
   { href: "/#product", label: "Product", sectionId: "product" },
   { href: "/#for-investors", label: "For investors", sectionId: "for-investors" },
   { href: "/#trust", label: "Trust", sectionId: "trust" },
-  { href: "/#about", label: "About", sectionId: "about" },
+  { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
 
-/** Secondary destinations — surfaced in the mobile menu and the footer. */
+/** Secondary destinations — the mobile menu and the footer. */
 export const SECONDARY_LINKS: readonly NavLink[] = [
+  { href: "/research", label: "How it works, in detail" },
   { href: "/careers", label: "Careers" },
   { href: "/feedback", label: "Feedback" },
 ];
@@ -70,13 +68,16 @@ export const FOOTER_COLUMNS = [
     title: "Product",
     links: [
       { href: "/#how-it-works", label: "How it works" },
-      { href: "/#product", label: "Product" },
+      { href: "/product", label: "Product" },
+      { href: "/research", label: "The process" },
       { href: "/waitlist", label: "Waitlist" },
     ],
   },
   {
     title: "Company",
     links: [
+      { href: "/#for-investors", label: "For investors" },
+      { href: "/#trust", label: "Trust" },
       { href: "/about", label: "About" },
       { href: "/careers", label: "Careers" },
       { href: "/contact", label: "Contact" },
@@ -93,8 +94,7 @@ export const FOOTER_COLUMNS = [
   },
 ] as const;
 
-export const FOOTER_TAGLINE =
-  "Making investing simpler by making financial information easier to understand.";
+export const FOOTER_TAGLINE = SITE_TAGLINE;
 
 export const FOOTER_NOTE = "QRA explains. You decide.";
 

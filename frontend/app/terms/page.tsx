@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { SectionLabel } from "@/components/ui";
 import { COMPANY_NAME, PRODUCT_NAME } from "@/lib/constants";
 
 export const metadata: Metadata = {
@@ -14,9 +15,8 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
     body: (
       <>
         The website and its products are provided as-is and pre-launch. Joining a waitlist does not
-        guarantee access to any product; access is granted in cohorts, in waitlist order.{" "}
-        {PRODUCT_NAME} explains financial information — it does not provide investment advice and
-        does not tell anyone what to buy or sell.
+        guarantee access to any product. {PRODUCT_NAME} explains financial information \u2014 it does
+        not provide investment advice and does not tell anyone what to buy or sell.
       </>
     ),
   },
@@ -44,7 +44,7 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
     body: (
       <>
         We may change, pause or discontinue the website or any product at any time. Pre-launch
-        details — product features, timelines, availability — are indicative and may change.
+        details \u2014 features, timelines, availability \u2014 are indicative and may change.
       </>
     ),
   },
@@ -65,32 +65,32 @@ const SECTIONS: { title: string; body: React.ReactNode }[] = [
 
 export default function TermsPage() {
   return (
-    <div className="mx-auto max-w-shell px-5 py-14 sm:px-6 sm:py-20">
+    <div className="mx-auto max-w-shell px-5 pb-20 pt-14 sm:px-6 sm:pt-20">
       <div className="max-w-3xl">
-        <p className="text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-accent">Legal</p>
-        <h1 className="mt-4 font-display text-4xl font-semibold leading-[1.08] tracking-tightest text-ink sm:text-5xl">
+        <SectionLabel tone="brand">Legal</SectionLabel>
+        <h1 className="mt-5 font-display text-[2.2rem] font-semibold leading-[1.06] tracking-tightest text-paper sm:text-5xl">
           Terms of service
         </h1>
 
-        <p className="mt-6 rounded-md border border-caution/25 bg-caution-50 p-4 text-sm leading-relaxed text-ink-800">
-          <strong className="font-semibold">Placeholder text.</strong> Final terms are pending legal
-          review before launch.
+        <p className="mt-6 rounded-md border border-amber/30 bg-amber/[0.08] p-4 text-sm leading-relaxed text-paper-dim">
+          <strong className="font-semibold text-paper">Placeholder text.</strong> Final terms are
+          pending legal review before launch.
         </p>
 
         <div className="mt-10 space-y-8">
           {SECTIONS.map((section) => (
             <section key={section.title}>
-              <h2 className="font-display text-lg font-semibold tracking-tight text-ink">
+              <h2 className="font-display text-lg font-semibold tracking-tight text-paper">
                 {section.title}
               </h2>
-              <div className="mt-2 text-base leading-relaxed text-muted">{section.body}</div>
+              <div className="mt-2 text-base leading-relaxed text-paper-dim">{section.body}</div>
             </section>
           ))}
         </div>
 
-        <p className="mt-10 text-sm text-muted">
+        <p className="mt-10 text-sm text-paper-faint">
           Questions about these terms?{" "}
-          <Link href="/contact" className="text-accent underline decoration-accent/40 underline-offset-2">
+          <Link href="/contact" className="text-brand-300 underline decoration-brand-500/40 underline-offset-2">
             Contact us
           </Link>
           .

@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ApplyForm } from "@/components/ApplyForm";
 import { Markdown } from "@/components/Markdown";
 import { Reveal } from "@/components/Reveal";
-import { Badge, Eyebrow } from "@/components/ui";
+import { SectionLabel } from "@/components/ui";
 import { apiGet } from "@/lib/api";
 import { SITE_NAME } from "@/lib/constants";
 import { FALLBACK_POSTINGS } from "@/lib/seed";
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   if (!posting) return { title: "Role not found" };
   return {
     title: posting.title,
-    description: `${posting.title} at Quantrelic Analytics — ${posting.location}.`,
+    description: `${posting.title} at Quantrelic Analytics \u2014 ${posting.location}.`,
   };
 }
 
@@ -46,28 +46,23 @@ export default async function CareerPage({ params }: { params: { slug: string } 
   if (!posting) notFound();
 
   return (
-    <div className="mx-auto max-w-shell px-5 py-14 sm:px-6 sm:py-20">
+    <div className="mx-auto max-w-shell px-5 pb-20 pt-14 sm:px-6 sm:pt-20">
       <div className="mx-auto max-w-3xl">
         <Reveal>
-          <div className="flex flex-wrap items-center gap-3">
-            <Eyebrow>Careers</Eyebrow>
-            <Badge tone="accent">Open</Badge>
-            <Badge tone="muted">{posting.location}</Badge>
-            {posting.compensation_range && <Badge tone="muted">{posting.compensation_range}</Badge>}
-          </div>
-          <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.08] tracking-tightest text-ink sm:text-5xl">
+          <SectionLabel tone="brand">Careers</SectionLabel>
+          <h1 className="mt-5 font-display text-[2.2rem] font-semibold leading-[1.06] tracking-tightest text-paper sm:text-5xl">
             {posting.title}
           </h1>
-          <p className="mt-4 text-base text-muted">
-            {posting.department} · {posting.employment_type.replace("_", " ")} ·{" "}
-            {posting.location_type.replace("_", " ")}
+          <p className="mt-4 text-sm text-paper-mute">
+            {posting.department} \u00b7 {posting.employment_type.replace("_", " ")} \u00b7{" "}
+            {posting.location_type.replace("_", " ")} \u00b7 {posting.location}
           </p>
         </Reveal>
 
-        <div className="mt-10 space-y-12">
+        <div className="mt-12 grid gap-10 sm:grid-cols-2">
           <Reveal>
             <section>
-              <h2 className="font-display text-xl font-semibold tracking-tight text-ink">
+              <h2 className="font-display text-lg font-semibold tracking-tight text-paper">
                 About the role
               </h2>
               <div className="mt-3 text-base">
@@ -75,9 +70,9 @@ export default async function CareerPage({ params }: { params: { slug: string } 
               </div>
             </section>
           </Reveal>
-          <Reveal>
+          <Reveal delay={90}>
             <section>
-              <h2 className="font-display text-xl font-semibold tracking-tight text-ink">
+              <h2 className="font-display text-lg font-semibold tracking-tight text-paper">
                 Requirements
               </h2>
               <div className="mt-3 text-base">
@@ -87,12 +82,11 @@ export default async function CareerPage({ params }: { params: { slug: string } 
           </Reveal>
         </div>
 
-        <Reveal>
-          <section className="mt-16 rounded-lg border border-ink/10 bg-white p-6 shadow-card sm:p-8">
-            <h2 className="font-display text-2xl font-semibold tracking-tight text-ink">Apply</h2>
-            <p className="mb-6 mt-2 text-sm leading-relaxed text-muted">
-              Resume (PDF) and a few details. A person at {SITE_NAME} reads every application, and
-              we reply either way.
+        <Reveal delay={140}>
+          <section className="mt-14 rounded-xl border border-line bg-ink-850/80 p-6 shadow-panel sm:p-8">
+            <h2 className="font-display text-xl font-semibold tracking-tight text-paper">Apply</h2>
+            <p className="mb-6 mt-2 text-sm text-paper-mute">
+              Resume (PDF) and a few details. A person at {SITE_NAME} reads every application.
             </p>
             <ApplyForm slug={posting.slug} title={posting.title} />
           </section>

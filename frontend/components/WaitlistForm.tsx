@@ -112,12 +112,12 @@ export function WaitlistForm({ compact = false }: { compact?: boolean }) {
       <div
         data-testid="waitlist-success"
         role="status"
-        className="rounded-lg border border-positive/25 bg-positive-50 p-5 text-sm text-positive"
+        className="rounded-lg border border-positive/30 bg-positive/[0.08] p-5 text-sm"
       >
-        <p className="font-semibold text-ink">
+        <p className="font-semibold text-paper">
           {state.alreadyPresent ? "You're already on the list." : "You're on the list!"}
         </p>
-        <p className="mt-1.5 leading-relaxed text-ink-700">
+        <p className="mt-1.5 leading-relaxed text-paper-dim">
           {state.alreadyPresent
             ? "We already have this email for QRA — no action needed."
             : "We'll email you when early access opens. Waitlist updates only — no spam."}
@@ -151,7 +151,7 @@ export function WaitlistForm({ compact = false }: { compact?: boolean }) {
       <div>
         <label htmlFor="waitlist-interest" className={labelClass}>
           What would you like to understand better?{" "}
-          <span className="font-normal text-muted">(optional)</span>
+          <span className="font-normal text-paper-mute">(optional)</span>
         </label>
         <select
           id="waitlist-interest"
@@ -170,28 +170,28 @@ export function WaitlistForm({ compact = false }: { compact?: boolean }) {
       </div>
 
       <div className="space-y-3">
-        <label className="flex items-start gap-2.5 text-sm leading-relaxed text-ink-700">
+        <label className="flex items-start gap-2.5 text-sm leading-relaxed text-paper-dim">
           <input
             type="checkbox"
             data-testid="waitlist-consent"
             checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-ink/30 accent-accent"
+            className="mt-0.5 h-4 w-4 rounded border-line-strong accent-brand-500"
             aria-describedby={fieldErrors.consentWaitlistContact ? "waitlist-consent-error" : undefined}
           />
           <span>
             I agree to be contacted about waitlist updates and early access for QRA.{" "}
-            <span className="text-muted">(required)</span>
+            <span className="text-paper-mute">(required)</span>
           </span>
         </label>
         <FieldError id="waitlist-consent-error">{fieldErrors.consentWaitlistContact}</FieldError>
-        <label className="flex items-start gap-2.5 text-sm leading-relaxed text-muted">
+        <label className="flex items-start gap-2.5 text-sm leading-relaxed text-paper-mute">
           <input
             type="checkbox"
             data-testid="waitlist-marketing"
             checked={marketing}
             onChange={(e) => setMarketing(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-ink/30 accent-accent"
+            className="mt-0.5 h-4 w-4 rounded border-line-strong accent-brand-500"
           />
           <span>Optional: send me occasional product news (marketing consent, separate).</span>
         </label>
@@ -213,19 +213,19 @@ export function WaitlistForm({ compact = false }: { compact?: boolean }) {
         disabled={submitting}
         className={`${
           compact ? "w-full" : "w-full sm:w-auto"
-        } inline-flex items-center justify-center rounded-md bg-accent px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-accent-700 disabled:opacity-60`}
+        } inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-600 disabled:opacity-60`}
       >
         {submitting ? "Joining…" : "Join the waitlist"}
       </button>
 
       {state.kind === "error" && (
-        <p data-testid="waitlist-error" role="alert" className="text-sm text-[#B42318]">
+        <p data-testid="waitlist-error" role="alert" className="text-sm text-danger">
           {state.message}
         </p>
       )}
-      <p className="text-xs leading-relaxed text-muted">
+      <p className="text-xs leading-relaxed text-paper-mute">
         Protected by rate limits, bot checks and spam filters. Read the{" "}
-        <a href="/privacy" className="underline hover:text-ink-700">
+        <a href="/privacy" className="underline hover:text-paper-dim">
           privacy policy
         </a>
         .

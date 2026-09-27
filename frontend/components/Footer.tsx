@@ -4,38 +4,43 @@ import { Logo } from "@/components/Logo";
 import {
   COMPANY_NAME,
   FOOTER_COLUMNS,
-  FOOTER_NOTE,
   FOOTER_TAGLINE,
   NOT_ADVICE_NOTE,
   PRODUCT_NAME,
-  SITE_NAME,
+  SITE_SHORT_NAME,
 } from "@/lib/constants";
 
 export function Footer() {
   return (
-    <footer className="border-t border-ink/10 bg-canvas-deep">
+    <footer className="border-t border-line bg-ink-900">
       <div className="mx-auto max-w-shell px-5 py-14 sm:px-6">
-        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5">
               <Logo className="h-6 w-auto object-contain" />
-              <p className="font-display text-sm font-semibold text-ink">{SITE_NAME}</p>
+              <span className="flex items-baseline gap-2">
+                <span className="font-display text-sm font-semibold uppercase tracking-[0.12em] text-paper">
+                  {SITE_SHORT_NAME}
+                </span>
+                <span className="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-paper-faint">
+                  QRA
+                </span>
+              </span>
             </div>
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted">{FOOTER_TAGLINE}</p>
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted">
-              {PRODUCT_NAME} is a product of {COMPANY_NAME}.
-            </p>
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-paper-dim">{FOOTER_TAGLINE}</p>
           </div>
+
           {FOOTER_COLUMNS.map((column) => (
             <FooterColumn key={column.title} title={column.title} links={column.links} />
           ))}
         </div>
-        <div className="mt-12 flex flex-col gap-3 border-t border-ink/10 pt-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
+
+        <div className="mt-12 flex flex-col gap-3 border-t border-line pt-6 text-xs text-paper-faint sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} {COMPANY_NAME}. All rights reserved.
+            © {new Date().getFullYear()} {COMPANY_NAME}.
           </p>
           <p className="sm:text-right">
-            {FOOTER_NOTE} {NOT_ADVICE_NOTE}
+            {PRODUCT_NAME} explains. You decide. {NOT_ADVICE_NOTE}
           </p>
         </div>
       </div>
@@ -52,11 +57,14 @@ function FooterColumn({
 }) {
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-700">{title}</p>
+      <p className="micro">{title}</p>
       <ul className="mt-4 space-y-2.5">
         {links.map((link) => (
           <li key={link.href}>
-            <Link href={link.href} className="text-sm text-muted transition-colors hover:text-ink">
+            <Link
+              href={link.href}
+              className="text-sm text-paper-dim transition-colors hover:text-paper"
+            >
               {link.label}
             </Link>
           </li>

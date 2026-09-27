@@ -3,40 +3,80 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
+  --scroll-progress: 0;
 }
 
 html {
   scroll-behavior: smooth;
   /* Keep anchored sections clear of the sticky header. */
-  scroll-padding-top: 5.75rem;
+  scroll-padding-top: 5.5rem;
 }
 
 body {
-  @apply bg-canvas font-sans text-ink antialiased;
+  @apply bg-ink-950 font-sans text-paper antialiased;
 }
 
 ::selection {
-  background: rgba(49, 87, 213, 0.14);
-  color: #101828;
+  background: rgba(59, 102, 255, 0.32);
+  color: #f5f7fa;
 }
 
-/* One consistent, visible keyboard focus treatment for the whole site. */
 :focus-visible {
-  outline: 2px solid #3157d5;
+  outline: 2px solid #3b66ff;
   outline-offset: 2px;
 }
 
-/*
- * Section reveal — the site's only decorative motion, gated by
- * components/Reveal.tsx (IntersectionObserver, runs once per element).
- */
+/* ── Structural language ───────────────────────────────────────────── */
+
+/* Micro label: tiny uppercase metadata that gives the site its
+   financial-product vocabulary without becoming a terminal. */
+.micro {
+  @apply text-[0.66rem] font-semibold uppercase tracking-microl text-paper-faint;
+}
+
+/* Restrained financial grid — barely visible, used behind key surfaces. */
+.grid-backdrop {
+  background-image:
+    linear-gradient(rgba(245, 247, 250, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 247, 250, 0.035) 1px, transparent 1px);
+  background-size: 72px 72px;
+  background-position: center;
+  mask-image: radial-gradient(ellipse 85% 70% at 50% 0%, black 20%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 85% 70% at 50% 0%, black 20%, transparent 100%);
+}
+
+/* Value placeholders inside illustrative interfaces (₹ X,XXX Cr). */
+.value-placeholder {
+  letter-spacing: 0.08em;
+  color: rgba(245, 247, 250, 0.55);
+}
+
+/* Reading-progress marker under the navbar (scroll-linked, no re-render). */
+.scroll-progress {
+  transform: scaleX(var(--scroll-progress));
+  transform-origin: left;
+}
+
+/* ── Motion system ─────────────────────────────────────────────────── */
+
+/* Scroll reveal (IntersectionObserver-gated in components/Reveal.tsx). */
 .reveal {
   opacity: 0;
-  transform: translateY(14px);
+  transform: translateY(22px);
   transition:
-    opacity 0.5s ease-out,
-    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.reveal--fade {
+  transform: none;
+}
+
+.reveal--scale {
+  transform: translateY(16px) scale(0.985);
 }
 
 .reveal.is-visible {
@@ -44,24 +84,118 @@ body {
   transform: none;
 }
 
-/*
- * Financial-document hairline: a quiet rule used as the primary structural
- * element across sections (dividers instead of cards).
- */
-.rule {
-  border-top: 1px solid rgba(16, 24, 40, 0.1);
+/* Hero load-in: brand → headline → support → CTA → visual, in sequence. */
+.rise {
+  opacity: 0;
+  animation: rise-in 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--d, 0ms);
 }
 
-/*
- * Placeholder value marks inside illustrative product visuals (₹ …). They are
- * deliberately quiet: the UI is a concept, never live market data.
- */
-.value-placeholder {
-  letter-spacing: 0.14em;
-  color: rgba(16, 24, 40, 0.32);
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-/* Reduced motion (WCAG 2.3.3): everything still, all content visible. */
+/* Sequential information reveal (numbers → meaning → source). */
+.seq {
+  opacity: 0;
+  animation: seq-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--d, 0ms);
+}
+
+@keyframes seq-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Data fragment that moves from scattered → sorted as the user scrolls. */
+.fragment {
+  transform: translate3d(var(--fx, 0), var(--fy, 0), 0) rotate(var(--fr, 0deg));
+  opacity: 0.45;
+  transition:
+    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.7s ease-out,
+    border-color 0.7s ease-out;
+  transition-delay: var(--fd, 0ms);
+}
+
+[data-phase="1"] .fragment,
+[data-phase="2"] .fragment {
+  transform: none;
+  opacity: 1;
+  border-color: rgba(245, 247, 250, 0.16);
+}
+
+/* Precision line that connects information once it is sorted. */
+.connector {
+  transform: scaleY(0);
+  transform-origin: top;
+  transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 220ms;
+}
+
+[data-phase="2"] .connector {
+  transform: scaleY(1);
+}
+
+/* Hero panel: as the user scrolls past it, the rows are marked as sorted and
+   the explanation block is marked as the answer. Restrained on purpose. */
+.panel-metric {
+  transition:
+    box-shadow 0.6s ease-out,
+    background-color 0.6s ease-out;
+}
+
+[data-phase="1"] .panel-metric,
+[data-phase="2"] .panel-metric {
+  box-shadow: inset 2px 0 0 rgba(59, 102, 255, 0.55);
+}
+
+.panel-meaning {
+  transition: border-color 0.7s ease-out;
+}
+
+[data-phase="2"] .panel-meaning {
+  border-color: rgba(59, 102, 255, 0.38);
+}
+
+/* "Understanding" payoff — appears last in the sequence. */
+.understood {
+  opacity: 0;
+  transform: translateY(12px);
+  transition:
+    opacity 0.7s ease-out,
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: 320ms;
+}
+
+[data-phase="2"] .understood {
+  opacity: 1;
+  transform: none;
+}
+
+/* Nav indicator (slides between links rather than snapping colour). */
+.nav-indicator {
+  transition:
+    transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    width 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.2s ease-out;
+}
+
+/* ── Reduced motion (WCAG 2.3.3): everything still, content visible ── */
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -73,10 +207,23 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
   }
 
-  .reveal {
+  .reveal,
+  .rise,
+  .seq,
+  .understood {
     opacity: 1;
     transform: none;
+  }
+
+  .fragment {
+    transform: none;
+    opacity: 1;
+  }
+
+  .connector {
+    transform: scaleY(1);
   }
 }
