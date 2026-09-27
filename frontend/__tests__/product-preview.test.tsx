@@ -28,6 +28,10 @@ describe("ProductPreview", () => {
     expect(panel.getByText(PRODUCT.tabs[1].question)).toBeInTheDocument();
     // the financials view is the one that carries example metrics
     expect(panel.getByText("Revenue")).toBeInTheDocument();
+    expect(panel.getByText("Cash flow")).toBeInTheDocument();
+    // …and the explanation is labelled, with its source attached
+    expect(panel.getByText(PRODUCT.meaningLabel)).toBeInTheDocument();
+    expect(panel.getByRole("button", { name: /See the source/i })).toBeInTheDocument();
   });
 
   it("opens and closes the source behind the current explanation", async () => {
