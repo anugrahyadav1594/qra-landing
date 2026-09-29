@@ -48,12 +48,7 @@ export function AudienceSection() {
       {/* The room the three readers sit in. */}
       <QRAAtmosphere variant="investor" />
 
-      <QRADataField
-        variant="organize"
-        intensity={0.6}
-        density={0.7}
-        className="opacity-40"
-      />
+      <QRADataField variant="organize" intensity={0.55} density={0.65} className="opacity-30" />
 
       <div className="relative z-10" ref={ref} data-ready={ready || undefined}>
         <QRAReveal>

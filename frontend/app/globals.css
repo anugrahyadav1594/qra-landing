@@ -211,36 +211,8 @@ body {
 
 /* Drawn when its block is revealed: the line literally connects the steps
    instead of sitting between three cards. */
-.draw-line {
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform 1.1s cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: var(--dd, 0ms);
-}
-
-.draw-line--vertical {
-  transform: scaleY(0);
-  transform-origin: top center;
-}
-
-.is-visible .draw-line {
-  transform: none;
-}
-
 /* Station marker on the line — lights up with the step it belongs to. */
-.station {
-  transition:
-    background-color 0.6s ease-out,
-    box-shadow 0.6s ease-out;
-  transition-delay: var(--dd, 0ms);
-}
-
-.is-visible .station {
-  background-color: #3f6fff;
-  box-shadow: 0 0 0 4px rgba(63, 111, 255, 0.16);
-}
-
-/* ── Phase legend (scattered → organized → explained → understood) ── */
+.is-visible /* ── Phase legend (scattered → organized → explained → understood) ── */
 
 /* Each label carries the segment of line above it: the line draws as that
    stage is reached, so the stepper fills in rather than blinking. The stage
@@ -817,53 +789,6 @@ html[data-cursor="custom"] [contenteditable="true"] {
 }
 
 /* Form fields: the focus state draws its own border. */
-.field-line {
-  position: relative;
-}
-
-.field-line::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1px;
-  background: #3f6fff;
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform var(--dur-standard) var(--ease);
-  pointer-events: none;
-}
-
-.field-line:focus-within::after {
-  transform: scaleX(1);
-}
-
-/* A section seam: the information lines that carry one section into the next. */
-.data-seam {
-  position: relative;
-  height: 1px;
-  overflow: hidden;
-}
-
-.data-seam__line {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(63, 111, 255, 0.45) 50%,
-    transparent
-  );
-  transform: scaleX(0);
-  transform-origin: center;
-  transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.is-visible .data-seam__line {
-  transform: scaleX(1);
-}
-
 /* ── Product panel transitions ─────────────────────────────────────── */
 
 /* Changing the question swaps one answer for the next: the old one rises out,
@@ -1099,6 +1024,32 @@ html[data-cursor="custom"] [contenteditable="true"] {
   filter: saturate(0.42) brightness(0.68) blur(1.2px);
 }
 
+/* Tablet and phone: the environment stays, but further back — less opacity,
+   a slower cycle and, on a phone, no heavy pointer or parallax work. */
+@media (max-width: 1023px) {
+  .qra-atmosphere {
+    --atmosphere-scale: 0.78;
+  }
+
+  .qra-atmosphere__image {
+    animation-duration: 1200ms, calc(var(--atmosphere-speed, 26s) * 1.4);
+  }
+
+  .qra-transition__label {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .qra-atmosphere {
+    --atmosphere-scale: 0.62;
+  }
+
+  .qra-atmosphere__image {
+    filter: saturate(0.5) brightness(0.7) blur(1.5px);
+  }
+}
+
 /* ── Section transition (components/motion/QRASectionTransition.tsx) ── */
 
 /* The thread between two sections: one hairline, one node, one label. */
@@ -1199,13 +1150,8 @@ html[data-cursor="custom"] [contenteditable="true"] {
     transform: none !important;
   }
 
-  .draw-line,
   .phase-mark__tick {
     transform: none;
-  }
-
-  .station {
-    background-color: #3f6fff;
   }
 
   /* The opening sequence is skipped, not shortened: a 0.01ms "animation" would
@@ -1235,10 +1181,6 @@ html[data-cursor="custom"] [contenteditable="true"] {
   .chart-line {
     stroke-dashoffset: 0 !important;
     animation: none !important;
-  }
-
-  .data-seam__line {
-    transform: none !important;
   }
 
   .btn-lift:hover {

@@ -36,13 +36,9 @@ export default function AboutPage() {
             as every other section, in its most structural pose. */}
         <div className="relative h-[220px] overflow-hidden rounded-xl border border-line sm:h-[280px] lg:h-[320px]">
           <QRAAtmosphere variant="about" className="rounded-xl" />
-          <QRADataField
-            variant="structure"
-            density={1.3}
-            intensity={0.9}
-            autoPlay
-            className="opacity-90"
-          />
+          {/* Scrubbed rather than played once: the structure assembles across
+              the band as the page moves through it. */}
+          <QRADataField variant="structure" density={1.3} intensity={0.9} className="opacity-85" />
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950 via-transparent to-ink-950/60"

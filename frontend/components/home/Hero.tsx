@@ -19,8 +19,13 @@ import { HERO } from "@/lib/content";
 export function Hero() {
   return (
     <section id="hero" data-section="hero" className="relative overflow-hidden">
-      {/* The environment: the hero's own information space, alive underneath. */}
-      <QRAAtmosphere variant="hero" interactive />
+      {/* The layer stack, in order: the environment image, its dark wash (both
+          inside QRAAtmosphere), a very faint grid, the information field, then
+          the content. Each layer is quieter than the one above it. */}
+      <QRAAtmosphere variant="hero" />
+
+      {/* A fine grid at 3.5% — structure you feel rather than see. */}
+      <div aria-hidden="true" className="grid-backdrop pointer-events-none absolute inset-0" />
 
       {/* The information field: long thin lines, drifting. */}
       <QRADataField

@@ -10,6 +10,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { QRALoader, INTRO_ATTRIBUTE } from "@/components/motion/QRALoader";
 import { ProductPreview } from "@/components/ProductPreview";
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { QRAReveal } from "@/components/motion/QRAReveal";
 import { QRADataField } from "@/components/motion/QRADataField";
 import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
 import { TextReveal } from "@/components/motion/TextReveal";
@@ -146,5 +147,31 @@ describe("ProductPreview exchange", () => {
     const { container } = render(<ProductPreview />);
     await userEvent.click(screen.getByRole("tab", { name: /Financials/ }));
     expect(container.querySelectorAll(".chart-point").length).toBeGreaterThan(3);
+  });
+});
+
+describe("reveal paths without an observer", () => {
+  it("shows block reveals immediately when IntersectionObserver is unavailable", () => {
+    // jsdom has no observer: the safe path is to show the content, never to
+    // leave it hidden behind an animation that will not run.
+    const { container } = render(<QRAReveal>Content</QRAReveal>);
+    expect(container.firstElementChild).toHaveClass("is-visible");
+  });
+
+  it("keeps the environment visible when it cannot be observed", () => {
+    const { container } = render(<QRAAtmosphere variant="problem" />);
+    // The gating attribute is only ever written to pause motion; a page that
+    // cannot observe keeps its image.
+    expect(container.querySelector(".qra-atmosphere__image")).not.toBeNull();
+  });
+});
+
+describe("opening sequence across navigation", () => {
+  it("does not replay when the session has already seen it", () => {
+    // Soft navigation re-renders the layout without the bootstrap having run
+    // again: no attribute, no sequence.
+    sessionStorage.setItem("qra-loader-seen", "1");
+    const { container } = render(<QRALoader />);
+    expect(container).toBeEmptyDOMElement();
   });
 });
