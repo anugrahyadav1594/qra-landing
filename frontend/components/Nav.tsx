@@ -102,7 +102,9 @@ export function Nav() {
           <Link
             href="/"
             aria-label="Quantrelic Analytics — home"
-            className="flex items-center gap-2.5"
+            data-nav-logo
+            className="nav-seq flex items-center gap-2.5"
+            style={{ "--d": "0ms" } as React.CSSProperties}
             onClick={() => setMenuOpen(false)}
           >
             <Logo className="h-6 w-auto object-contain" />
@@ -116,7 +118,12 @@ export function Nav() {
             </span>
           </Link>
 
-          <div ref={listRef} className="relative hidden items-center justify-self-center lg:flex">
+          <div
+            ref={listRef}
+            data-nav-links
+            className="nav-seq relative hidden items-center justify-self-center lg:flex"
+            style={{ "--d": "90ms" } as React.CSSProperties}
+          >
             {NAV_LINKS.map((link) => {
               const active = isActive(link.href, link.sectionId);
               return (
@@ -168,7 +175,8 @@ export function Nav() {
 
             <Link
               href="/waitlist"
-              className="hidden rounded-md bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white transition duration-200 ease-editorial hover:-translate-y-px hover:bg-brand-600 sm:inline-flex"
+              className="nav-seq hidden rounded-md bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white transition duration-200 ease-editorial hover:-translate-y-0.5 hover:bg-brand-600 sm:inline-flex"
+              style={{ "--d": "170ms" } as React.CSSProperties}
             >
               Join the waitlist
             </Link>

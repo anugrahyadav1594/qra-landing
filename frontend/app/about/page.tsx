@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 
 import { socialMetadata } from "@/lib/seo";
 
-import { QRADataField } from "@/components/QRADataField";
-import { Reveal } from "@/components/Reveal";
+import { QRADataField } from "@/components/motion/QRADataField";
+import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { QRAReveal } from "@/components/motion/QRAReveal";
 import { Button, SectionLabel, SectionStatement } from "@/components/ui";
 import { ABOUT } from "@/lib/content";
 import { COMPANY_NAME, SITE_NAME, SITE_URL } from "@/lib/constants";
@@ -22,18 +23,19 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="mx-auto max-w-shell px-5 pb-20 pt-14 sm:px-6 sm:pt-20">
-      <Reveal>
+      <QRAReveal>
         <div className="max-w-3xl">
           <SectionLabel tone="brand">{ABOUT.eyebrow}</SectionLabel>
           <SectionStatement id="about-heading" as="h2" lines={ABOUT.headline} className="mt-5" />
         </div>
-      </Reveal>
+      </QRAReveal>
 
-      <Reveal variant="scale" className="mt-10">
+      <QRAReveal variant="scale" className="mt-10">
         {/* The Quantrelic architecture: vertical spines, horizontal pathways and
             nodes, constructing itself. No photograph — the same visual system
             as every other section, in its most structural pose. */}
         <div className="relative h-[220px] overflow-hidden rounded-xl border border-line sm:h-[280px] lg:h-[320px]">
+          <QRAAtmosphere variant="about" className="rounded-xl" />
           <QRADataField
             variant="structure"
             density={1.3}
@@ -49,10 +51,10 @@ export default function AboutPage() {
             Infrastructure for understanding
           </p>
         </div>
-      </Reveal>
+      </QRAReveal>
 
       <div className="mt-12 grid gap-12 lg:grid-cols-[1.1fr_minmax(0,420px)] lg:gap-16">
-        <Reveal>
+        <QRAReveal>
           <div className="max-w-2xl space-y-6 text-lg leading-relaxed text-paper-dim">
             {ABOUT.paragraphs.map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
@@ -61,19 +63,19 @@ export default function AboutPage() {
 
           <ul className="mt-12 grid gap-8 sm:grid-cols-3">
             {ABOUT.principles.map((principle, index) => (
-              <Reveal as="li" key={principle.title} delay={index * 90}>
+              <QRAReveal as="li" key={principle.title} delay={index * 90}>
                 <div className="border-t border-line pt-5">
                   <h2 className="font-display text-base font-semibold tracking-tight text-paper">
                     {principle.title}
                   </h2>
                   <p className="mt-2 text-sm leading-relaxed text-paper-mute">{principle.body}</p>
                 </div>
-              </Reveal>
+              </QRAReveal>
             ))}
           </ul>
-        </Reveal>
+        </QRAReveal>
 
-        <Reveal delay={120} variant="scale">
+        <QRAReveal delay={120} variant="scale">
           <div className="rounded-xl border border-line bg-ink-850/80 p-6 shadow-panel sm:p-7">
             <dl className="divide-y divide-line-faint">
               {ABOUT.facts.map((fact) => (
@@ -94,7 +96,7 @@ export default function AboutPage() {
               </Button>
             </div>
           </div>
-        </Reveal>
+        </QRAReveal>
       </div>
 
       <p className="mt-16 border-t border-line pt-8 text-sm text-paper-faint">{COMPANY_NAME}</p>

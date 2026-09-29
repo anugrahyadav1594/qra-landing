@@ -1,13 +1,21 @@
 import { ProductPreview } from "@/components/ProductPreview";
-import { Reveal } from "@/components/Reveal";
+import { QRAReveal } from "@/components/motion/QRAReveal";
+import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
 import { Button, Section, SectionLabel, SectionStatement } from "@/components/ui";
 import { PRODUCT } from "@/lib/content";
 
 /** The product: one company, five questions, an explanation and its source. */
 export function ProductSection() {
   return (
-    <Section id="product" tone="raised" labelledBy="product-heading">
-      <Reveal>
+    <Section id="product" tone="raised" labelledBy="product-heading" className="relative overflow-hidden">
+      <QRASectionTransition label="Structured" />
+
+      {/* Barely there: the product interface is the brightest thing on screen. */}
+      <QRAAtmosphere variant="product" />
+
+      <div className="relative z-10">
+      <QRAReveal>
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <SectionLabel tone="brand">{PRODUCT.label}</SectionLabel>
@@ -17,13 +25,13 @@ export function ProductSection() {
             {PRODUCT.support}
           </p>
         </div>
-      </Reveal>
+      </QRAReveal>
 
-      <Reveal delay={120} variant="scale" className="mt-12">
+      <QRAReveal delay={120} variant="scale" className="mt-12">
         <ProductPreview />
-      </Reveal>
+      </QRAReveal>
 
-      <Reveal delay={80}>
+      <QRAReveal delay={80}>
         <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
           <Button href="/product" variant="outline">
             See the full product page
@@ -32,7 +40,8 @@ export function ProductSection() {
             Numbers are easy. Knowing what they mean isn’t — that’s the part we’re building.
           </p>
         </div>
-      </Reveal>
+      </QRAReveal>
+      </div>
     </Section>
   );
 }

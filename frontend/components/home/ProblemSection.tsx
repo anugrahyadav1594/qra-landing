@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { QRADataField } from "@/components/QRADataField";
+import { QRADataField } from "@/components/motion/QRADataField";
+import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
 import { Section, SectionLabel, SectionStatement } from "@/components/ui";
-import { useScrollScene } from "@/components/useScrollScene";
+import { useScrollScene } from "@/components/motion/useScrollScene";
 import { PROBLEM } from "@/lib/content";
 
 /**
@@ -65,39 +67,55 @@ export function ProblemSection() {
             },
       });
 
-      // 1 — scattered
+      // 1 — the seven sources arrive, in order, slowly. Nothing flies in: the
+      //     pile is legible here, which is what makes this a statement about
+      //     volume rather than a decorative mess.
       timeline.from(fragments, {
-        x: () => gsap.utils.random(-160, 160),
-        y: () => gsap.utils.random(-90, 90),
-        rotate: () => gsap.utils.random(-14, 14),
         opacity: 0,
-        scale: 0.94,
-        duration: 1,
-        stagger: { each: 0.04, from: "random" },
+        y: 24,
+        scale: 0.985,
+        duration: 0.9,
+        stagger: { each: 0.09, from: "start" },
       });
 
-      // 2 — moving, overlapping, overwhelming
+      // 2 — they begin to overlap as the page moves past them.
       timeline.to(
         fragments,
         {
-          x: () => gsap.utils.random(-48, 48),
-          y: () => gsap.utils.random(-26, 26),
-          rotate: () => gsap.utils.random(-5, 5),
-          borderColor: "rgba(245,247,250,0.22)",
-          duration: 1.2,
-          stagger: { each: 0.02, from: "random" },
+          x: () => gsap.utils.random(-34, 34),
+          y: () => gsap.utils.random(-18, 18),
+          rotate: () => gsap.utils.random(-3, 3),
+          duration: 1.1,
+          stagger: { each: 0.03, from: "start" },
         },
         ">-0.2",
       );
 
-      // 3 — freeze. A deliberate hold so the moment registers.
-      timeline.to({}, { duration: 0.55 });
+      // 3 — density. The gaps close and the pile stops being readable: still
+      //     the same seven sources, just too many of them in one place.
+      timeline.to(fragments, {
+        x: 0,
+        y: 0,
+        rotate: 0,
+        scale: 0.97,
+        borderColor: "rgba(245,247,250,0.24)",
+        duration: 1,
+        stagger: { each: 0.02, from: "end" },
+      });
+
+      // 4 — everything stops. A deliberate hold, so the freeze registers.
+      timeline.to({}, { duration: 0.6 });
       timeline.fromTo("[data-overload]", { opacity: 0 }, { opacity: 1, duration: 0.7 });
-      timeline.to({}, { duration: 0.7 });
+      timeline.to({}, { duration: 0.8 });
       timeline.to("[data-overload]", { opacity: 0, duration: 0.5 });
       timeline.fromTo("[data-clarity]", { opacity: 0 }, { opacity: 1, duration: 0.7 });
 
-      // 4 — everything converges on one node
+      // 5 — the pause. Negative space is part of the argument, so it gets real
+      //     time on the timeline: the frame goes almost empty first.
+      timeline.to({}, { duration: 1 });
+      timeline.to(fragments, { opacity: 0.1, duration: 0.9 });
+
+      // 6 — everything converges on one node
       timeline.to(
         fragments,
         {
@@ -105,7 +123,7 @@ export function ProblemSection() {
           y: 0,
           rotate: 0,
           scale: 0.82,
-          opacity: 0.25,
+          opacity: 0.22,
           duration: 1.3,
           stagger: { each: 0.03, from: "edges" },
         },
@@ -113,7 +131,7 @@ export function ProblemSection() {
       );
       timeline.fromTo(
         "[data-node]",
-        { opacity: 0, scale: 0.9 },
+        { opacity: 0, scale: 0.92 },
         { opacity: 1, scale: 1, duration: 0.9 },
         ">-0.7",
       );
@@ -124,6 +142,11 @@ export function ProblemSection() {
 
   return (
     <Section id="problem" tone="raised" labelledBy="problem-heading" className="relative overflow-x-clip">
+      <QRASectionTransition label="Fragmented" />
+
+      {/* The environment: the pile, felt rather than seen. */}
+      <QRAAtmosphere variant="problem" />
+
       {/* The field behaves the same way the fragments do: chaos, then order. */}
       <QRADataField variant="converge" intensity={0.85} density={1.2} stickyCanvas className="opacity-80" />
 

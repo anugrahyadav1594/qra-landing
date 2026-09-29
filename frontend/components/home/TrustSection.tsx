@@ -2,9 +2,11 @@
 
 import { useRef } from "react";
 
-import { QRADataField } from "@/components/QRADataField";
+import { QRADataField } from "@/components/motion/QRADataField";
+import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
 import { Section, SectionLabel } from "@/components/ui";
-import { useScrollScene } from "@/components/useScrollScene";
+import { useScrollScene } from "@/components/motion/useScrollScene";
 import { TRUST } from "@/lib/content";
 
 /**
@@ -44,6 +46,11 @@ export function TrustSection() {
 
   return (
     <Section id="trust" tone="deep" labelledBy="trust-heading" className="relative overflow-hidden">
+      <QRASectionTransition label="Calmer" />
+
+      {/* The quietest environment on the site. */}
+      <QRAAtmosphere variant="trust" />
+
       <QRADataField variant="organize" intensity={0.5} density={0.5} className="opacity-30" />
 
       {/* Slow vertical rules — structure, not decoration */}
@@ -55,7 +62,7 @@ export function TrustSection() {
         </div>
       </div>
 
-      <div className="relative" ref={ref}>
+      <div className="relative z-10" ref={ref}>
         <div className="max-w-2xl">
           <SectionLabel tone="brand">{TRUST.label}</SectionLabel>
           <h2

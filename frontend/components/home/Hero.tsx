@@ -1,6 +1,7 @@
 import { ClarityPanel } from "@/components/ClarityPanel";
-import { QRADataField } from "@/components/QRADataField";
-import { TextReveal } from "@/components/TextReveal";
+import { QRADataField } from "@/components/motion/QRADataField";
+import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { TextReveal } from "@/components/motion/TextReveal";
 import { Button } from "@/components/ui";
 import { HERO } from "@/lib/content";
 
@@ -18,22 +19,24 @@ import { HERO } from "@/lib/content";
 export function Hero() {
   return (
     <section id="hero" data-section="hero" className="relative overflow-hidden">
+      {/* The environment: the hero's own information space, alive underneath. */}
+      <QRAAtmosphere variant="hero" interactive />
+
       {/* The information field: long thin lines, drifting. */}
       <QRADataField
         variant="ambient"
         interactive
-        intensity={0.7}
-        speed={0.7}
-        density={1.1}
-        className="qra-data-field--interactive opacity-[0.55]"
+        intensity={0.62}
+        speed={0.6}
+        density={0.9}
+        className="qra-data-field--interactive opacity-[0.42]"
       />
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_20%_30%,rgba(63,111,255,0.07),transparent_70%)]"
       />
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 grid-backdrop" />
 
-      <div className="relative mx-auto grid max-w-shell gap-14 px-5 pb-20 pt-12 sm:px-6 sm:pt-16 lg:grid-cols-[1.02fr_1fr] lg:items-start lg:gap-16 lg:pb-28 lg:pt-20">
+      <div className="relative z-10 mx-auto grid max-w-shell gap-14 px-5 pb-20 pt-12 sm:px-6 sm:pt-16 lg:grid-cols-[1.02fr_1fr] lg:items-start lg:gap-16 lg:pb-28 lg:pt-20">
         <div>
           <p className="rise micro !text-brand-400" style={{ "--d": "0ms" } as React.CSSProperties}>
             {HERO.eyebrow}

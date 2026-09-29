@@ -1,19 +1,23 @@
 "use client";
 
 /**
- * The Quantrelic opening sequence.
+ * THE QRA OPENING SEQUENCE.
  *
- * Five frames, ~2.3 seconds, once per browser session:
- *   01  the mark and the wordmark on a black field
- *   02  the mark dissolves into thin data lines across the viewport
- *   03  the lines converge and nodes appear at the intersections
- *   04  QUANTRELEC reveals character by character over the brand line
- *   05  the structure compresses and lifts into the hero
+ * The logo is the anchor and the system builds around it — this is the site's
+ * thesis performed in two seconds: something clear, then structure, then
+ * information, then the product.
+ *
+ *   0.00s  a near-black field; only the environment is alive
+ *   0.30s  the logo arrives — opacity, scale, blur and a short lift, together
+ *   0.80s  a ring draws around it, then coordinate lines extend from it
+ *   1.20s  data points settle where the lines cross; the wordmark resolves
+ *   1.60s  the structure expands outward, and the logo travels into the navbar
+ *   2.35s  the hero is below it, already in place
  *
  * Two rules shape the implementation:
  *
- * 1. NOTHING MAY TRAP THE PAGE. The overlay is server-rendered (so there is no
- *    flash of the hero first) but it carries its own CSS-only dismissal, so a
+ * 1. NOTHING MAY TRAP THE PAGE. The overlay is server-rendered (so the hero
+ *    never flashes first) but it carries its own CSS-only dismissal, so a
  *    failure in JavaScript still clears it. The hero's entrance is delayed by a
  *    custom property rather than paused, so it always ends up visible.
  * 2. The decision is made before paint. A tiny inline script in the layout
@@ -51,11 +55,28 @@ export const INTRO_BOOTSTRAP =
   `else{d.setAttribute("${INTRO_ATTRIBUTE}","play");d.style.setProperty("--intro-delay",f+"ms");}` +
   `}catch(e){d.setAttribute("${INTRO_ATTRIBUTE}","skip");}})();`;
 
-const HORIZONTAL_LINES = 7;
-const VERTICAL_LINES = 7;
-const NODES = 16;
+/** Two rings, in the same coordinate space as the lines. */
+const RINGS = [
+  { radius: 132, className: "qra-loader__ring qra-loader__ring--inner", delay: 780 },
+  { radius: 236, className: "qra-loader__ring qra-loader__ring--outer", delay: 1000 },
+];
 
-export function Loader() {
+/** Guides at a quarter and three quarters of the field. */
+const GUIDES = [0.25, 0.75];
+
+/** Points settle where the guides cross the axes (plus the guide corners). */
+const POINTS: Array<[number, number]> = [
+  [0.5, 0.25],
+  [0.5, 0.75],
+  [0.25, 0.5],
+  [0.75, 0.5],
+  [0.25, 0.25],
+  [0.75, 0.25],
+  [0.25, 0.75],
+  [0.75, 0.75],
+];
+
+export function QRALoader() {
   const [mode, setMode] = useState<IntroMode | null>(null);
 
   useEffect(() => {
@@ -104,58 +125,84 @@ export function Loader() {
       data-mode={mode ?? "play"}
       role="presentation"
       aria-hidden="true"
-      /* Set by the component so the rest of the site can respond to the intro. */
       data-testid="qra-loader"
     >
       <div className="qra-loader__stage">
-        {/* Frames 02–03: the mark becomes a coordinate system. */}
-        <div className="qra-loader__lines">
-          {Array.from({ length: HORIZONTAL_LINES }, (_, index) => (
-            <span
-              key={`h${index}`}
-              className="qra-loader__line qra-loader__line--h"
-              style={{ top: `${((index + 1) / (HORIZONTAL_LINES + 1)) * 100}%` }}
-            />
-          ))}
-          {Array.from({ length: VERTICAL_LINES }, (_, index) => (
-            <span
-              key={`v${index}`}
-              className="qra-loader__line qra-loader__line--v"
-              style={{ left: `${((index + 1) / (VERTICAL_LINES + 1)) * 100}%` }}
-            />
-          ))}
-          <div className="qra-loader__nodes">
-            {Array.from({ length: NODES }, (_, index) => {
-              const column = index % 4;
-              const row = Math.floor(index / 4) % 4;
-              return (
-                <span
-                  key={index}
-                  className="qra-loader__node"
-                  style={{
-                    left: `${(column + 1) * 20}%`,
-                    top: `${(row + 1) * 20}%`,
-                    animationDelay: `${1080 + (index % 5) * 55}ms`,
-                  }}
-                />
-              );
-            })}
-          </div>
+        {/* The coordinate system that forms around the logo. */}
+        <div className="qra-loader__structure">
+          <svg
+            className="qra-loader__axes"
+            viewBox="0 0 1000 1000"
+            focusable="false"
+            aria-hidden="true"
+          >
+            {RINGS.map((ring) => (
+              <circle
+                key={ring.radius}
+                className={ring.className}
+                cx="500"
+                cy="500"
+                r={ring.radius}
+                style={{
+                  "--circ": `${Math.round(2 * Math.PI * ring.radius)}`,
+                  animationDelay: `${ring.delay}ms`,
+                } as React.CSSProperties}
+              />
+            ))}
+
+            <line className="qra-loader__axis qra-loader__axis--h" x1="0" y1="500" x2="1000" y2="500" />
+            <line className="qra-loader__axis qra-loader__axis--v" x1="500" y1="0" x2="500" y2="1000" />
+
+            {GUIDES.map((position) => (
+              <line
+                key={`h${position}`}
+                className="qra-loader__guide qra-loader__guide--h"
+                x1="0"
+                y1={position * 1000}
+                x2="1000"
+                y2={position * 1000}
+              />
+            ))}
+            {GUIDES.map((position) => (
+              <line
+                key={`v${position}`}
+                className="qra-loader__guide qra-loader__guide--v"
+                x1={position * 1000}
+                y1="0"
+                x2={position * 1000}
+                y2="1000"
+              />
+            ))}
+
+            {POINTS.map(([x, y], index) => (
+              <circle
+                key={`${x}-${y}`}
+                className="qra-loader__point"
+                cx={x * 1000}
+                cy={y * 1000}
+                r="3.5"
+                style={{ animationDelay: `${1180 + index * 40}ms` }}
+              />
+            ))}
+          </svg>
         </div>
 
-        {/* Frames 01 and 04: the brand itself. */}
+        {/* The anchor. The inner span carries the departure: the mark travels
+            to the navbar's own position instead of vanishing. */}
         <div className="qra-loader__mark">
-          <Logo className="qra-loader__logo" />
-          <p className="qra-loader__wordmark">{LOADER.wordmark}</p>
+          <span className="qra-loader__handoff">
+            <Logo className="qra-loader__logo" />
+          </span>
         </div>
 
+        {/* The name, then the line the whole company is built on. */}
         <div className="qra-loader__name">
           <p className="qra-loader__name-text" aria-hidden="true">
             {LOADER.name.split("").map((character, index) => (
               <span
                 key={`${character}-${index}`}
                 className="qra-loader__char"
-                style={{ animationDelay: `${1460 + index * 38}ms` }}
+                style={{ animationDelay: `${1260 + index * 34}ms` }}
               >
                 {character}
               </span>

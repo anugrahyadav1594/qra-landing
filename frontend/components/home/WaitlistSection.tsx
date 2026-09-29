@@ -1,5 +1,7 @@
-import { QRADataField } from "@/components/QRADataField";
-import { Reveal } from "@/components/Reveal";
+import { QRADataField } from "@/components/motion/QRADataField";
+import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
+import { QRAReveal } from "@/components/motion/QRAReveal";
 import { WaitlistForm } from "@/components/WaitlistForm";
 import { Section, SectionLabel } from "@/components/ui";
 import { EARLY_ACCESS } from "@/lib/content";
@@ -14,11 +16,16 @@ import { EARLY_ACCESS } from "@/lib/content";
 export function WaitlistSection() {
   return (
     <Section id="waitlist" labelledBy="waitlist-heading" className="relative overflow-hidden">
+      <QRASectionTransition label="Convergence" />
+
+      {/* The last environment: everything drawing toward one point. */}
+      <QRAAtmosphere variant="waitlist" />
+
       {/* The convergence: scattered → one point, and then stillness. */}
       <QRADataField variant="converge" intensity={0.55} density={0.6} speed={0.5} className="opacity-35" />
 
-      <div className="relative grid gap-12 lg:grid-cols-[1fr_minmax(0,520px)] lg:gap-20">
-        <Reveal>
+      <div className="relative z-10 grid gap-12 lg:grid-cols-[1fr_minmax(0,520px)] lg:gap-20">
+        <QRAReveal>
           <SectionLabel tone="brand">{EARLY_ACCESS.label}</SectionLabel>
           <h2
             id="waitlist-heading"
@@ -40,13 +47,13 @@ export function WaitlistSection() {
               </li>
             ))}
           </ul>
-        </Reveal>
+        </QRAReveal>
 
-        <Reveal delay={120} variant="scale">
+        <QRAReveal delay={120} variant="scale">
           <div className="card-edge rounded-xl border border-line bg-ink-850/80 p-6 shadow-panel sm:p-7">
             <WaitlistForm />
           </div>
-        </Reveal>
+        </QRAReveal>
       </div>
     </Section>
   );

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { socialMetadata } from "@/lib/seo";
 
 import { ProductPreview } from "@/components/ProductPreview";
-import { Reveal } from "@/components/Reveal";
+import { QRAReveal } from "@/components/motion/QRAReveal";
 import { WaitlistForm } from "@/components/WaitlistForm";
 import { Button, SectionLabel } from "@/components/ui";
 import { apiGet } from "@/lib/api";
@@ -79,12 +79,12 @@ export default async function ProductPage() {
           </div>
         </div>
 
-        <Reveal variant="scale" delay={120} className="mt-14">
+        <QRAReveal variant="scale" delay={120} className="mt-14">
           <ProductPreview />
-        </Reveal>
+        </QRAReveal>
 
         <div className="mt-16 grid gap-10 border-t border-line pt-12 lg:grid-cols-[1.1fr_minmax(0,460px)] lg:gap-16">
-          <Reveal>
+          <QRAReveal>
             <h2 className="font-display text-2xl font-semibold tracking-tight text-paper sm:text-3xl">
               What QRA is not
             </h2>
@@ -96,9 +96,9 @@ export default async function ProductPage() {
             <p className="mt-8 max-w-xl text-sm leading-relaxed text-paper-mute">
               {product.description_md.split("\n")[0]}
             </p>
-          </Reveal>
+          </QRAReveal>
 
-          <Reveal delay={120}>
+          <QRAReveal delay={120}>
             <div className="rounded-xl border border-line bg-ink-850/80 p-6 shadow-panel sm:p-7">
               <h2 className="font-display text-lg font-semibold tracking-tight text-paper">
                 Join the waitlist
@@ -108,7 +108,7 @@ export default async function ProductPage() {
               </p>
               <WaitlistForm compact />
             </div>
-          </Reveal>
+          </QRAReveal>
         </div>
       </div>
     </div>

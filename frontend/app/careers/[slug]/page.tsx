@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { ApplyForm } from "@/components/ApplyForm";
 import { Markdown } from "@/components/Markdown";
-import { Reveal } from "@/components/Reveal";
+import { QRAReveal } from "@/components/motion/QRAReveal";
 import { SectionLabel } from "@/components/ui";
 import { apiGet } from "@/lib/api";
 import { SITE_NAME } from "@/lib/constants";
@@ -48,7 +48,7 @@ export default async function CareerPage({ params }: { params: { slug: string } 
   return (
     <div className="mx-auto max-w-shell px-5 pb-20 pt-14 sm:px-6 sm:pt-20">
       <div className="mx-auto max-w-3xl">
-        <Reveal>
+        <QRAReveal>
           <SectionLabel tone="brand">Careers</SectionLabel>
           <h1 className="mt-5 font-display text-[2.2rem] font-semibold leading-[1.06] tracking-tightest text-paper sm:text-5xl">
             {posting.title}
@@ -57,10 +57,10 @@ export default async function CareerPage({ params }: { params: { slug: string } 
             {posting.department} \u00b7 {posting.employment_type.replace("_", " ")} \u00b7{" "}
             {posting.location_type.replace("_", " ")} \u00b7 {posting.location}
           </p>
-        </Reveal>
+        </QRAReveal>
 
         <div className="mt-12 grid gap-10 sm:grid-cols-2">
-          <Reveal>
+          <QRAReveal>
             <section>
               <h2 className="font-display text-lg font-semibold tracking-tight text-paper">
                 About the role
@@ -69,8 +69,8 @@ export default async function CareerPage({ params }: { params: { slug: string } 
                 <Markdown source={posting.description_md} />
               </div>
             </section>
-          </Reveal>
-          <Reveal delay={90}>
+          </QRAReveal>
+          <QRAReveal delay={90}>
             <section>
               <h2 className="font-display text-lg font-semibold tracking-tight text-paper">
                 Requirements
@@ -79,10 +79,10 @@ export default async function CareerPage({ params }: { params: { slug: string } 
                 <Markdown source={posting.requirements_md} />
               </div>
             </section>
-          </Reveal>
+          </QRAReveal>
         </div>
 
-        <Reveal delay={140}>
+        <QRAReveal delay={140}>
           <section className="mt-14 rounded-xl border border-line bg-ink-850/80 p-6 shadow-panel sm:p-8">
             <h2 className="font-display text-xl font-semibold tracking-tight text-paper">Apply</h2>
             <p className="mb-6 mt-2 text-sm text-paper-mute">
@@ -90,7 +90,7 @@ export default async function CareerPage({ params }: { params: { slug: string } 
             </p>
             <ApplyForm slug={posting.slug} title={posting.title} />
           </section>
-        </Reveal>
+        </QRAReveal>
       </div>
     </div>
   );

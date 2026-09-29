@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 
-import { useScrollScene } from "@/components/useScrollScene";
+import { useScrollScene } from "@/components/motion/useScrollScene";
 import { IDEA } from "@/lib/content";
 
 /**
@@ -16,7 +16,7 @@ import { IDEA } from "@/lib/content";
  * Scrolling drives the drawing; without motion the diagram is simply present
  * and the three captions carry the meaning on their own.
  */
-export function ProcessDiagram() {
+export function QRAProcessDiagram() {
   const ref = useRef<HTMLDivElement>(null);
 
   useScrollScene(ref, ({ gsap }) => {
@@ -58,11 +58,20 @@ export function ProcessDiagram() {
       stagger: 0.14,
     });
 
-    // The one line that ties the three stages together.
+    // The one line that ties the three stages together, drawn from its start.
     timeline.from(
       "[data-spine]",
       { scaleX: 0, transformOrigin: "left center", duration: 1.5, ease: "power2.inOut" },
       0,
+    );
+
+    // …and the node that travels along it: information entering, being
+    // explained, arriving somewhere it can be held. One object, one pass.
+    timeline.fromTo(
+      "[data-travel]",
+      { x: 0, opacity: 0 },
+      { x: 410, opacity: 1, duration: 1.5, ease: "power1.inOut" },
+      0.1,
     );
   });
 
@@ -88,6 +97,11 @@ export function ProcessDiagram() {
           stroke="rgba(245,247,250,0.12)"
           strokeWidth="1"
         />
+
+        {/* The node that travels it — the argument, moving. It starts at the
+            scattered marks and finishes inside the settled hierarchy. */}
+        <circle cx="150" cy="100" r="7" fill="none" stroke="rgba(111,148,255,0.26)" strokeWidth="1" />
+        <circle data-travel cx="150" cy="100" r="3.5" fill="#6F94FF" opacity="0" />
 
         {/* 01 — scattered points converging on a node */}
         <g>

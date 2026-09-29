@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { QRADataField } from "@/components/QRADataField";
-import { Reveal } from "@/components/Reveal";
+import { QRADataField } from "@/components/motion/QRADataField";
+import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
+import { QRAReveal } from "@/components/motion/QRAReveal";
 import { Button, Section, SectionLabel } from "@/components/ui";
 import { AUDIENCE } from "@/lib/content";
-import { useScrollScene } from "@/components/useScrollScene";
+import { useScrollScene } from "@/components/motion/useScrollScene";
 
 /**
  * For investors.
@@ -41,6 +43,11 @@ export function AudienceSection() {
 
   return (
     <Section id="for-investors" labelledBy="audience-heading" className="relative overflow-hidden">
+      <QRASectionTransition label="Understood" />
+
+      {/* The room the three readers sit in. */}
+      <QRAAtmosphere variant="investor" />
+
       <QRADataField
         variant="organize"
         intensity={0.6}
@@ -48,8 +55,8 @@ export function AudienceSection() {
         className="opacity-40"
       />
 
-      <div className="relative" ref={ref} data-ready={ready || undefined}>
-        <Reveal>
+      <div className="relative z-10" ref={ref} data-ready={ready || undefined}>
+        <QRAReveal>
           <SectionLabel tone="brand">{AUDIENCE.label}</SectionLabel>
           <h2
             id="audience-heading"
@@ -57,7 +64,7 @@ export function AudienceSection() {
           >
             {AUDIENCE.statement}
           </h2>
-        </Reveal>
+        </QRAReveal>
 
         <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)] lg:gap-16">
           {/* The figure: a profile built only from lines and nodes. */}

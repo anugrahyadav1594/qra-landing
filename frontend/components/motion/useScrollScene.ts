@@ -44,18 +44,24 @@ export function useScrollScene(
     // Loaded on demand: GSAP never reaches the initial bundle of a page whose
     // section has not scrolled into view yet.
     void (async () => {
-      const [{ gsap }, { ScrollTrigger }] = await Promise.all([
-        import("gsap"),
-        import("gsap/ScrollTrigger"),
-      ]);
-      if (cancelled) return;
+      try {
+        const [{ gsap }, { ScrollTrigger }] = await Promise.all([
+          import("gsap"),
+          import("gsap/ScrollTrigger"),
+        ]);
+        if (cancelled) return;
 
-      gsap.registerPlugin(ScrollTrigger);
-      const context = gsap.context(() => {
-        build({ gsap, ScrollTrigger, root });
-      }, root);
+        gsap.registerPlugin(ScrollTrigger);
+        const context = gsap.context(() => {
+          build({ gsap, ScrollTrigger, root });
+        }, root);
 
-      cleanup = () => context.revert();
+        cleanup = () => context.revert();
+      } catch {
+        // The choreography is authored in its finished state, so a failed load
+        // (offline, a blocked chunk) leaves a still, fully readable page
+        // instead of a half-drawn one — and never an unhandled rejection.
+      }
     })();
 
     return () => {

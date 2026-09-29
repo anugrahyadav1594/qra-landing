@@ -2,28 +2,33 @@
 
 import { createElement, useEffect, useRef, type ElementType } from "react";
 
+import { prefersReducedMotion } from "@/lib/motion";
+
+import { sharedRevealObserver } from "./reveal-observer";
+
 /**
  * Word-by-word typographic reveal.
  *
  * Each word sits in a clip, so the text resolves out of the line instead of
- * fading in from somewhere. Motion is by transform only.
+ * fading in from somewhere. Words appear in reading order — never at random,
+ * never flying in from different directions — with a stagger inside the 40–80ms
+ * band, which reads as one statement arriving rather than a gimmick.
  *
  * Safety: the visible state is the default in the stylesheet and the hidden
  * state is driven by a guard animation with a hard end, so the words appear
- * even if the observer never fires — a reveal can never leave a headline
- * permanently blank.
+ * even if the observer never fires — a reveal can never leave a headline blank.
  */
 export function TextReveal({
   text,
   as = "span",
   className = "",
-  step = 90,
+  step = 60,
   delay = 0,
 }: {
   text: string;
   as?: ElementType;
   className?: string;
-  /** Stagger between words, in ms. */
+  /** Stagger between words, in ms (40–80 is the house range). */
   step?: number;
   /** Base delay, in ms. */
   delay?: number;
@@ -36,27 +41,14 @@ export function TextReveal({
 
     const show = () => element.classList.add("is-visible");
 
-    if (
-      typeof IntersectionObserver === "undefined" ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    ) {
+    // The shared capability check: safe on the server, in tests, and anywhere
+    // matchMedia is unavailable.
+    if (prefersReducedMotion()) {
       show();
       return;
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            show();
-            observer.disconnect();
-          }
-        }
-      },
-      { threshold: 0.2, rootMargin: "0px 0px -60px 0px" },
-    );
-    observer.observe(element);
-    return () => observer.disconnect();
+    return sharedRevealObserver().observe(element, show);
   }, []);
 
   const words = text.split(" ");

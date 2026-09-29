@@ -1,6 +1,8 @@
-import { ProcessDiagram } from "@/components/ProcessDiagram";
-import { Reveal } from "@/components/Reveal";
-import { TextReveal } from "@/components/TextReveal";
+import { QRAProcessDiagram } from "@/components/motion/QRAProcessDiagram";
+import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
+import { QRAReveal } from "@/components/motion/QRAReveal";
+import { TextReveal } from "@/components/motion/TextReveal";
 import { Button, Section, SectionLabel } from "@/components/ui";
 import { IDEA } from "@/lib/content";
 
@@ -16,8 +18,13 @@ export function IdeaSection() {
         className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-line to-transparent"
       />
 
-      <div className="relative">
-        <Reveal>
+      <QRASectionTransition label="Organized" />
+
+      {/* The environment settles inward here — the page organising itself. */}
+      <QRAAtmosphere variant="idea" className="opacity-90" />
+
+      <div className="relative z-10">
+        <QRAReveal>
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
               <SectionLabel tone="brand">{IDEA.label}</SectionLabel>
@@ -37,11 +44,11 @@ export function IdeaSection() {
               Three moves. No jargon, no dashboards to learn.
             </p>
           </div>
-        </Reveal>
+        </QRAReveal>
 
-        <ProcessDiagram />
+        <QRAProcessDiagram />
 
-        <Reveal delay={80}>
+        <QRAReveal delay={80}>
           <div className="mt-14 flex flex-col gap-6 border-t border-line pt-8 sm:flex-row sm:items-center sm:justify-between">
             <p className="font-display text-xl font-semibold tracking-tight text-paper sm:text-2xl">
               {IDEA.closing}
@@ -53,7 +60,7 @@ export function IdeaSection() {
               </span>
             </Button>
           </div>
-        </Reveal>
+        </QRAReveal>
       </div>
     </Section>
   );

@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
 
 import { AuthProvider } from "@/components/AuthProvider";
-import { Cursor } from "@/components/Cursor";
+import { Cursor } from "@/components/motion/Cursor";
 import { Footer } from "@/components/Footer";
-import { INTRO_BOOTSTRAP, Loader } from "@/components/Loader";
+import { INTRO_BOOTSTRAP, QRALoader } from "@/components/motion/QRALoader";
 import { Nav } from "@/components/Nav";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/constants";
 import { socialMetadata } from "@/lib/seo";
@@ -39,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             opening sequence plays, and delays the hero by the same amount. */}
         <script dangerouslySetInnerHTML={{ __html: INTRO_BOOTSTRAP }} />
 
-        <Loader />
+        <QRALoader />
         <Cursor />
 
         {/* ClerkProvider goes inside <body> — never wraps <html> (Clerk docs). */}

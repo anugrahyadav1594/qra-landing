@@ -2,10 +2,22 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { CountUp } from "@/components/CountUp";
+import { CountUp } from "@/components/motion/CountUp";
 import { DirectionMark } from "@/components/ui";
 import { useScrollPhase } from "@/components/useScrollPhase";
 import { HERO_PANEL, ILLUSTRATIVE_LABEL } from "@/lib/content";
+
+/** The readings along the hero chart, in the order the line reaches them. */
+const HERO_PANEL_CHART_POINTS: Array<[number, number]> = [
+  [2, 28],
+  [46, 25],
+  [92, 26],
+  [138, 19],
+  [184, 21],
+  [230, 13],
+  [276, 10],
+  [318, 5],
+];
 
 /**
  * The hero's concept interface: the numbers, what they mean, and where they
@@ -117,6 +129,20 @@ export function ClarityPanel() {
               className="chart-line"
               style={{ "--len": 340, "--cd": "620ms" } as React.CSSProperties}
             />
+            {/* The readings arrive along the line as it finishes drawing. */}
+            {HERO_PANEL_CHART_POINTS.map(([x, y], index) => (
+              <circle
+                key={`${x}-${y}`}
+                className="chart-point"
+                cx={x}
+                cy={y}
+                r="2"
+                fill="#6F94FF"
+                style={{
+                  animationDelay: `${760 + Math.round((340 * index) / HERO_PANEL_CHART_POINTS.length)}ms`,
+                }}
+              />
+            ))}
             <path
               d="M2 32 L318 32"
               fill="none"

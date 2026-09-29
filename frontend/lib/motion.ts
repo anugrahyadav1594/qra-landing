@@ -1,28 +1,132 @@
 /**
- * Motion tokens and capability checks.
+ * The motion system.
  *
- * One place decides how much motion the device can afford, so every animated
- * component answers the same questions the same way: is motion wanted, is this
- * a touch device, and how much work can this screen handle.
+ * One file decides everything about how this site moves: how long things take,
+ * what curve they use, how much motion the device can afford, and the named
+ * definitions every scene is built from. Sections do not invent their own
+ * timing — they compose from this vocabulary, which is what makes the whole
+ * page feel like it was choreographed by one hand.
+ *
+ * The house curve is `cubic-bezier(0.22, 1, 0.36, 1)` (in CSS) and its GSAP
+ * equivalent `expo.out` (in JS): quick to leave, long to settle, never bouncy.
  */
 
 export const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
-/** Durations (seconds) — kept short. Nothing on this site should make anyone wait. */
-export const DURATION = {
-  micro: 0.18,
-  fast: 0.32,
-  base: 0.55,
-  slow: 0.9,
-  scene: 1.4,
+/**
+ * Durations in seconds, for GSAP. The names describe intent, not length, so a
+ * section can ask for "cinematic" without inventing a number.
+ */
+export const TIMING = {
+  fast: 0.18,
+  micro: 0.25,
+  standard: 0.4,
+  smooth: 0.6,
+  cinematic: 0.9,
+  ambient: 4,
+} as const;
+
+/** The same scale in milliseconds, for CSS transitions and delays. */
+export const MS = {
+  fast: 180,
+  micro: 250,
+  standard: 400,
+  smooth: 600,
+  cinematic: 900,
+  ambient: 4000,
 } as const;
 
 export const EASE = {
-  /** The house curve: quick out, long settle. */
-  out: "power3.out",
+  /** The house curve, verbatim — the same curve the CSS tokens use. */
+  css: "cubic-bezier(0.22, 1, 0.36, 1)",
+  /** GSAP's nearest equivalent, for major reveals. */
+  out: "expo.out",
+  /** A shorter settle for small, frequent movements. */
+  soft: "power2.out",
+  /** Symmetrical, for things that travel and return. */
   inOut: "power2.inOut",
+  /** Scroll-scrubbed motion must be linear: the scrollbar is the clock. */
   none: "none",
 } as const;
+
+type Vars = Record<string, unknown>;
+
+/**
+ * The shared vocabulary of movements. Every scroll scene is built by picking
+ * from these, so nothing on the site moves in a way nothing else does.
+ */
+export const MOTION = {
+  /** Content arrives: a short lift and a fade. The default for anything new. */
+  fadeUp: (vars: Vars = {}): Vars => ({
+    opacity: 0,
+    y: 18,
+    duration: TIMING.smooth,
+    ease: EASE.out,
+    ...vars,
+  }),
+
+  /** A block wipes upward out of its own line — used for panels and figures. */
+  reveal: (vars: Vars = {}): Vars => ({
+    opacity: 0,
+    clipPath: "inset(0 0 12% 0)",
+    y: 14,
+    duration: TIMING.cinematic,
+    ease: EASE.out,
+    ...vars,
+  }),
+
+  /** Something small resolving into place. Never larger than 3%. */
+  scaleReveal: (vars: Vars = {}): Vars => ({
+    opacity: 0,
+    scale: 0.97,
+    duration: TIMING.smooth,
+    ease: EASE.out,
+    ...vars,
+  }),
+
+  /** A line being drawn, always from its own left edge. */
+  lineDraw: (vars: Vars = {}): Vars => ({
+    scaleX: 0,
+    transformOrigin: "left center",
+    duration: TIMING.cinematic,
+    ease: EASE.inOut,
+    ...vars,
+  }),
+
+  /** Atmosphere: a few percent of travel across a whole section. */
+  imageDrift: (vars: Vars = {}): Vars => ({
+    ease: EASE.none,
+    ...vars,
+  }),
+
+  /** Reading order: each item follows the previous one at a small interval. */
+  staggerReveal: (each = 0.06, vars: Vars = {}): Vars => ({
+    opacity: 0,
+    y: 14,
+    duration: TIMING.smooth,
+    ease: EASE.out,
+    stagger: { each, from: "start" },
+    ...vars,
+  }),
+} as const;
+
+/**
+ * The scroll window a scene runs in. Sections share these defaults so the page
+ * has one rhythm: a scene begins once its subject is comfortably in view and is
+ * already resolved before the section leaves.
+ */
+export function sceneTrigger(
+  trigger: Element,
+  overrides: { start?: string; end?: string; scrub?: number | boolean } = {},
+) {
+  return {
+    trigger,
+    start: "top 78%",
+    end: "bottom 45%",
+    scrub: 0.5,
+    ...overrides,
+  };
+}
 
 /** Safe on the server and in tests, where `window` may not exist. */
 export function prefersReducedMotion(): boolean {
