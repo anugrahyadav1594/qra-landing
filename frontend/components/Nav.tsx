@@ -213,7 +213,7 @@ export function Nav() {
           menuOpen ? "pointer-events-auto" : "pointer-events-none"
         }`}
       >
-        <div className="flex h-full flex-col justify-between overflow-y-auto bg-ink-950/96 px-5 pb-10 pt-8 backdrop-blur-xl sm:px-6">
+        <div className="flex h-full flex-col justify-between overflow-y-auto bg-ink-950/[0.96] px-5 pb-10 pt-8 backdrop-blur-xl sm:px-6">
           <div className="space-y-1">
             {[...NAV_LINKS, ...SECONDARY_LINKS].map((link, index) => {
               const active = isActive(link.href, link.sectionId);

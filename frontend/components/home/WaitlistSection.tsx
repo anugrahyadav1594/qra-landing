@@ -24,9 +24,10 @@ export function WaitlistSection() {
             id="waitlist-heading"
             className="mt-5 font-display text-[2.2rem] font-semibold leading-[1.06] tracking-tightest text-paper sm:text-5xl"
           >
-            {EARLY_ACCESS.statement.map((line) => (
+            {EARLY_ACCESS.statement.map((line, index) => (
               <span key={line} className="block">
                 {line}
+                {index < EARLY_ACCESS.statement.length - 1 ? " " : null}
               </span>
             ))}
           </h2>

@@ -62,9 +62,10 @@ export function TrustSection() {
             id="trust-heading"
             className="mt-5 font-display text-[2.4rem] font-semibold leading-[1.04] tracking-tightest text-paper sm:text-5xl lg:text-[3.6rem]"
           >
-            {TRUST.statement.map((line) => (
+            {TRUST.statement.map((line, index) => (
               <span key={line} className="block">
                 {line}
+                {index < TRUST.statement.length - 1 ? " " : null}
               </span>
             ))}
           </h2>

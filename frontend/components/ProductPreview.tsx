@@ -101,7 +101,7 @@ export function ProductPreview({ className = "" }: { className?: string }) {
                 {/* The selection bar grows into place rather than appearing. */}
                 <span
                   aria-hidden="true"
-                  className={`absolute inset-y-2 left-0 w-px origin-bottom bg-brand-500 transition-transform duration-400 ease-editorial ${
+                  className={`absolute inset-y-2 left-0 w-px origin-bottom bg-brand-500 transition-transform duration-[400ms] ease-editorial ${
                     selected ? "scale-y-100" : "scale-y-0"
                   }`}
                 />

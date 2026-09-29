@@ -42,11 +42,8 @@ export function Hero() {
           <h1 className="mt-6 font-display text-[2.7rem] font-semibold leading-[1.02] tracking-tightest text-paper sm:text-6xl lg:text-[4.1rem]">
             {HERO.headline.map((line, index) => (
               <span key={line} className="block">
-                <TextReveal
-                  text={line}
-                  step={70}
-                  delay={140 + index * 130}
-                />
+                <TextReveal text={line} step={70} delay={140 + index * 130} />
+                {index < HERO.headline.length - 1 ? " " : null}
               </span>
             ))}
           </h1>

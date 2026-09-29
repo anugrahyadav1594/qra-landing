@@ -25,9 +25,10 @@ export function IdeaSection() {
                 id="idea-heading"
                 className="mt-5 font-display text-[2.1rem] font-semibold leading-[1.08] tracking-tightest text-paper sm:text-5xl sm:leading-[1.05] lg:text-[3.4rem]"
               >
-                {IDEA.statement.map((line) => (
+                {IDEA.statement.map((line, index) => (
                   <span key={line} className="block">
                     <TextReveal text={line} step={80} />
+                    {index < IDEA.statement.length - 1 ? " " : null}
                   </span>
                 ))}
               </h2>

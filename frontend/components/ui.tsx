@@ -83,9 +83,10 @@ export function SectionStatement({
       id={id}
       className={`font-display font-semibold tracking-tightest text-paper ${sizes[size]} ${className}`}
     >
-      {lines.map((line) => (
+      {lines.map((line, index) => (
         <span key={line} className="block">
           {line}
+          {index < lines.length - 1 ? " " : null}
         </span>
       ))}
     </Tag>
