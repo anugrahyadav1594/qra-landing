@@ -15,23 +15,13 @@ import {
   SITE_TITLE,
   SITE_URL,
 } from "@/lib/constants";
+import { socialMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: { absolute: SITE_TITLE },
   description: SITE_DESCRIPTION,
   alternates: { canonical: "/" },
-  openGraph: {
-    type: "website",
-    url: SITE_URL,
-    siteName: SITE_NAME,
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
-  },
-  twitter: {
-    card: "summary",
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
-  },
+  ...socialMetadata({ title: SITE_TITLE, description: SITE_DESCRIPTION }),
 };
 
 /** Truthful Organization JSON-LD — identity, url, logo, description only. */

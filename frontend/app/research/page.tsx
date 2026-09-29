@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { socialMetadata } from "@/lib/seo";
+
 import { Reveal } from "@/components/Reveal";
 import { Button, DataCard, SectionLabel, SectionStatement } from "@/components/ui";
 import { EVIDENCE, HOW_IT_WORKS } from "@/lib/content";
@@ -9,10 +11,11 @@ export const metadata: Metadata = {
   title: "How it works",
   description:
     "Five steps, in the order a careful investor asks them: the business, the numbers, what changed, the risks, and your own decision.",
-  openGraph: {
+  ...socialMetadata({
     title: `How it works · ${SITE_NAME}`,
     description: SITE_DESCRIPTION,
-  },
+    url: undefined,
+  }),
 };
 
 /** How it works: one sentence and one visual per step. */

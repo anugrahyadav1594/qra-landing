@@ -1,18 +1,21 @@
 import type { Metadata } from "next";
 
+import { socialMetadata } from "@/lib/seo";
+
 import { WaitlistForm } from "@/components/WaitlistForm";
 import { SectionLabel, SectionStatement } from "@/components/ui";
-import { COMPANY_NAME, PRODUCT_NAME, SITE_NAME } from "@/lib/constants";
+import { COMPANY_NAME, PRODUCT_NAME, SITE_NAME, SITE_URL } from "@/lib/constants";
 import { WAITLIST_PAGE } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Join the waitlist",
   description:
     "Join the waitlist for QRA — Quantrelic Analytics' product that makes financial information easier to understand. Early access opens in cohorts.",
-  openGraph: {
+  ...socialMetadata({
     title: `Join the waitlist · ${SITE_NAME}`,
-    description: "We\u2019re building QRA now. We\u2019ll email you when early access opens.",
-  },
+    description: "We are building QRA now. We will email you when early access opens.",
+    url: `${SITE_URL}/waitlist`,
+  }),
 };
 
 export default function WaitlistPage() {

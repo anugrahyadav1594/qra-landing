@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 type ImageAssetProps = {
   /** Path from `IMAGE_ASSETS` — always a local file under /public. */
@@ -31,7 +31,17 @@ type ImageAssetProps = {
  * surface, so:
  *   · a missing file shows concept art instead of a broken-image icon,
  *   · nothing shifts when the file appears (or never does),
- *   · the image itself fades in, which doubles as the site's image reveal.
+ *   · the image fades in on load, which doubles as the site's image reveal.
+ *
+ * Two details matter for correctness:
+ *
+ * 1. The reveal is a CSS animation, not JavaScript state. A local image can
+ *    finish loading *before* React hydrates — if visibility were gated on an
+ *    `onLoad` handler, that image would stay at opacity 0 forever. The
+ *    animation always ends visible, with or without JavaScript.
+ * 2. A file that already failed before hydration reports itself as complete
+ *    with no intrinsic width, so it is checked once on mount and swapped for
+ *    the fallback instead of leaving a broken-image icon behind.
  *
  * Nothing is fetched from a third party and nothing is inlined: the assets are
  * exactly the files placed in `public/images/`. They are already generated and
@@ -51,14 +61,19 @@ export function ImageAsset({
   decorative = false,
 }: ImageAssetProps) {
   const [failed, setFailed] = useState(false);
-  const [loaded, setLoaded] = useState(false);
+  const frameRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const element = frameRef.current?.querySelector("img");
+    if (element?.complete && element.naturalWidth === 0) setFailed(true);
+  }, []);
 
   return (
     <div className={`overflow-hidden bg-ink-900 ${className}`}>
       {/* The frame itself is always relative; the caller decides where the
           frame sits (absolute band, aspect box, grid cell) without the two
           positioning systems fighting each other. */}
-      <div className="relative h-full w-full">
+      <div ref={frameRef} className="relative h-full w-full">
         {/* Concealed fallback surface — always present, always underneath. */}
         <div aria-hidden="true" className={`absolute inset-0 ${fallbackClassName}`}>
           <div className="absolute inset-0 grid-backdrop opacity-70" />
@@ -70,15 +85,12 @@ export function ImageAsset({
           <Image
             src={src}
             alt={decorative ? "" : alt}
-          fill
-          sizes={sizes}
-          priority={priority}
-          unoptimized
-          onLoad={() => setLoaded(true)}
+            fill
+            sizes={sizes}
+            priority={priority}
+            unoptimized
             onError={() => setFailed(true)}
-            className={`object-cover transition-opacity duration-[1100ms] ease-editorial ${
-              loaded ? "opacity-100" : "opacity-0"
-            } ${imageClassName}`}
+            className={`img-reveal object-cover ${imageClassName}`}
           />
         )}
 

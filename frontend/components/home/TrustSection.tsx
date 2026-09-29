@@ -19,7 +19,7 @@ export function TrustSection() {
           alt={IMAGE_ALTS.trust}
           decorative
           sizes="100vw"
-          className="absolute inset-0 h-full w-full"
+          className="absolute inset-0 h-full w-full opacity-[0.7]"
           imageClassName="object-center"
           fallbackClassName="bg-[linear-gradient(180deg,#0D131D_0%,#111925_50%,#070A0F_100%)]"
         />

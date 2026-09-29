@@ -1,21 +1,23 @@
 import type { Metadata } from "next";
 
+import { socialMetadata } from "@/lib/seo";
+
 import { ImageAsset } from "@/components/ImageAsset";
 import { Reveal } from "@/components/Reveal";
 import { Button, SectionLabel, SectionStatement } from "@/components/ui";
 import { ABOUT } from "@/lib/content";
-import { COMPANY_NAME, SITE_NAME } from "@/lib/constants";
+import { COMPANY_NAME, SITE_NAME, SITE_URL } from "@/lib/constants";
 import { IMAGE_ALTS, IMAGE_ASSETS } from "@/lib/images";
 
 export const metadata: Metadata = {
   title: "About",
   description:
     "Quantrelic Analytics Private Limited is building technology that makes financial information easier to understand and investing simpler for everyday investors.",
-  openGraph: {
+  ...socialMetadata({
     title: `About · ${SITE_NAME}`,
-    description:
-      "Quantrelic Analytics Private Limited is building technology that makes financial information easier to understand.",
-  },
+    description: "Quantrelic Analytics Private Limited is building technology that makes financial information easier to understand.",
+    url: `${SITE_URL}/about`,
+  }),
 };
 
 export default function AboutPage() {
@@ -29,14 +31,21 @@ export default function AboutPage() {
       </Reveal>
 
       <Reveal variant="scale" className="mt-10">
-        <ImageAsset
-          src={IMAGE_ASSETS.about}
-          alt={IMAGE_ALTS.about}
-          sizes="(min-width: 1240px) 1200px, 100vw"
-          className="h-[200px] w-full rounded-xl border border-line img-mask-bottom sm:h-[280px] lg:h-[340px]"
-          imageClassName="object-center"
-          fallback={<span className="micro absolute bottom-4 left-4">QRA · concept visual</span>}
-        />
+        {/* Editorial band: no border, and both edges dissolve into the page so
+            the photograph reads as depth rather than as a placed rectangle. */}
+        <div className="relative">
+          <ImageAsset
+            src={IMAGE_ASSETS.about}
+            alt={IMAGE_ALTS.about}
+            sizes="(min-width: 1240px) 1200px, 100vw"
+            className="h-[200px] w-full rounded-xl sm:h-[280px] lg:h-[340px]"
+            imageClassName="object-center"
+          />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-b from-ink-950/75 via-transparent to-ink-950"
+          />
+        </div>
       </Reveal>
 
       <div className="mt-12 grid gap-12 lg:grid-cols-[1.1fr_minmax(0,420px)] lg:gap-16">

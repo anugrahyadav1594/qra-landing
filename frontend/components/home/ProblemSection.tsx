@@ -29,11 +29,11 @@ export function ProblemSection() {
           alt={IMAGE_ALTS.informationOverload}
           decorative
           sizes="100vw"
-          className="absolute inset-0 h-full w-full img-mask-bottom"
+          className="absolute inset-0 h-full w-full img-mask-bottom opacity-[0.5]"
           imageClassName="object-center"
           fallbackClassName="bg-[linear-gradient(165deg,#111925_0%,#0D131D_58%,#070A0F_100%)]"
         />
-        <div className="absolute inset-0 bg-ink-900/55" />
+        <div className="absolute inset-0 bg-ink-900/70" />
       </div>
 
       <div ref={ref} data-phase={phase} className="relative">

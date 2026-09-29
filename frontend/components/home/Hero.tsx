@@ -18,7 +18,7 @@ export function Hero() {
       {/* Atmospheric layer — masked, dimmed, never a rectangle */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-y-0 right-0 w-full opacity-[0.6] lg:w-[64%]"
+        className="pointer-events-none absolute inset-y-0 right-0 w-full opacity-[0.32] lg:w-[64%] lg:opacity-[0.6]"
       >
         <ImageAsset
           src={IMAGE_ASSETS.hero}

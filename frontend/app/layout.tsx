@@ -4,6 +4,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/constants";
+import { socialMetadata } from "@/lib/seo";
 
 // Self-hosted variable fonts — offline-safe, no runtime font fetches.
 import "@fontsource-variable/inter";
@@ -19,27 +20,7 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
-  openGraph: {
-    type: "website",
-    siteName: SITE_NAME,
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
-    locale: "en_IN",
-    images: [
-      {
-        url: "/image.png",
-        width: 512,
-        height: 512,
-        alt: "Quantrelic Analytics logo",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary",
-    title: SITE_TITLE,
-    description: SITE_DESCRIPTION,
-    images: [{ url: "/image.png", alt: "Quantrelic Analytics logo" }],
-  },
+  ...socialMetadata({ title: SITE_TITLE, description: SITE_DESCRIPTION }),
   robots: { index: true, follow: true },
 };
 

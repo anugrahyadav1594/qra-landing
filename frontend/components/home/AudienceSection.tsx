@@ -24,14 +24,21 @@ export function AudienceSection() {
 
       <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,400px)_minmax(0,1fr)] lg:gap-16">
         <Reveal variant="scale">
-          <ImageAsset
-            src={IMAGE_ASSETS.investor}
-            alt={IMAGE_ALTS.investor}
-            sizes="(min-width: 1024px) 400px, 100vw"
-            className="aspect-[4/5] w-full rounded-xl border border-line img-mask-bottom"
-            imageClassName="object-center"
-            fallback={<span className="micro absolute bottom-4 left-4">QRA · concept visual</span>}
-          />
+          <div className="relative">
+            <ImageAsset
+              src={IMAGE_ASSETS.investor}
+              alt={IMAGE_ALTS.investor}
+              sizes="(min-width: 1024px) 400px, 100vw"
+              className="aspect-[4/5] w-full rounded-xl border border-line"
+              imageClassName="object-center"
+            />
+            {/* The portrait keeps its frame; only the bottom edge softens, for
+                the caption, so the card still reads as a deliberate object. */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-24 rounded-b-xl bg-gradient-to-t from-ink-950/85 to-transparent"
+            />
+          </div>
         </Reveal>
 
         <div>

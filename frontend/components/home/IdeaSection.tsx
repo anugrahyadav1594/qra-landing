@@ -13,7 +13,7 @@ export function IdeaSection() {
   return (
     <Section id="how-it-works" labelledBy="idea-heading" className="overflow-hidden">
       {/* Clarity, as atmosphere: the section where the picture settles */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[70%] opacity-[0.5]">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[70%] opacity-[0.55]">
         <ImageAsset
           src={IMAGE_ASSETS.clarity}
           alt={IMAGE_ALTS.clarity}

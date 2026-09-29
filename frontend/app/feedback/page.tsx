@@ -1,19 +1,22 @@
 import type { Metadata } from "next";
+
+import { socialMetadata } from "@/lib/seo";
 import Link from "next/link";
 
 import { FeedbackForm } from "@/components/FeedbackForm";
 import { SectionLabel } from "@/components/ui";
-import { SITE_NAME } from "@/lib/constants";
+import { SITE_NAME, SITE_URL } from "@/lib/constants";
 import { FEEDBACK_COPY } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Feedback",
   description:
     "Tell us what\u2019s broken, what\u2019s missing, or what you\u2019d like to see \u2014 a human reads every message.",
-  openGraph: {
-    title: `Feedback \u00b7 ${SITE_NAME}`,
-    description: "Tell us what\u2019s broken, what\u2019s missing, or what you\u2019d like to see.",
-  },
+  ...socialMetadata({
+    title: `Feedback · ${SITE_NAME}`,
+    description: "Tell us what is broken, what is missing, or what you would like to see.",
+    url: `${SITE_URL}/feedback`,
+  }),
 };
 
 export default function FeedbackPage() {

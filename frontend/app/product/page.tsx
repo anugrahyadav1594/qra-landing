@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 
+import { socialMetadata } from "@/lib/seo";
+
 import { ProductPreview } from "@/components/ProductPreview";
 import { Reveal } from "@/components/Reveal";
 import { WaitlistForm } from "@/components/WaitlistForm";
@@ -12,12 +14,11 @@ export const metadata: Metadata = {
   title: "Product",
   description:
     "QRA is being built to make the financial information behind an investment easier to understand — the business, the numbers, what changed and what could change the picture.",
-  openGraph: {
+  ...socialMetadata({
     title: `Product · ${SITE_NAME}`,
-    description:
-      "QRA is being built to make the financial information behind an investment easier to understand.",
+    description: "QRA is being built to make the financial information behind an investment easier to understand.",
     url: `${SITE_URL}/product`,
-  },
+  }),
 };
 
 export const dynamic = "force-dynamic";

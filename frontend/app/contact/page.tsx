@@ -1,25 +1,22 @@
 import type { Metadata } from "next";
+
+import { socialMetadata } from "@/lib/seo";
 import Link from "next/link";
 
 import { FeedbackForm } from "@/components/FeedbackForm";
 import { SectionLabel } from "@/components/ui";
-import {
-  COMPANY_NAME,
-  CONTACT_GENERAL_EMAIL,
-  SECURITY_CONTACT_EMAIL,
-  SITE_NAME,
-} from "@/lib/constants";
+import { COMPANY_NAME, CONTACT_GENERAL_EMAIL, SECURITY_CONTACT_EMAIL, SITE_NAME, SITE_URL } from "@/lib/constants";
 import { CONTACT_COPY } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Contact",
   description:
     "Contact Quantrelic Analytics — product questions, working with us, careers, or anything else. Use the form and we'll get back to you.",
-  openGraph: {
+  ...socialMetadata({
     title: `Contact · ${SITE_NAME}`,
-    description:
-      "Product questions, working with us, or something else — use the form and we'll get back to you.",
-  },
+    description: "Product questions, working with us, or something else - use the form and we will get back to you.",
+    url: `${SITE_URL}/contact`,
+  }),
 };
 
 export default function ContactPage() {

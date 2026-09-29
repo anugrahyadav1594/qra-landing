@@ -102,7 +102,7 @@ export function ClarityPanel() {
                   <span className="relative block h-px w-full bg-line-strong">
                     <span aria-hidden="true" className="phase-mark__tick absolute inset-0 block bg-brand-500" />
                   </span>
-                  <span className="mt-2 block text-[0.56rem] font-semibold uppercase leading-tight tracking-[0.12em] text-paper-faint">
+                  <span className="mt-2 block text-[0.62rem] font-semibold uppercase leading-tight tracking-[0.11em] text-paper-faint">
                     {phase}
                   </span>
                 </li>

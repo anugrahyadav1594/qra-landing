@@ -1,19 +1,22 @@
 import type { Metadata } from "next";
+
+import { socialMetadata } from "@/lib/seo";
 import Link from "next/link";
 
 import { apiGet } from "@/lib/api";
 import { SectionLabel } from "@/components/ui";
-import { SITE_NAME } from "@/lib/constants";
+import { SITE_NAME, SITE_URL } from "@/lib/constants";
 import { FALLBACK_POSTINGS } from "@/lib/seed";
 
 export const metadata: Metadata = {
   title: "Careers",
   description:
     "Open roles at Quantrelic Analytics \u2014 building QRA, technology that makes financial information easier to understand.",
-  openGraph: {
-    title: `Careers \u00b7 ${SITE_NAME}`,
+  ...socialMetadata({
+    title: `Careers · ${SITE_NAME}`,
     description: "Open roles at Quantrelic Analytics.",
-  },
+    url: `${SITE_URL}/careers`,
+  }),
 };
 
 export const dynamic = "force-dynamic";
