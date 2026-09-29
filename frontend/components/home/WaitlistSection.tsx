@@ -1,12 +1,23 @@
+import { QRADataField } from "@/components/QRADataField";
 import { Reveal } from "@/components/Reveal";
 import { WaitlistForm } from "@/components/WaitlistForm";
 import { Section, SectionLabel } from "@/components/ui";
 import { EARLY_ACCESS } from "@/lib/content";
 
+/**
+ * Early access — the end of the story.
+ *
+ * Every line the site has drawn converges here and then stops: the field is
+ * quiet, nothing behind the form moves, and the form itself is left alone. The
+ * calm is the design; after seven sections of motion it reads as resolution.
+ */
 export function WaitlistSection() {
   return (
-    <Section id="waitlist" labelledBy="waitlist-heading">
-      <div className="grid gap-12 lg:grid-cols-[1fr_minmax(0,520px)] lg:gap-20">
+    <Section id="waitlist" labelledBy="waitlist-heading" className="relative overflow-hidden">
+      {/* The convergence: scattered → one point, and then stillness. */}
+      <QRADataField variant="converge" intensity={0.55} density={0.6} speed={0.5} className="opacity-35" />
+
+      <div className="relative grid gap-12 lg:grid-cols-[1fr_minmax(0,520px)] lg:gap-20">
         <Reveal>
           <SectionLabel tone="brand">{EARLY_ACCESS.label}</SectionLabel>
           <h2
@@ -31,7 +42,7 @@ export function WaitlistSection() {
         </Reveal>
 
         <Reveal delay={120} variant="scale">
-          <div className="rounded-xl border border-line bg-ink-850/80 p-6 shadow-panel sm:p-7">
+          <div className="card-edge rounded-xl border border-line bg-ink-850/80 p-6 shadow-panel sm:p-7">
             <WaitlistForm />
           </div>
         </Reveal>

@@ -2,12 +2,11 @@ import type { Metadata } from "next";
 
 import { socialMetadata } from "@/lib/seo";
 
-import { ImageAsset } from "@/components/ImageAsset";
+import { QRADataField } from "@/components/QRADataField";
 import { Reveal } from "@/components/Reveal";
 import { Button, SectionLabel, SectionStatement } from "@/components/ui";
 import { ABOUT } from "@/lib/content";
 import { COMPANY_NAME, SITE_NAME, SITE_URL } from "@/lib/constants";
-import { IMAGE_ALTS, IMAGE_ASSETS } from "@/lib/images";
 
 export const metadata: Metadata = {
   title: "About",
@@ -31,20 +30,24 @@ export default function AboutPage() {
       </Reveal>
 
       <Reveal variant="scale" className="mt-10">
-        {/* Editorial band: no border, and both edges dissolve into the page so
-            the photograph reads as depth rather than as a placed rectangle. */}
-        <div className="relative">
-          <ImageAsset
-            src={IMAGE_ASSETS.about}
-            alt={IMAGE_ALTS.about}
-            sizes="(min-width: 1240px) 1200px, 100vw"
-            className="h-[200px] w-full rounded-xl sm:h-[280px] lg:h-[340px]"
-            imageClassName="object-center"
+        {/* The Quantrelic architecture: vertical spines, horizontal pathways and
+            nodes, constructing itself. No photograph — the same visual system
+            as every other section, in its most structural pose. */}
+        <div className="relative h-[220px] overflow-hidden rounded-xl border border-line sm:h-[280px] lg:h-[320px]">
+          <QRADataField
+            variant="structure"
+            density={1.3}
+            intensity={0.9}
+            autoPlay
+            className="opacity-90"
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-b from-ink-950/75 via-transparent to-ink-950"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950 via-transparent to-ink-950/60"
           />
+          <p className="micro absolute bottom-4 left-4 !tracking-[0.2em]">
+            Infrastructure for understanding
+          </p>
         </div>
       </Reveal>
 

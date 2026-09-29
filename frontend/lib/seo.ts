@@ -10,14 +10,16 @@
 import type { Metadata } from "next";
 
 import { SITE_NAME, SITE_URL } from "@/lib/constants";
-import { IMAGE_ALTS, IMAGE_ASSETS } from "@/lib/images";
 
-/** The hero visual doubles as the preview card; it is a local asset. */
+/**
+ * The brand mark is the only permanent image the site ships, so it is also the
+ * preview card. The generated photography is no longer referenced anywhere.
+ */
 const SOCIAL_IMAGE = {
-  url: IMAGE_ASSETS.hero,
-  width: 1600,
-  height: 900,
-  alt: IMAGE_ALTS.hero,
+  url: "/image.png",
+  width: 1774,
+  height: 887,
+  alt: `${SITE_NAME} logo`,
 };
 
 type SocialCopy = { title: string; description: string; url?: string };

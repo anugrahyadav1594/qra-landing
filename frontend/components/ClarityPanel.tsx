@@ -1,31 +1,70 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
+import { CountUp } from "@/components/CountUp";
 import { DirectionMark } from "@/components/ui";
 import { useScrollPhase } from "@/components/useScrollPhase";
 import { HERO_PANEL, ILLUSTRATIVE_LABEL } from "@/lib/content";
 
 /**
  * The hero's concept interface: the numbers, what they mean, and where they
- * came from — labelled, in that order, so the product explains itself.
+ * came from.
  *
- * Everything is a placeholder (₹XX,XXX Cr) and the panel says ILLUSTRATIVE
- * EXAMPLE: this is a preview of the product, never live market data.
+ * The sequencing is the point — the same order a person actually reads in:
  *
- * The panel also carries the site's signature interaction as a stepper:
- *   scattered → organized → explained → understood.
- * Scrolling advances the stage; only the stage changes on scroll, the movement
- * itself is CSS.
+ *   1  the label and the company
+ *   2  each figure steps up to its value, and its direction marker resolves
+ *   3  a trend line draws itself across the figures
+ *   4  "WHAT DOES THIS MEAN?" arrives
+ *   5  the source closes the loop
+ *
+ * Steps 1–4 happen once, when the panel enters. Step 5 (the four phase labels)
+ * is scroll-driven: scattered → organized → explained → understood.
+ *
+ * Everything is a placeholder and the panel says so: this is a concept
+ * interface, never live market data.
  */
 export function ClarityPanel() {
   const ref = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
   const stage = useScrollPhase(ref, HERO_PANEL.phases.length);
 
+  // The sequence starts when the panel is on screen, and always ends in the
+  // readable state — the timer is a ceiling, not a dependency.
+  useEffect(() => {
+    const element = ref.current;
+    const show = () => setReady(true);
+    if (!element || typeof IntersectionObserver === "undefined") {
+      show();
+      return;
+    }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      show();
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            show();
+            observer.disconnect();
+          }
+        }
+      },
+      { threshold: 0.25 },
+    );
+    observer.observe(element);
+    const guard = window.setTimeout(show, 2200);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(guard);
+    };
+  }, []);
+
   return (
-    <div ref={ref} data-stage={stage} className="relative">
-      {/* Financial grid backdrop, extremely restrained */}
-      <div aria-hidden="true" className="pointer-events-none absolute -inset-6 grid-backdrop opacity-60" />
+    <div ref={ref} data-stage={stage} data-ready={ready} className="relative">
+      <div aria-hidden="true" className="pointer-events-none absolute -inset-6 grid-backdrop opacity-50" />
 
       <div className="relative overflow-hidden rounded-xl border border-line bg-ink-900/90 shadow-panel backdrop-blur-xl">
         <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
@@ -35,33 +74,63 @@ export function ClarityPanel() {
           <span className="micro">{ILLUSTRATIVE_LABEL}</span>
         </div>
 
-        {/* The numbers */}
+        {/* Step 2: the figures resolve, one after another. */}
         <div className="px-5 py-3">
           {HERO_PANEL.metrics.map((metric, index) => (
             <div
               key={metric.label}
-              className="panel-metric seq flex items-baseline justify-between gap-4 border-b border-line-faint py-2.5 last:border-b-0"
-              style={{ "--d": `${80 + index * 90}ms` } as React.CSSProperties}
+              className="panel-metric flex items-baseline justify-between gap-4 border-b border-line-faint py-2.5 last:border-b-0"
             >
               <span className="text-sm text-paper-dim">{metric.label}</span>
               <span className="flex items-center gap-2.5">
-                <span className="value-placeholder font-mono text-sm">{metric.value}</span>
-                <DirectionMark direction={metric.direction} />
+                <span
+                  className="panel-value guard-in value-placeholder font-mono text-sm"
+                  style={{ "--d": `${200 + index * 140}ms` } as React.CSSProperties}
+                >
+                  <CountUp
+                    to={metric.figure}
+                    prefix="₹"
+                    suffix=" Cr"
+                    duration={900 + index * 90}
+                  />
+                </span>
+                <span
+                  className="panel-trend guard-in"
+                  style={{ "--d": `${320 + index * 140}ms` } as React.CSSProperties}
+                >
+                  <DirectionMark direction={metric.direction} />
+                </span>
               </span>
             </div>
           ))}
         </div>
 
-        {/* Precision line: the numbers are connected to their explanation */}
+        {/* Step 3: the trend line draws itself across the figures. */}
         <div className="px-5" aria-hidden="true">
-          <div className="seq h-6 w-px bg-line-strong" style={{ "--d": "620ms" } as React.CSSProperties} />
+          <svg viewBox="0 0 320 34" className="h-9 w-full" preserveAspectRatio="none">
+            <path
+              d="M2 28 L46 25 L92 26 L138 19 L184 21 L230 13 L276 10 L318 5"
+              fill="none"
+              stroke="#3F6FFF"
+              strokeWidth="1.25"
+              strokeLinecap="round"
+              className="chart-line"
+              style={{ "--len": 340, "--cd": "620ms" } as React.CSSProperties}
+            />
+            <path
+              d="M2 32 L318 32"
+              fill="none"
+              stroke="rgba(245,247,250,0.12)"
+              strokeWidth="1"
+            />
+          </svg>
         </div>
 
-        {/* What it means, then where it came from */}
+        {/* Step 4: the explanation. */}
         <div className="px-5 pb-5">
           <div
-            className="panel-meaning seq rounded-lg border border-line bg-ink-850/70 p-4"
-            style={{ "--d": "700ms" } as React.CSSProperties}
+            className="panel-meaning guard-in guard-in--up rounded-lg border border-line bg-ink-850/70 p-4"
+            style={{ "--d": "960ms" } as React.CSSProperties}
           >
             <p className="micro !text-brand-400">{HERO_PANEL.meaningLabel}</p>
             <ul className="mt-3 space-y-2">
@@ -74,9 +143,10 @@ export function ClarityPanel() {
             </ul>
           </div>
 
+          {/* Step 5: the source. */}
           <div
-            className="seq mt-4 flex items-center gap-2.5"
-            style={{ "--d": "960ms" } as React.CSSProperties}
+            className="panel-settled guard-in mt-4 flex items-center gap-2.5"
+            style={{ "--d": "1200ms" } as React.CSSProperties}
           >
             <span className="micro !tracking-[0.16em]">{HERO_PANEL.source.label}</span>
             <span className="h-px flex-1 bg-line" aria-hidden="true" />
@@ -86,7 +156,7 @@ export function ClarityPanel() {
           </div>
         </div>
 
-        {/* The signature interaction, named: complexity → clarity */}
+        {/* The signature interaction, named. */}
         <div className="border-t border-line px-5 py-4">
           <ol className="grid grid-cols-2 gap-x-5 gap-y-3 sm:grid-cols-4 sm:gap-x-3">
             {HERO_PANEL.phases.map((phase, index) => {
@@ -100,7 +170,10 @@ export function ClarityPanel() {
                   }`}
                 >
                   <span className="relative block h-px w-full bg-line-strong">
-                    <span aria-hidden="true" className="phase-mark__tick absolute inset-0 block bg-brand-500" />
+                    <span
+                      aria-hidden="true"
+                      className="phase-mark__tick absolute inset-0 block bg-brand-500"
+                    />
                   </span>
                   <span className="mt-2 block text-[0.62rem] font-semibold uppercase leading-tight tracking-[0.11em] text-paper-faint">
                     {phase}

@@ -95,7 +95,9 @@ export function Nav() {
       >
         <nav
           aria-label="Main"
-          className="mx-auto flex h-16 max-w-shell items-center gap-4 px-5 sm:px-6 lg:grid lg:h-[68px] lg:grid-cols-[1fr_auto_1fr] lg:gap-6"
+          className={`mx-auto flex max-w-shell items-center gap-4 px-5 transition-[height] duration-300 ease-editorial sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-6 ${
+            scrolled ? "h-[68px]" : "h-[68px] lg:h-20"
+          }`}
         >
           <Link
             href="/"
@@ -126,7 +128,7 @@ export function Nav() {
                   }}
                   onClick={(event) => handleSectionNav(event, link.sectionId)}
                   aria-current={active ? (link.sectionId ? "true" : "page") : undefined}
-                  className={`px-3 py-2 text-sm transition-colors duration-200 ${
+                  className={`px-3 py-2 text-sm transition-colors duration-300 ${
                     active ? "text-paper" : "text-paper-dim hover:text-paper"
                   }`}
                 >
@@ -207,11 +209,11 @@ export function Nav() {
       <div
         id="mobile-menu"
         hidden={!menuOpen}
-        className={`fixed inset-0 top-16 z-40 lg:hidden ${
+        className={`fixed inset-0 z-40 lg:hidden ${scrolled ? "top-[68px]" : "top-[68px] lg:top-20"} ${
           menuOpen ? "pointer-events-auto" : "pointer-events-none"
         }`}
       >
-        <div className="flex h-full flex-col justify-between overflow-y-auto bg-ink-950/95 px-5 pb-10 pt-8 backdrop-blur-xl sm:px-6">
+        <div className="flex h-full flex-col justify-between overflow-y-auto bg-ink-950/96 px-5 pb-10 pt-8 backdrop-blur-xl sm:px-6">
           <div className="space-y-1">
             {[...NAV_LINKS, ...SECONDARY_LINKS].map((link, index) => {
               const active = isActive(link.href, link.sectionId);

@@ -7,6 +7,15 @@
  * is pre-launch, and all interface data is clearly marked as illustrative.
  */
 
+/* ── Opening sequence ───────────────────────────────────────────────── */
+
+export const LOADER = {
+  wordmark: "Quantrelic Analytics",
+  name: "QUANTRELIC",
+  tagline: "Making investing simpler for the masses.",
+  announcement: "Loading Quantrelic Analytics.",
+};
+
 export const ILLUSTRATIVE_LABEL = "Illustrative example";
 export const CONCEPT_LABEL = "Concept interface";
 
@@ -28,12 +37,14 @@ export type Direction = "up" | "down" | "flat";
 
 export const HERO_PANEL = {
   company: "RELIANCE INDUSTRIES",
+  /* Round placeholders — see the disclaimer under the panel. They are the
+     resting state of the animation, not a claim about any company. */
   metrics: [
-    { label: "Revenue", value: "₹XX,XXX Cr", direction: "up" },
-    { label: "Profit", value: "₹XX,XXX Cr", direction: "up" },
-    { label: "Debt", value: "₹XX,XXX Cr", direction: "down" },
-    { label: "Cash flow", value: "₹XX,XXX Cr", direction: "up" },
-  ] as { label: string; value: string; direction: Direction }[],
+    { label: "Revenue", figure: 40000, direction: "up" },
+    { label: "Profit", figure: 6000, direction: "up" },
+    { label: "Debt", figure: 12000, direction: "down" },
+    { label: "Cash flow", figure: 5000, direction: "up" },
+  ] as { label: string; figure: number; direction: Direction }[],
   meaningLabel: "What does this mean?",
   meaning: ["Revenue has grown steadily while margins have changed with costs."],
   /** The signature interaction, named: complexity becoming understanding. */
@@ -96,7 +107,15 @@ export type ProductTab = {
   question: string;
   summary: string[];
   metrics?: { label: string; value: string; direction: Direction }[];
-  source: { label: string; detail: string };
+  source: {
+    label: string;
+    detail: string;
+    /** Where in the document the explanation comes from. */
+    page: string;
+    section: string;
+    /** The figures the explanation was built from. */
+    used: string[];
+  };
 };
 
 export const PRODUCT = {
@@ -120,6 +139,9 @@ export const PRODUCT = {
       ],
       source: {
         label: "Annual Report · FY25",
+        page: "84",
+        section: "Segment reporting",
+        used: ["Revenue by segment", "Segment share"],
         detail: "Segment reporting section — how the company describes its own businesses.",
       },
     },
@@ -139,6 +161,9 @@ export const PRODUCT = {
       ],
       source: {
         label: "Financial statements",
+        page: "112",
+        section: "Consolidated Statement of Profit and Loss",
+        used: ["Revenue", "Operating profit", "Cash flow"],
         detail: "The statement of profit and loss — the document every listed company publishes each quarter.",
       },
     },
@@ -152,6 +177,9 @@ export const PRODUCT = {
       ],
       source: {
         label: "Results presentation",
+        page: "18",
+        section: "Management commentary",
+        used: ["Volumes", "Realisation", "Capacity"],
         detail: "Management commentary on plans, capacity and outlook — context, not a forecast.",
       },
     },
@@ -165,6 +193,9 @@ export const PRODUCT = {
       ],
       source: {
         label: "Risk disclosures",
+        page: "220",
+        section: "Principal risks and uncertainties",
+        used: ["Input costs", "Project execution"],
         detail: "The risks a listed company is required to set out in its report — read in the company’s own words.",
       },
     },
@@ -178,6 +209,9 @@ export const PRODUCT = {
       ],
       source: {
         label: "Exchange filings",
+        page: "—",
+        section: "Recent disclosures to the exchange",
+        used: ["Filing dates", "Announcements"],
         detail: "Disclosures filed with the stock exchange — the primary record of what a company has told the market.",
       },
     },

@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
 
 import { AuthProvider } from "@/components/AuthProvider";
+import { Cursor } from "@/components/Cursor";
 import { Footer } from "@/components/Footer";
+import { INTRO_BOOTSTRAP, Loader } from "@/components/Loader";
 import { Nav } from "@/components/Nav";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/constants";
 import { socialMetadata } from "@/lib/seo";
@@ -33,6 +35,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className="flex min-h-screen flex-col bg-ink-950">
+        {/* Runs before the rest of the body is parsed: decides whether the
+            opening sequence plays, and delays the hero by the same amount. */}
+        <script dangerouslySetInnerHTML={{ __html: INTRO_BOOTSTRAP }} />
+
+        <Loader />
+        <Cursor />
+
         {/* ClerkProvider goes inside <body> — never wraps <html> (Clerk docs). */}
         <AuthProvider>
           <Nav />
