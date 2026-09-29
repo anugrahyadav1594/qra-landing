@@ -211,8 +211,13 @@ export function QRALoader() {
           <p className="qra-loader__tagline">{LOADER.tagline}</p>
         </div>
 
-        <p className="sr-only">{LOADER.announcement}</p>
       </div>
+
+      {/* Announced outside the hidden overlay, so the sequence is described
+          once without exposing its decorative structure to assistive tech. */}
+      <p role="status" className="sr-only">
+        {LOADER.announcement}
+      </p>
     </div>
   );
 }

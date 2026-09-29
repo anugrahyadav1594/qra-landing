@@ -26,6 +26,7 @@ import { useEffect, useRef } from "react";
 
 import { deviceTier, EASE, MS, prefersReducedMotion } from "@/lib/motion";
 
+import { observeOnScreen } from "./screen-observer";
 import { useScrollScene } from "./useScrollScene";
 
 export type AtmosphereVariant =
@@ -121,6 +122,17 @@ export function QRAAtmosphere({
       },
     );
   }, [variant]);
+
+  // Continuous motion only while visible. The attribute is only ever written to
+  // stop the breathing, so a page without JavaScript keeps a still image rather
+  // than an invisible one.
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    return observeOnScreen(element, (onScreen) => {
+      element.dataset.onscreen = onScreen ? "true" : "false";
+    });
+  }, []);
 
   // Pointer response: a couple of pixels, written straight to the element.
   useEffect(() => {

@@ -996,6 +996,12 @@ html[data-cursor="custom"] [contenteditable="true"] {
   animation-delay: calc(var(--intro-delay, 0ms) + 240ms), 0s;
 }
 
+/* Off screen, nothing is animating: the compositor is not asked to keep seven
+   breathing images alive behind the page. */
+.qra-atmosphere[data-onscreen="false"] .qra-atmosphere__image {
+  animation-play-state: paused;
+}
+
 @keyframes atmosphere-intro {
   from {
     opacity: 0;
@@ -1036,6 +1042,26 @@ html[data-cursor="custom"] [contenteditable="true"] {
 /* Each section frames a different part of its environment. */
 .qra-atmosphere[data-variant="hero"] .qra-atmosphere__image {
   object-position: 62% 50%;
+}
+
+/* The hero's environment is read from the left, where the headline sits: the
+   image is allowed to show on the right, behind the interface, and is pulled
+   almost entirely into the background on the text side. */
+.qra-atmosphere[data-variant="hero"] .qra-atmosphere__wash {
+  background:
+    linear-gradient(
+      92deg,
+      rgba(7, 10, 15, 0.97) 0%,
+      rgba(7, 10, 15, 0.88) 38%,
+      rgba(7, 10, 15, 0.5) 62%,
+      rgba(7, 10, 15, 0.68) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(7, 10, 15, 0.92) 0%,
+      rgba(7, 10, 15, 0.3) 45%,
+      rgba(7, 10, 15, 0.95) 100%
+    );
 }
 
 .qra-atmosphere[data-variant="problem"] .qra-atmosphere__image {
