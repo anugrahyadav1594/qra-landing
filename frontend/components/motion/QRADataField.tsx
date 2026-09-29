@@ -310,12 +310,14 @@ export function QRADataField({
         ctx.stroke();
       }
 
-      // Connections, batched by alpha bucket.
+      // Connections, batched by alpha bucket. The band is deliberately narrow
+      // (0.05–0.17 before intensity): these lines are the texture of the page,
+      // never a feature of it.
       ctx.lineWidth = 1;
       for (let bucket = 0; bucket < EDGE_BUCKETS; bucket += 1) {
         const lower = bucket / EDGE_BUCKETS;
         const upper = (bucket + 1) / EDGE_BUCKETS;
-        ctx.globalAlpha = (0.05 + 0.16 * upper) * intensity;
+        ctx.globalAlpha = (0.05 + 0.12 * upper) * intensity;
         ctx.strokeStyle = `rgb(${rgb.r},${rgb.g},${rgb.b})`;
         ctx.beginPath();
         for (const edge of edges) {
