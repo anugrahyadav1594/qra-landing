@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { socialMetadata } from "@/lib/seo";
 
 import { ProductPreview } from "@/components/ProductPreview";
+import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { QRAReveal } from "@/components/motion/QRAReveal";
 import { WaitlistForm } from "@/components/WaitlistForm";
 import { Button, SectionLabel } from "@/components/ui";
@@ -42,10 +43,15 @@ export default async function ProductPage() {
     data.products.find((candidate) => candidate.slug === "qra") ?? data.products[0] ?? FALLBACK_PRODUCT;
 
   return (
-    <div className="relative">
+    <div className="relative overflow-hidden">
+      {/* The page continues the product section's environment rather than
+          starting a new one: same layer stack, same restraint. */}
+      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-[620px]">
+        <QRAAtmosphere variant="product" />
+      </div>
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-[520px] grid-backdrop" />
 
-      <div className="relative mx-auto max-w-shell px-5 pb-20 pt-14 sm:px-6 sm:pt-20">
+      <div className="relative z-10 mx-auto max-w-shell px-5 pb-20 pt-14 sm:px-6 sm:pt-20">
         <div className="grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:items-end lg:gap-16">
           <div>
             <SectionLabel tone="brand">The product</SectionLabel>

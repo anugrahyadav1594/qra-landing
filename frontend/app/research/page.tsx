@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { socialMetadata } from "@/lib/seo";
 
+import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { QRAReveal } from "@/components/motion/QRAReveal";
 import { Button, DataCard, SectionLabel, SectionStatement } from "@/components/ui";
 import { EVIDENCE, HOW_IT_WORKS } from "@/lib/content";
@@ -21,8 +22,13 @@ export const metadata: Metadata = {
 /** How it works: one sentence and one visual per step. */
 export default function HowItWorksPage() {
   return (
-    <div className="mx-auto max-w-shell px-5 pb-20 pt-14 sm:px-6 sm:pt-20">
-      <QRAReveal>
+    <div className="relative overflow-hidden">
+      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-[520px]">
+        <QRAAtmosphere variant="idea" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-shell px-5 pb-20 pt-14 sm:px-6 sm:pt-20">
+        <QRAReveal>
         <div className="max-w-3xl">
           <SectionLabel tone="brand">{HOW_IT_WORKS.eyebrow}</SectionLabel>
           <SectionStatement
@@ -82,6 +88,7 @@ export default function HowItWorksPage() {
           does not make decisions for anyone.
         </p>
       </QRAReveal>
+      </div>
     </div>
   );
 }

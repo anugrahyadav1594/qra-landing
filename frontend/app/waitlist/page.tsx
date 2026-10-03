@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { socialMetadata } from "@/lib/seo";
 
+import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { WaitlistForm } from "@/components/WaitlistForm";
 import { SectionLabel, SectionStatement } from "@/components/ui";
 import { COMPANY_NAME, PRODUCT_NAME, SITE_NAME, SITE_URL } from "@/lib/constants";
@@ -20,7 +21,14 @@ export const metadata: Metadata = {
 
 export default function WaitlistPage() {
   return (
-    <div className="mx-auto max-w-shell px-5 pb-20 pt-14 sm:px-6 sm:pt-20">
+    <div className="relative overflow-hidden">
+      {/* The last environment: the same convergence the landing page ends on.
+          The form itself is left completely alone. */}
+      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-[560px]">
+        <QRAAtmosphere variant="waitlist" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-shell px-5 pb-20 pt-14 sm:px-6 sm:pt-20">
       <div className="grid gap-12 lg:grid-cols-[1fr_minmax(0,520px)] lg:gap-20">
         <div>
           <SectionLabel tone="brand">{WAITLIST_PAGE.eyebrow}</SectionLabel>
@@ -46,6 +54,7 @@ export default function WaitlistPage() {
         <div className="rounded-xl border border-line bg-ink-850/80 p-6 shadow-panel sm:p-7">
           <WaitlistForm />
         </div>
+      </div>
       </div>
     </div>
   );

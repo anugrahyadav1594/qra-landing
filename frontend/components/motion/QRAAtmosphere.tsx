@@ -197,7 +197,7 @@ export function QRAAtmosphere({
 
 /** Calibrated so the environment is felt rather than seen. */
 const DEFAULT_OPACITY: Record<AtmosphereVariant, number> = {
-  hero: 0.3,
+  hero: 0.26,
   problem: 0.22,
   idea: 0.16,
   product: 0.14,

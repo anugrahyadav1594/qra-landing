@@ -23,7 +23,9 @@
  * 2. The decision is made before paint. A tiny inline script in the layout
  *    writes `data-intro` on <html>: "skip" for a returning visitor, "reduce"
  *    when motion is not wanted, "play" otherwise. CSS then shows or hides the
- *    overlay accordingly — no hydration-dependent flicker.
+ *    overlay accordingly — no hydration-dependent flicker. A returning visitor
+ *    is skipped entirely rather than given a shorter sequence: the opening is a
+ *    first impression, not a toll on every page in a session.
  */
 
 import { useEffect, useState } from "react";
@@ -37,7 +39,6 @@ const SEEN_KEY = "qra-loader-seen";
 /** Timings (ms) — the whole sequence stays under 2.5s. */
 const TIMING = {
   full: 2350,
-  short: 420,
   reduced: 520,
   /** Hard ceiling: whatever happens, the overlay is gone by now. */
   timeout: 3800,
