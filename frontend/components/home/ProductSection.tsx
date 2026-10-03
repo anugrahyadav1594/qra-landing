@@ -27,12 +27,15 @@ export function ProductSection() {
         </div>
       </QRAReveal>
 
-      <QRAReveal delay={120} variant="scale" className="mt-12">
+      {/* The product interface, with the room to be the subject of the page:
+          a wider gap above it than below, so the hierarchy reads as
+          statement → interface → next step. */}
+      <QRAReveal delay={120} variant="scale" className="mt-16 lg:mt-20">
         <ProductPreview />
       </QRAReveal>
 
       <QRAReveal delay={80}>
-        <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center">
+        <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center lg:mt-12">
           <Button href="/product" variant="outline">
             See the full product page
           </Button>

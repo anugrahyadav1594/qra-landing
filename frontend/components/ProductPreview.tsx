@@ -262,7 +262,7 @@ export function ProductPreview({ className = "" }: { className?: string }) {
 
   return (
     <div
-      className={`overflow-hidden rounded-xl border border-line bg-ink-850/90 shadow-panel ${className}`}
+      className={`panel-float overflow-hidden rounded-xl border border-line-strong bg-ink-900/92 backdrop-blur-xl ${className}`}
       data-cursor="focus"
     >
       {/* Header */}

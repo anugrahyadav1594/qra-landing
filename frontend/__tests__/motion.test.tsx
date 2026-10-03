@@ -15,6 +15,8 @@ import {
 } from "@/components/motion/QRALoader";
 import { ProductPreview } from "@/components/ProductPreview";
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { QRAArchitecture } from "@/components/motion/QRAArchitecture";
+import { QRAProcessDiagram } from "@/components/motion/QRAProcessDiagram";
 import { QRAReveal } from "@/components/motion/QRAReveal";
 import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
 import { TextReveal } from "@/components/motion/TextReveal";
@@ -274,5 +276,31 @@ describe("product figures", () => {
     // The outgoing answer is still leaving the frame, but it is not the live
     // one: the panel you read from carries only the current question's figures.
     expect(panel.queryByText("₹1,24,300 Cr")).not.toBeInTheDocument();
+  });
+});
+
+describe("pre-rendered graphics", () => {
+  it("names the three stages of the process route", () => {
+    render(<QRAProcessDiagram />);
+    for (const stage of ["Find", "Explain", "Understand"]) {
+      expect(screen.getByText(stage)).toBeInTheDocument();
+    }
+  });
+
+  it("draws the process route as one normalised path", () => {
+    const { container } = render(<QRAProcessDiagram />);
+    const route = container.querySelector("[data-route]");
+    // pathLength=1 means progress is one number, and the plan underneath keeps
+    // the whole route readable even before it is drawn.
+    expect(route).toHaveAttribute("pathLength", "1");
+    expect(container.querySelector(".qra-process__plan")).not.toBeNull();
+  });
+
+  it("draws the architecture as geometry rather than a simulation", () => {
+    const { container } = render(<QRAArchitecture />);
+    const svg = container.querySelector(".qra-architecture");
+    expect(svg).toHaveAttribute("data-ready", "false");
+    expect(container.querySelectorAll(".qra-architecture__spines line").length).toBe(6);
+    expect(container.querySelector(".qra-architecture__pathway")).not.toBeNull();
   });
 });

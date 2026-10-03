@@ -36,12 +36,12 @@ import { LOADER } from "@/lib/content";
 export const INTRO_ATTRIBUTE = "data-intro";
 const SEEN_KEY = "qra-loader-seen";
 
-/** Timings (ms) — the whole sequence stays under 2.5s. */
+/** Timings (ms) — the whole sequence is inside the brief: 1.5–2s. */
 const TIMING = {
   full: 1900,
   reduced: 520,
   /** Hard ceiling: whatever happens, the overlay is gone by now. */
-  timeout: 3800,
+  timeout: 2600,
 };
 
 /** How long the hero waits for the sequence (a beat before it ends). */

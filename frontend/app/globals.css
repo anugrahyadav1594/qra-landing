@@ -314,8 +314,9 @@ html[data-intro="skip"] .qra-loader {
   background: #05080d;
   color: #f5f7fa;
   overflow: hidden;
-  /* CSS-only hard ceiling: whatever happens next, this clears the screen. */
-  animation: loader-guard 0s linear 3.6s forwards;
+  /* CSS-only hard ceiling: whatever happens next, this clears the screen. One
+     beat past the sequence, because a guard that fires late is a blank screen. */
+  animation: loader-guard 0s linear calc(var(--loader-dur) + 700ms) forwards;
 }
 
 @keyframes loader-guard {
@@ -1106,6 +1107,73 @@ html[data-cursor="custom"] [contenteditable="true"] {
   }
 }
 
+/* ── Process route (components/motion/QRAProcessDiagram.tsx) ─────────── */
+
+/* Path length 1 via pathLength="1": the dash is the whole route, so progress is
+   a single normalised number rather than a measurement. */
+.qra-process__plan,
+.qra-process__route {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.qra-process__plan {
+  stroke: rgba(245, 247, 250, 0.07);
+  stroke-width: 1;
+}
+
+.qra-process__route {
+  stroke: rgba(111, 148, 255, 0.5);
+  stroke-width: 1.25;
+  stroke-dasharray: 1;
+  /* Undrawn until the scroll scene says otherwise. */
+  stroke-dashoffset: 1;
+}
+
+[data-still="true"] .qra-process__route {
+  stroke-dashoffset: 0;
+}
+
+.qra-process__ring {
+  fill: none;
+  stroke: rgba(111, 148, 255, 0.24);
+  stroke-width: 1;
+}
+
+.qra-process__node {
+  fill: var(--token-brand, #3f6fff);
+}
+
+.qra-process__tick {
+  stroke: rgba(245, 247, 250, 0.16);
+  stroke-width: 1;
+}
+
+.qra-process__dot {
+  fill: rgba(154, 168, 186, 0.7);
+}
+
+.qra-process__link {
+  stroke: rgba(245, 247, 250, 0.1);
+  stroke-width: 1;
+}
+
+.qra-process__word {
+  fill: rgba(245, 247, 250, 0.2);
+}
+
+.qra-process__word--lead {
+  fill: rgba(245, 247, 250, 0.34);
+}
+
+@media (max-width: 767px) {
+  /* Three columns of prose do not fit at this width; the graphic stays, the
+     captions go. */
+  .qra-process__caption {
+    display: none;
+  }
+}
+
 /* ── Architecture drawing (components/motion/QRAArchitecture.tsx) ───── */
 
 /* A structure described once, as geometry. Every element's dash offset is
@@ -1308,7 +1376,8 @@ html[data-cursor="custom"] [contenteditable="true"] {
   }
 
   .qra-architecture line,
-  .qra-architecture path {
+  .qra-architecture path,
+  .qra-process__route {
     stroke-dashoffset: 0 !important;
   }
 
