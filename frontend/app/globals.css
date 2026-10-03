@@ -1212,7 +1212,6 @@ html[data-cursor="custom"] [contenteditable="true"] {
     animation-delay: 0ms !important;
   }
 
-  .loader-metric,
   .metric-resolve {
     animation: none !important;
     opacity: 1 !important;
