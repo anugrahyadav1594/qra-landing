@@ -48,7 +48,7 @@ const IMAGES: Record<AtmosphereVariant, string> = {
   problem: "/images/qra-information-overload.webp",
   idea: "/images/qra-clarity.webp",
   product: "/images/qra-clarity.webp",
-  investor: "/images/qra-investor.webp",
+  investor: "/motion/investors-mesh.webp",
   trust: "/images/qra-trust.webp",
   about: "/images/qra-about.webp",
   waitlist: "/images/qra-clarity.webp",
@@ -69,6 +69,16 @@ const LOOPS: Partial<Record<AtmosphereVariant, { webm: string; mp4: string; post
     mp4: "/motion/waitlist.mp4",
     poster: "/motion/waitlist-poster.webp",
   },
+  problem: {
+    webm: "/motion/problem-flood.webm",
+    mp4: "/motion/problem-flood.mp4",
+    poster: "/motion/problem-flood-poster.webp",
+  },
+  idea: {
+    webm: "/motion/idea-flow.webm",
+    mp4: "/motion/idea-flow.mp4",
+    poster: "/motion/idea-flow-poster.webp",
+  },
 };
 
 export function QRAAtmosphere({
@@ -77,6 +87,7 @@ export function QRAAtmosphere({
   speed = 1,
   opacity,
   image,
+  drift = true,
   className = "",
 }: {
   variant: AtmosphereVariant;
@@ -88,6 +99,8 @@ export function QRAAtmosphere({
   opacity?: number;
   /** Override the environment image. */
   image?: string;
+  /** Run the variant's scroll drift. Off when a parent stage drives the motion. */
+  drift?: boolean;
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -103,8 +116,8 @@ export function QRAAtmosphere({
   // one environment rather than six effects.
   useScrollScene(ref, ({ gsap }) => {
     const scope = ref.current;
-    const drift = driftRef.current;
-    if (!scope || !drift) return;
+    const drifting = driftRef.current;
+    if (!drift || !scope || !drifting) return;
 
     const recipes: Record<AtmosphereVariant, gsap.TweenVars> = {
       hero: { from: { y: 14 }, to: { y: -32 } },
@@ -119,7 +132,7 @@ export function QRAAtmosphere({
 
     const recipe = recipes[variant];
     gsap.fromTo(
-      drift,
+      drifting,
       { ...recipe.from, transformOrigin: "50% 50%" },
       {
         ...recipe.to,
@@ -132,7 +145,7 @@ export function QRAAtmosphere({
         },
       },
     );
-  }, [variant]);
+  }, [variant, drift]);
 
   // Playback is a privilege, not an assumption: a desktop-class device, a
   // connection that is not deliberately slow, and motion that has not been
@@ -214,8 +227,15 @@ export function QRAAtmosphere({
                 aria-hidden="true"
                 tabIndex={-1}
               >
-                <source src={loop.webm} type="video/webm" />
+                {/* MP4 first, on the numbers rather than on convention: these
+                    loops are encoded by scripts/render-graphics.py and
+                    scripts/render-motion.py, and H.264 comes out several times
+                    smaller than VP9 in realtime mode (the only mode that fits in
+                    this build environment) while being hardware-decoded
+                    everywhere. WebM stays as the fallback for anything without
+                    H.264. */}
                 <source src={loop.mp4} type="video/mp4" />
+                <source src={loop.webm} type="video/webm" />
               </video>
             )}
           </>
@@ -244,10 +264,10 @@ export function QRAAtmosphere({
 /** Calibrated so the environment is felt rather than seen. */
 const DEFAULT_OPACITY: Record<AtmosphereVariant, number> = {
   hero: 0.34,
-  problem: 0.22,
-  idea: 0.16,
+  problem: 0.42,
+  idea: 0.3,
   product: 0.14,
-  investor: 0.2,
+  investor: 0.34,
   trust: 0.16,
   about: 0.24,
   waitlist: 0.3,

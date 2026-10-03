@@ -3,38 +3,51 @@
 import { useEffect, useRef, useState } from "react";
 
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
-import { QRAReveal } from "@/components/motion/QRAReveal";
 import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
 import { Section, SectionLabel, SectionStatement } from "@/components/ui";
 import { useScrollScene } from "@/components/motion/useScrollScene";
 import { PROBLEM } from "@/lib/content";
 
 /**
- * The problem — the site's signature sequence.
+ * THE PROBLEM — information arriving from everywhere.
  *
- * Seven sources of financial information are scattered across the stage. As the
- * section is scrolled they drift, overlap and pile up until the information is
- * unreadable, everything stops, two statements land, and then the whole field
- * converges on a single node.
+ * The stage is a pre-rendered film: ninety documents drifting in three depth
+ * layers, made in scripts/render-graphics.py and encoded to a seamless loop. It
+ * plays continuously, on the compositor, while the scroll choreographs only the
+ * seven readable fragments on top of it.
  *
- * Everything readable is HTML; the field behind it is canvas. The animation is
- * built with `gsap.from()`, which means the authored markup is the *finished*
- * state: with reduced motion, without JavaScript, or before the scene loads,
- * the section simply reads as a tidy summary.
+ * The sequence is the section's argument, in order:
  *
- * The scroll length lives on the wrapper rather than on the section, because a
- * pinned box can only travel inside a parent taller than itself, and the
- * section's own container is exactly content-height. Pinning is desktop-only:
- * on small screens the sequence plays out as the page scrolls instead.
+ *   quiet      the seven sources sit in a readable row
+ *   1          they drift out of line and crowd each other
+ *   2          "Too much information." lands on top of the pile
+ *   3          everything stops — a real hold, so the freeze registers
+ *   4          the pile converges on one node, and the film recedes
+ *   5          "Not enough clarity." resolves; the node is what is left
+ *
+ * Built with gsap.fromTo so the authored markup is the *settled* state: with
+ * reduced motion, without JavaScript, or before the scene loads, the section
+ * reads as a tidy row of sources and a node — the argument, still.
  */
+
+/** Where each fragment drifts to when the pile loses its order. */
+const SCATTER: Array<[number, number, number]> = [
+  [86, -74, -7],
+  [-98, -46, 5],
+  [64, 58, 8],
+  [-72, 74, -4],
+  [118, 12, 6],
+  [-56, -92, -9],
+  [42, 96, 3],
+];
+
 export function ProblemSection() {
   const ref = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(false);
+  const [choreographed, setChoreographed] = useState(false);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    // The stage is only tall enough to choreograph once we know we can.
-    setActive(true);
+    setChoreographed(true);
   }, []);
 
   useScrollScene(
@@ -43,199 +56,167 @@ export function ProblemSection() {
       const scope = ref.current;
       if (!scope) return;
 
-      const fragments = scope.querySelectorAll("[data-fragment]");
-      // The pinned box is the wrapper's first child; the sequence is timed to
-      // end exactly where the pin releases, so the resolved composition is what
-      // stays on screen. Below lg nothing is pinned, so the scene plays out over
-      // the section's own travel instead.
+      const stage = scope.querySelector("[data-stage]");
+      const fragments = gsap.utils.toArray<HTMLElement>("[data-fragment]", scope);
       const pinned = scope.firstElementChild as HTMLElement | null;
-      const tall = window.matchMedia("(min-width: 1024px)").matches && pinned !== null;
+      const wide = window.matchMedia("(min-width: 1024px)").matches;
+      // On a phone the scattered offsets are halved: the stage is narrower, and
+      // fragments that leave it read as broken rather than as crowded.
+      const reach = wide ? 1 : 0.5;
+
       const timeline = gsap.timeline({
         defaults: { ease: "none" },
-        scrollTrigger: tall
-          ? {
-              trigger: scope,
-              start: "top 80px",
-              end: () => `+=${Math.max(1, scope.offsetHeight - (pinned?.offsetHeight ?? 0))}`,
-              scrub: 0.6,
-            }
-          : {
-              trigger: scope,
-              start: "top 80%",
-              end: "bottom 45%",
-              scrub: 0.6,
-            },
+        scrollTrigger: {
+          trigger: scope,
+          start: wide ? "top 64px" : "top 74%",
+          end: wide
+            ? () => `+=${Math.max(1, scope.offsetHeight - (pinned?.offsetHeight ?? 0))}`
+            : "bottom 60%",
+          scrub: 0.7,
+        },
       });
 
-      // 1 — the seven sources arrive, in order, slowly. Nothing flies in: the
-      //     pile is legible here, which is what makes this a statement about
-      //     volume rather than a decorative mess.
-      timeline.from(fragments, {
-        opacity: 0,
-        y: 24,
-        scale: 0.985,
-        duration: 0.9,
-        stagger: { each: 0.09, from: "start" },
-      });
-
-      // 2 — they begin to overlap as the page moves past them.
+      // 1 — the pile loses its order. Fragments move out of the row, tilt, and
+      //     brighten as they crowd: the same seven things, no longer readable.
       timeline.to(
         fragments,
         {
-          x: () => gsap.utils.random(-34, 34),
-          y: () => gsap.utils.random(-18, 18),
-          rotate: () => gsap.utils.random(-3, 3),
-          duration: 1.1,
-          stagger: { each: 0.03, from: "start" },
+          xPercent: (index: number) => SCATTER[index % SCATTER.length][0] * reach,
+          yPercent: (index: number) => SCATTER[index % SCATTER.length][1] * reach,
+          rotate: (index: number) => SCATTER[index % SCATTER.length][2] * reach,
+          borderColor: "rgba(245,247,250,0.30)",
+          backgroundColor: "rgba(21,30,42,1)",
+          duration: 1.4,
+          stagger: { each: 0.06, from: "center" },
+        },
+        0,
+      );
+
+      // The film comes forward as the pile does.
+      timeline.to("[data-flood]", { opacity: 1, scale: 1.03, duration: 1.2 }, 0.2);
+
+      // 2 — the statement lands while the pile is at its worst.
+      timeline.fromTo(
+        "[data-overload]",
+        { opacity: 0, y: 18 },
+        { opacity: 1, y: 0, duration: 0.7 },
+        1.15,
+      );
+
+      // 3 — everything stops. A hold with no movement at all, which is the only
+      //     way a pause reads as deliberate rather than as a dropped frame.
+      timeline.to({}, { duration: 0.85 });
+      timeline.to("[data-overload]", { opacity: 0, duration: 0.5 });
+
+      // 4 — convergence: the pile returns to one line, dims, and the film
+      //     recedes behind the resolved frame.
+      timeline.to(
+        fragments,
+        {
+          xPercent: 0,
+          yPercent: 0,
+          rotate: 0,
+          opacity: 0.16,
+          duration: 1.2,
+          stagger: { each: 0.04, from: "edges" },
         },
         ">-0.2",
       );
+      timeline.to("[data-flood]", { opacity: 0.45, scale: 1, duration: 1.2 }, "<");
 
-      // 3 — density. The gaps close and the pile stops being readable: still
-      //     the same seven sources, just too many of them in one place.
-      timeline.to(fragments, {
-        x: 0,
-        y: 0,
-        rotate: 0,
-        scale: 0.97,
-        borderColor: "rgba(245,247,250,0.24)",
-        duration: 1,
-        stagger: { each: 0.02, from: "end" },
-      });
-
-      // 4 — everything stops. A deliberate hold, so the freeze registers.
-      timeline.to({}, { duration: 0.6 });
-      timeline.fromTo("[data-overload]", { opacity: 0 }, { opacity: 1, duration: 0.7 });
-      timeline.to({}, { duration: 0.8 });
-      timeline.to("[data-overload]", { opacity: 0, duration: 0.5 });
-      timeline.fromTo("[data-clarity]", { opacity: 0 }, { opacity: 1, duration: 0.7 });
-
-      // 5 — the pause. Negative space is part of the argument, so it gets real
-      //     time on the timeline: the frame goes almost empty first.
-      timeline.to({}, { duration: 1 });
-      timeline.to(fragments, { opacity: 0.1, duration: 0.9 });
-
-      // 6 — everything converges on one node
-      timeline.to(
-        fragments,
-        {
-          x: 0,
-          y: 0,
-          rotate: 0,
-          scale: 0.82,
-          opacity: 0.22,
-          duration: 1.3,
-          stagger: { each: 0.03, from: "edges" },
-        },
-        ">-0.3",
-      );
+      // The node arrives last: it is the conclusion, not a decoration.
       timeline.fromTo(
         "[data-node]",
-        { opacity: 0, scale: 0.92 },
+        { opacity: 0, scale: 0.94 },
         { opacity: 1, scale: 1, duration: 0.9 },
-        ">-0.7",
+        "<0.35",
       );
-      timeline.to("[data-clarity]", { opacity: 0.35, duration: 0.6 }, "<");
+      timeline.fromTo(
+        "[data-clarity]",
+        { opacity: 0, y: 16 },
+        { opacity: 1, y: 0, duration: 0.7 },
+        "<0.15",
+      );
+
+      // 5 — a last beat of stillness on the resolved composition.
+      timeline.to({}, { duration: 0.7 });
+
+      // The stage's own border brightens as the section resolves.
+      if (stage) {
+        timeline.to(stage, { borderColor: "rgba(63,111,255,0.36)", duration: 0.8 }, 2.2);
+      }
     },
-    [active],
+    [choreographed],
   );
 
   return (
-    <Section id="problem" tone="raised" labelledBy="problem-heading" className="relative overflow-x-clip">
+    <Section
+      id="problem"
+      tone="raised"
+      labelledBy="problem-heading"
+      className="relative overflow-x-clip"
+    >
       <QRASectionTransition label="Fragmented" />
 
-      {/* The environment: the pile, felt rather than seen. */}
-      <QRAAtmosphere variant="problem" />
-
-
-      {/* The composition: one full-width band of the same sources the copy
-          names, crowded until it stops being readable. It assembles in reading
-          order — forty cells, 16ms apart — so the pile arrives rather than
-          appearing, and then it holds. */}
-      <div aria-hidden="true" className="problem-pile relative z-0 mb-14 lg:mb-20">
-        <QRAReveal stagger step={16} variant="fade" className="problem-pile__grid">
-          {Array.from({ length: 40 }, (_, index) => (
-            <span
-              key={index}
-              className="problem-pile__cell"
-              style={{ "--i": index } as React.CSSProperties}
-            />
-          ))}
-        </QRAReveal>
-        <div className="problem-pile__labels">
-          {[...PROBLEM.fragments.map((f) => f.label), ...PROBLEM.fragments.map((f) => f.label)].map(
-            (label, index) => (
-              <span
-                key={`${label}-${index}`}
-                className="problem-pile__label"
-                style={{
-                  top: `${(index % 5) * 19 + 4}%`,
-                  left: `${(index * 37) % 78}%`,
-                  opacity: 0.18 + (index % 4) * 0.06,
-                }}
-              >
-                {label}
-              </span>
-            ),
-          )}
-        </div>
-      </div>
-
-      <div ref={ref} className={`relative z-10 ${active ? "lg:min-h-[190vh]" : ""}`}>
-        <div className={active ? "lg:sticky lg:top-20" : ""}>
-          <div className="grid gap-12 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
+      <div
+        ref={ref}
+        className={`relative ${choreographed ? "lg:min-h-[215vh]" : ""}`}
+      >
+        <div className={choreographed ? "lg:sticky lg:top-16" : ""}>
+          {/* The heading stays outside the stage: the argument is stated, then
+              shown. */}
+          <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-16">
             <div>
               <SectionLabel tone="brand">{PROBLEM.label}</SectionLabel>
-              <SectionStatement id="problem-heading" lines={PROBLEM.statement} as="h2" className="mt-5" />
-              <p className="mt-6 max-w-md text-base leading-relaxed text-paper-dim">{PROBLEM.note}</p>
+              <SectionStatement
+                id="problem-heading"
+                lines={PROBLEM.statement}
+                as="h2"
+                className="mt-5"
+              />
+            </div>
+            <p className="max-w-md text-base leading-relaxed text-paper-dim lg:justify-self-end">
+              {PROBLEM.note}
+            </p>
+          </div>
 
-              {/* The two statements land inside the animation. */}
-              <div className="mt-10 space-y-2">
-                <p
-                  data-overload
-                  className="font-display text-xl font-semibold tracking-tight text-paper sm:text-2xl"
-                >
-                  {PROBLEM.overload}
-                </p>
-                <p
-                  data-clarity
-                  className="font-display text-xl font-semibold tracking-tight text-brand-300 sm:text-2xl"
-                >
-                  {PROBLEM.clarity}
-                </p>
-              </div>
+          {/* ── The stage ─────────────────────────────────────────────────── */}
+          <div
+            data-stage
+            className="problem-stage mt-14 border border-line bg-ink-900/60 lg:mt-16"
+          >
+            {/* The film: information arriving from everywhere, pre-rendered. */}
+            <div data-flood className="problem-stage__flood">
+              <QRAAtmosphere variant="problem" drift={false} opacity={1} />
             </div>
 
-            {/* The fragment field. Authored as an orderly grid — the animation
-                scatters it and brings it back. */}
-            <div className="relative overflow-x-clip">
-              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
-                {PROBLEM.fragments.map((fragment, index) => (
-                  <div
-                    key={fragment.label}
-                    data-fragment
-                    className="card-edge rounded-md border border-line bg-ink-850/95 px-3 py-3"
-                  >
-                    <span className="micro !tracking-[0.14em] !text-paper-faint">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <p className="mt-2 text-xs leading-snug text-paper-dim sm:text-sm">{fragment.label}</p>
-                  </div>
-                ))}
-              </div>
+            {/* A veil, so the readable fragments always win against the film. */}
+            <div aria-hidden="true" className="problem-stage__veil" />
 
-              {/* Where it all resolves. */}
-              <div className="mt-12 flex flex-col items-center">
-                <span aria-hidden="true" className="h-10 w-px bg-brand-500/40" />
-                <div data-node className="flex flex-col items-center gap-3">
-                  <span className="rounded-md border border-brand-500/40 bg-brand-500/[0.08] px-4 py-2 font-display text-sm font-semibold tracking-[0.08em] text-paper">
-                    QRA
-                  </span>
-                  <span aria-hidden="true" className="h-6 w-px bg-line-strong" />
-                  <span className="micro !tracking-[0.24em] !text-brand-400">Understand</span>
+            {/* The seven sources, authored as a readable row. */}
+            <div className="problem-stage__row">
+              {PROBLEM.fragments.map((fragment, index) => (
+                <div key={fragment.label} data-fragment className="problem-chip">
+                  <span className="problem-chip__n">{String(index + 1).padStart(2, "0")}</span>
+                  <span className="problem-chip__label">{fragment.label}</span>
                 </div>
-              </div>
+              ))}
             </div>
+
+            {/* The two statements, and the node they resolve to. */}
+            <p data-overload className="problem-stage__statement problem-stage__statement--alarm">
+              {PROBLEM.overload}
+            </p>
+
+            <div data-node className="problem-stage__node">
+              <span className="problem-stage__node-mark">QRA</span>
+              <span className="problem-stage__node-rule" aria-hidden="true" />
+              <span className="problem-stage__node-word">Understand</span>
+            </div>
+
+            <p data-clarity className="problem-stage__statement problem-stage__statement--clarity">
+              {PROBLEM.clarity}
+            </p>
           </div>
         </div>
       </div>

@@ -20,8 +20,9 @@ export function IdeaSection() {
 
       <QRASectionTransition label="Organized" />
 
-      {/* The environment settles inward here — the page organising itself. */}
-      <QRAAtmosphere variant="idea" className="opacity-90" />
+      {/* No section-level film here: the band below shows it properly, and the
+          same film twice would be two decoders for one picture. */}
+      <div aria-hidden="true" className="idea-ground" />
 
       <div className="relative z-10">
         <QRAReveal>
@@ -43,6 +44,19 @@ export function IdeaSection() {
             <p className="max-w-xs text-sm leading-relaxed text-paper-mute lg:text-right">
               Three moves. No jargon, no dashboards to learn.
             </p>
+          </div>
+        </QRAReveal>
+
+        {/* A window onto the film, at full width: information arriving without
+            order on the left, leaving in rows on the right. */}
+        <QRAReveal delay={100} variant="scale" className="mt-14">
+          <div className="flow-band">
+            <QRAAtmosphere variant="idea" drift={false} opacity={0.95} className="flow-band__film" />
+            <div aria-hidden="true" className="flow-band__labels">
+              <span>Scattered</span>
+              <span>Aligned</span>
+              <span>Structured</span>
+            </div>
           </div>
         </QRAReveal>
 

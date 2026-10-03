@@ -16,6 +16,7 @@ import {
 import { ProductPreview } from "@/components/ProductPreview";
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { QRAArchitecture } from "@/components/motion/QRAArchitecture";
+import { AudienceSection } from "@/components/home/AudienceSection";
 import { QRASourceTicker } from "@/components/motion/QRASourceTicker";
 import { QRATilt } from "@/components/motion/QRATilt";
 import { QRAProcessDiagram } from "@/components/motion/QRAProcessDiagram";
@@ -293,20 +294,28 @@ describe("product figures", () => {
 });
 
 describe("pre-rendered graphics", () => {
-  it("names the three stages of the process route", () => {
+  it("names the three stages of the route", () => {
     render(<QRAProcessDiagram />);
-    for (const stage of ["Find", "Explain", "Understand"]) {
+    for (const stage of ["Find it", "Explain it", "Understand it"]) {
       expect(screen.getByText(stage)).toBeInTheDocument();
     }
   });
 
-  it("draws the process route as one normalised path", () => {
+  it("draws the route as one normalised path over a plan", () => {
     const { container } = render(<QRAProcessDiagram />);
     const route = container.querySelector("[data-route]");
-    // pathLength=1 means progress is one number, and the plan underneath keeps
-    // the whole route readable even before it is drawn.
+    // pathLength=1 makes progress a single number, and the plan underneath keeps
+    // the whole route readable before it is drawn.
     expect(route).toHaveAttribute("pathLength", "1");
-    expect(container.querySelector(".qra-process__plan")).not.toBeNull();
+    expect(container.querySelector(".qra-route__plan")).not.toBeNull();
+  });
+
+  it("rides a packet along the route", () => {
+    const { container } = render(<QRAProcessDiagram />);
+    expect(container.querySelector("[data-packet]")).not.toBeNull();
+    // Three stations, three captions, one route.
+    expect(container.querySelectorAll("[data-station]")).toHaveLength(3);
+    expect(container.querySelectorAll("[data-caption]")).toHaveLength(3);
   });
 
   it("draws the architecture as geometry rather than a simulation", () => {
@@ -351,5 +360,23 @@ describe("the motion layer", () => {
     );
     expect(container.querySelector(".qra-tilt__surface")).not.toBeNull();
     expect(container.querySelector("[data-testid='panel']")).not.toBeNull();
+  });
+});
+
+describe("the three paths", () => {
+  it("draws one route per investor, all normalised", () => {
+    const { container } = render(<AudienceSection />);
+    const routes = container.querySelectorAll("[data-route-path]");
+    expect(routes).toHaveLength(3);
+    for (const route of Array.from(routes)) {
+      expect(route).toHaveAttribute("pathLength", "1");
+    }
+  });
+
+  it("lights exactly one route at a time", () => {
+    const { container } = render(<AudienceSection />);
+    const active = container.querySelectorAll("[data-route-path][data-active='true']");
+    expect(active).toHaveLength(1);
+    expect(active[0]).toHaveAttribute("data-route", "beginner");
   });
 });
