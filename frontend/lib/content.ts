@@ -44,7 +44,7 @@ export const HERO_PANEL = {
     { label: "Profit", figure: 6000, direction: "up" },
     { label: "Debt", figure: 12000, direction: "down" },
     { label: "Cash flow", figure: 5000, direction: "up" },
-  ] as { label: string; figure: number; direction: Direction }[],
+  ] as Metric[],
   meaningLabel: "What does this mean?",
   meaning: ["Revenue has grown steadily while margins have changed with costs."],
   /** The signature interaction, named: complexity becoming understanding. */
@@ -101,12 +101,29 @@ export const IDEA = {
 
 /* ── The product ───────────────────────────────────────────────────── */
 
+/**
+ * A figure in an illustrative interface.
+ *
+ * Every one of these is a round placeholder, never real company data — but it
+ * is a *number* so the interface can move the way a real one would: the digits
+ * step to their value instead of the value appearing from nowhere.
+ */
+export type Metric = {
+  label: string;
+  figure: number;
+  direction: Direction;
+  /** How the figure is read. Defaults to crore-scale rupees. */
+  unit?: "crore" | "percent";
+  /** Decimal places, for figures like a margin. */
+  decimals?: number;
+};
+
 export type ProductTab = {
   id: string;
   label: string;
   question: string;
   summary: string[];
-  metrics?: { label: string; value: string; direction: Direction }[];
+  metrics?: Metric[];
   source: {
     label: string;
     detail: string;
@@ -154,10 +171,10 @@ export const PRODUCT = {
         "Margins have moved, so profit has not grown at the same pace.",
       ],
       metrics: [
-        { label: "Revenue", value: "₹XX,XXX Cr", direction: "up" },
-        { label: "Profit", value: "₹XX,XXX Cr", direction: "up" },
-        { label: "Margins", value: "XX.X%", direction: "flat" },
-        { label: "Cash flow", value: "₹XX,XXX Cr", direction: "up" },
+        { label: "Revenue", figure: 124300, direction: "up" },
+        { label: "Profit", figure: 18700, direction: "up" },
+        { label: "Margins", figure: 15.1, unit: "percent", decimals: 1, direction: "flat" },
+        { label: "Cash flow", figure: 24600, direction: "up" },
       ],
       source: {
         label: "Financial statements",
@@ -174,6 +191,11 @@ export const PRODUCT = {
       summary: [
         "Part of the growth is volume, part of it is price.",
         "New capacity takes time before it shows up in the numbers.",
+      ],
+      metrics: [
+        { label: "Volume growth", figure: 6.2, unit: "percent", decimals: 1, direction: "up" },
+        { label: "Realisation", figure: 3.4, unit: "percent", decimals: 1, direction: "up" },
+        { label: "Capacity used", figure: 88, unit: "percent", direction: "flat" },
       ],
       source: {
         label: "Results presentation",

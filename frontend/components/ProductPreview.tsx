@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { CountUp } from "@/components/motion/CountUp";
 import { DirectionMark, SectionLabel } from "@/components/ui";
 import { CONCEPT_LABEL, ILLUSTRATIVE_LABEL, PRODUCT, type ProductTab } from "@/lib/content";
 
@@ -134,7 +135,16 @@ export function ProductPreview({ className = "" }: { className?: string }) {
                   className="metric-resolve flex items-center gap-2.5"
                   style={{ "--d": `${index * 70}ms` } as React.CSSProperties}
                 >
-                  <span className="value-placeholder font-mono text-sm">{metric.value}</span>
+                  {/* The figure steps to its value rather than appearing at it;
+                      the panel remounts per question, so the count runs again. */}
+                  <CountUp
+                    to={metric.figure}
+                    prefix={metric.unit === "percent" ? "" : "₹"}
+                    suffix={metric.unit === "percent" ? "%" : " Cr"}
+                    decimals={metric.decimals ?? 0}
+                    duration={820 + index * 70}
+                    className="value-placeholder font-mono text-sm"
+                  />
                   <DirectionMark direction={metric.direction} />
                 </span>
               </div>

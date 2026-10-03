@@ -35,7 +35,7 @@ export function QRAReveal({
   variant = "up",
   as = "div",
 }: {
-  children: ReactNode;
+  children?: ReactNode;
   className?: string;
   /** Stagger, in ms. Keep to the 40–80ms band. */
   delay?: number;

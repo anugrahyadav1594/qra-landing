@@ -147,11 +147,13 @@ export function AudienceSection() {
           </div>
 
           <div>
-            <ol className="divide-y divide-line border-t border-line">
+            {/* The rule that opens the list draws from its left edge first. */}
+            <QRAReveal variant="line" className="border-t border-line" />
+            <ol className="divide-y divide-line">
               {AUDIENCE.people.map((person, index) => {
                 const on = index === active;
                 return (
-                  <li key={person.n}>
+                  <QRAReveal as="li" key={person.n} delay={120 + index * 90}>
                     <button
                       type="button"
                       onMouseEnter={() => setActive(index)}
@@ -178,12 +180,12 @@ export function AudienceSection() {
                         </span>
                       </span>
                     </button>
-                  </li>
+                  </QRAReveal>
                 );
               })}
             </ol>
 
-            <div className="mt-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            <QRAReveal delay={140} className="mt-10 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
               <p className="font-display text-xl font-semibold tracking-tight text-paper">
                 {AUDIENCE.closing}
               </p>
@@ -193,7 +195,7 @@ export function AudienceSection() {
                   →
                 </span>
               </Button>
-            </div>
+            </QRAReveal>
           </div>
         </div>
       </div>

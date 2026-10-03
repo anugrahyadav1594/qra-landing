@@ -3,11 +3,11 @@
  * exactly the point: none of these components may throw or trap the page when
  * their drawing surface or their observer is unavailable. */
 
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { QRALoader, INTRO_ATTRIBUTE } from "@/components/motion/QRALoader";
+import { QRALoader, INTRO_ATTRIBUTE, INTRO_BOOTSTRAP } from "@/components/motion/QRALoader";
 import { ProductPreview } from "@/components/ProductPreview";
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { QRAReveal } from "@/components/motion/QRAReveal";
@@ -173,5 +173,77 @@ describe("opening sequence across navigation", () => {
     sessionStorage.setItem("qra-loader-seen", "1");
     const { container } = render(<QRALoader />);
     expect(container).toBeEmptyDOMElement();
+  });
+});
+
+describe("intro bootstrap (runs before first paint)", () => {
+  const run = () => new Function(INTRO_BOOTSTRAP)();
+  const withReducedMotion = (run: () => void) => {
+    const original = window.matchMedia;
+    window.matchMedia = ((query: string) => ({
+      matches: query.includes("reduce"),
+      media: query,
+      onchange: null,
+      addListener() {},
+      removeListener() {},
+      addEventListener() {},
+      removeEventListener() {},
+      dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia;
+    try {
+      run();
+    } finally {
+      window.matchMedia = original;
+    }
+  };
+
+  it("plays for a first visit, and delays the hero by the same amount", () => {
+    sessionStorage.clear();
+    root().removeAttribute(INTRO_ATTRIBUTE);
+    root().style.removeProperty("--intro-delay");
+
+    run();
+
+    expect(root().getAttribute(INTRO_ATTRIBUTE)).toBe("play");
+    // The hero waits for the sequence rather than being paused by it.
+    expect(root().style.getPropertyValue("--intro-delay")).toBe("2150ms");
+  });
+
+  it("skips on a later visit in the same session", () => {
+    sessionStorage.setItem("qra-loader-seen", "1");
+    root().removeAttribute(INTRO_ATTRIBUTE);
+    run();
+    expect(root().getAttribute(INTRO_ATTRIBUTE)).toBe("skip");
+  });
+
+  it("uses the quiet path when motion is not wanted", () => {
+    sessionStorage.clear();
+    root().removeAttribute(INTRO_ATTRIBUTE);
+    withReducedMotion(run);
+    expect(root().getAttribute(INTRO_ATTRIBUTE)).toBe("reduce");
+  });
+});
+
+describe("product figures", () => {
+  it("shows real values, formatted as the interface reads them", async () => {
+    render(<ProductPreview />);
+    await userEvent.click(screen.getByRole("tab", { name: /Financials/ }));
+
+    // Indian-digit grouping, crore scale, and a margin with its decimal.
+    expect(screen.getByText("₹1,24,300 Cr")).toBeInTheDocument();
+    expect(screen.getByText("15.1%")).toBeInTheDocument();
+  });
+
+  it("changes the figures when the question changes", async () => {
+    render(<ProductPreview />);
+    await userEvent.click(screen.getByRole("tab", { name: /Financials/ }));
+    expect(within(screen.getByRole("tabpanel")).getByText("₹1,24,300 Cr")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("tab", { name: /Growth/ }));
+    const panel = within(screen.getByRole("tabpanel"));
+    expect(panel.getByText("6.2%")).toBeInTheDocument();
+    // The outgoing answer is still leaving the frame, but it is not the live
+    // one: the panel you read from carries only the current question's figures.
+    expect(panel.queryByText("₹1,24,300 Cr")).not.toBeInTheDocument();
   });
 });
