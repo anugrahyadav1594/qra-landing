@@ -4,236 +4,1529 @@
 
 :root {
   color-scheme: dark;
+  --scroll-progress: 0;
+
+  /* The motion system (lib/motion.ts mirrors these for GSAP scenes).
+     One curve for the whole site: quick to leave, long to settle, never bouncy. */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --dur-fast: 180ms;
+  --dur-micro: 250ms;
+  --dur-standard: 400ms;
+  --dur-smooth: 600ms;
+  --dur-cinematic: 900ms;
 }
 
 html {
   scroll-behavior: smooth;
+  /* Keep anchored sections clear of the sticky header. */
+  scroll-padding-top: 5.5rem;
 }
 
 body {
-  @apply bg-ink-950 font-sans text-paper-dim antialiased;
+  @apply bg-ink-950 font-sans text-paper antialiased;
+  /* Masked image layers and the scattered fragments must never produce a
+     horizontal scrollbar. `clip` rather than `hidden`, so the sticky header
+     keeps working. */
+  overflow-x: clip;
 }
 
 ::selection {
-  background: rgba(76, 111, 255, 0.35);
-  color: #f2f0e9;
+  background: rgba(63, 111, 255, 0.32);
+  color: #f5f7fa;
 }
 
-/* ── Backdrops ─────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid #3f6fff;
+  outline-offset: 2px;
+}
 
-/* Subtle grid backdrop used on the hero */
-.hero-grid {
+/* ── Structural language ───────────────────────────────────────────── */
+
+/* Micro label: tiny uppercase metadata that gives the site its
+   financial-product vocabulary without becoming a terminal. */
+.micro {
+  @apply text-[0.66rem] font-semibold uppercase tracking-microl text-paper-faint;
+}
+
+/* Restrained financial grid — barely visible, used behind key surfaces. */
+.grid-backdrop {
   background-image:
-    linear-gradient(rgba(242, 240, 233, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(242, 240, 233, 0.035) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(ellipse 90% 65% at 50% 0%, black 35%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 90% 65% at 50% 0%, black 35%, transparent 100%);
+    linear-gradient(rgba(245, 247, 250, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 247, 250, 0.035) 1px, transparent 1px);
+  background-size: 72px 72px;
+  background-position: center;
+  mask-image: radial-gradient(ellipse 85% 70% at 50% 0%, black 20%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 85% 70% at 50% 0%, black 20%, transparent 100%);
 }
 
-/* ── Reveal (IntersectionObserver-gated) ───────────────────────────── */
-
-.reveal {
-  opacity: 0;
-  transform: translateY(24px);
-  transition:
-    opacity 0.7s ease-out,
-    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-  will-change: opacity, transform;
+/* Value placeholders inside illustrative interfaces (₹ X,XXX Cr). */
+.value-placeholder {
+  letter-spacing: 0.08em;
+  color: rgba(245, 247, 250, 0.55);
 }
 
-.reveal.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+/* Reading-progress marker under the navbar (scroll-linked, no re-render). */
+.scroll-progress {
+  transform: scaleX(var(--scroll-progress));
+  transform-origin: left;
 }
 
-/* ── Hero load-in (runs once, staged delays inline) ────────────────── */
+/* ── Motion system ─────────────────────────────────────────────────── */
 
-.hero-rise {
-  opacity: 0;
-  transform: translateY(28px);
-  animation: hero-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+/* Block reveal (one shared observer: components/motion/reveal-observer.ts).
+ *
+ * Opacity and transform only — both are composited, so a reveal never costs the
+ * main thread and never repaints what is behind it. No clip-path (it is a paint
+ * every frame on a full-width panel) and no `will-change` (it would pin a GPU
+ * layer for every revealed block on the page, permanently).
+ *
+ * The visible state is the element's *own* state, and the hidden state lives in
+ * the animation. That is what makes the guard below safe: if nothing ever
+ * reveals this element — a chunk that failed to load, an observer that never
+ * fires, JavaScript switched off — CSS reveals it anyway after three seconds.
+ * A reveal can delay content. It can never strand it.
+ */
+.qra-reveal {
+  --reveal-y: 30px;
+  --reveal-scale: 1;
+  animation: reveal-guard 1ms linear 3s backwards;
 }
 
-@keyframes hero-rise {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.qra-reveal.is-visible {
+  animation: reveal-in 900ms var(--ease) backwards;
+  /* Every reveal is a pair: the entrance, and up to 240ms of stagger. */
+  animation-delay: var(--reveal-delay, 0ms);
 }
 
-/* Staged steps inside the conceptual research workspace */
-.workspace-step {
-  opacity: 0;
-  transform: translateY(14px);
-  animation: step-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes step-in {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Thesis chips — enter from left or right */
-.chip-flow {
-  opacity: 0;
-  animation: chip-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-.chip-flow.chip-left {
-  transform: translateX(-16px);
-}
-
-.chip-flow.chip-right {
-  transform: translateX(16px);
-}
-
-@keyframes chip-in {
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* ── Ambient motion ────────────────────────────────────────────────── */
-
-.drift-dot {
-  animation: drift 9s ease-in-out infinite alternate;
-}
-
-@keyframes drift {
+@keyframes reveal-in {
   from {
-    transform: translate3d(0, 0, 0);
+    opacity: 0;
+    transform: translate3d(0, var(--reveal-y), 0) scale(var(--reveal-scale));
+  }
+}
+
+@keyframes reveal-guard {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--reveal-y), 0) scale(var(--reveal-scale));
+  }
+}
+
+/* A line draws from its own left edge. */
+.qra-reveal--line {
+  --reveal-y: 0px;
+  --reveal-scale: 1;
+  animation: line-guard 1ms linear 3s backwards;
+}
+
+.qra-reveal--line.is-visible {
+  animation: line-in 900ms var(--ease) backwards;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+@keyframes line-in {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes line-guard {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.qra-reveal--fade {
+  --reveal-y: 0px;
+}
+
+/* Panels and figures lift into place and settle. */
+.qra-reveal--scale {
+  --reveal-y: 26px;
+  --reveal-scale: 0.97;
+}
+
+.qra-reveal--clip {
+  --reveal-y: 22px;
+  --reveal-scale: 0.985;
+}
+
+/* ── Cascades ────────────────────────────────────────────────────────── */
+
+/* A container whose children arrive in reading order, one after another.
+   `--step` sets the gap (70ms by default), so a band of cards behaves like a
+   deal rather than a single object fading in. */
+.qra-reveal--stagger {
+  animation: none;
+}
+
+.qra-reveal--stagger > * {
+  animation: reveal-guard 1ms linear 3s backwards;
+}
+
+.qra-reveal--stagger.is-visible > * {
+  animation: reveal-in 820ms var(--ease) backwards;
+  animation-delay: calc(var(--reveal-delay, 0ms) + var(--step, 70ms) * var(--i, 0));
+}
+
+.qra-reveal--stagger > :nth-child(1) {
+  --i: 1;
+}
+.qra-reveal--stagger > :nth-child(2) {
+  --i: 2;
+}
+.qra-reveal--stagger > :nth-child(3) {
+  --i: 3;
+}
+.qra-reveal--stagger > :nth-child(4) {
+  --i: 4;
+}
+.qra-reveal--stagger > :nth-child(5) {
+  --i: 5;
+}
+.qra-reveal--stagger > :nth-child(6) {
+  --i: 6;
+}
+.qra-reveal--stagger > :nth-child(7) {
+  --i: 7;
+}
+.qra-reveal--stagger > :nth-child(8) {
+  --i: 8;
+}
+.qra-reveal--stagger > :nth-child(9) {
+  --i: 9;
+}
+.qra-reveal--stagger > :nth-child(10) {
+  --i: 10;
+}
+.qra-reveal--stagger > :nth-child(n + 11) {
+  --i: 11;
+}
+
+/* Hero load-in: brand → headline → support → CTA → visual, in sequence. */
+.rise {
+  opacity: 0;
+  animation: rise-in var(--dur-cinematic) var(--ease) both;
+  /* The opening sequence delays the hero rather than pausing it: if any script
+     fails, --intro-delay is simply 0 and the hero still arrives. */
+  animation-delay: calc(var(--intro-delay, 0ms) + var(--d, 0ms));
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 26px, 0);
   }
   to {
-    transform: translate3d(var(--drift-x, 14px), var(--drift-y, -18px), 0);
+    opacity: 1;
+    transform: none;
   }
 }
 
-.pulse-dot {
-  animation: pulse 2.4s ease-in-out infinite;
+/* Hero panel: as the user scrolls past it, the rows are marked as sorted and
+   the explanation block is marked as the answer. Restrained on purpose. */
+.panel-metric {
+  transition:
+    box-shadow 0.6s ease-out,
+    background-color 0.6s ease-out;
 }
 
-@keyframes pulse {
+[data-stage="1"] .panel-metric,
+[data-stage="2"] .panel-metric,
+[data-stage="3"] .panel-metric {
+  box-shadow: inset 2px 0 0 rgba(63, 111, 255, 0.55);
+}
+
+.panel-meaning {
+  transition: border-color 0.7s ease-out;
+}
+
+[data-stage="2"] .panel-meaning,
+[data-stage="3"] .panel-meaning {
+  border-color: rgba(63, 111, 255, 0.38);
+}
+
+/* ── Guarded reveal ────────────────────────────────────────────────── */
+
+/* The pattern behind every sequenced interface: elements are staged by their
+   own delay once the parent says it is ready, and a delayed guard animation
+   ends visible regardless. Reordering a sequence can never hide content. */
+.guard-in {
+  opacity: 0;
+  animation: guard-fade 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--d, 0ms) + 2400ms);
+}
+
+.guard-in--up {
+  animation-name: guard-rise;
+}
+
+[data-ready="true"] > .guard-in,
+[data-ready="true"] .guard-in {
+  opacity: 1;
+  animation-delay: var(--d, 0ms);
+}
+
+@keyframes guard-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes guard-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Nav indicator (slides between links rather than snapping colour). */
+/* The indicator travels between items with a touch of overshoot: it arrives
+   rather than jumps, which is the difference between a menu and an interface. */
+.nav-indicator {
+  transition:
+    transform 0.46s cubic-bezier(0.34, 1.4, 0.5, 1),
+    width 0.46s cubic-bezier(0.34, 1.4, 0.5, 1),
+    opacity 0.25s ease-out;
+}
+
+/* ── The process line (FIND IT → EXPLAIN IT → UNDERSTAND IT) ───────── */
+
+/* Drawn when its block is revealed: the line literally connects the steps
+   instead of sitting between three cards. */
+/* Station marker on the line — lights up with the step it belongs to. */
+.is-visible /* ── Phase legend (scattered → organized → explained → understood) ── */
+
+/* Each label carries the segment of line above it: the line draws as that
+   stage is reached, so the stepper fills in rather than blinking. The stage
+   itself is computed in components/ClarityPanel.tsx (one state change per
+   stage, never per pixel). */
+.phase-mark {
+  opacity: 0.4;
+  transition: opacity 0.5s ease-out;
+}
+
+.phase-mark__tick {
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.phase-mark--reached .phase-mark__tick {
+  transform: scaleX(1);
+}
+
+.phase-mark--reached {
+  opacity: 1;
+}
+
+.phase-mark--active {
+  opacity: 1;
+}
+
+.phase-mark--active > span:last-child {
+  color: #f5f7fa;
+}
+
+
+/* ── Tilt (components/motion/QRATilt.tsx) ───────────────────────────── */
+
+/* The hero's panel leaning toward the pointer. Transforms only, on two
+   elements, written straight to the DOM from one animation frame — so the
+   interface moves with the pointer instead of after it. */
+.qra-tilt {
+  position: relative;
+}
+
+.qra-tilt__surface {
+  position: relative;
+  transform: perspective(1200px);
+  /* The return is slower than the follow: it settles rather than snaps back. */
+  transition: transform 620ms var(--ease);
+}
+
+.qra-tilt__surface[data-active="true"] {
+  transition-duration: 110ms;
+}
+
+.qra-tilt__glow {
+  position: absolute;
+  inset: -30%;
+  z-index: 2;
+  border-radius: 20%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(120, 158, 255, 0.15),
+    rgba(63, 111, 255, 0.07) 40%,
+    transparent 66%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0);
+  transition:
+    transform 620ms var(--ease),
+    opacity 420ms ease-out;
+}
+
+.qra-tilt:hover .qra-tilt__glow {
+  opacity: 1;
+}
+
+/* ── Sources band (components/motion/QRASourceTicker.tsx) ───────────── */
+
+.source-ticker {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  border-top: 1px solid rgba(245, 247, 250, 0.06);
+  border-bottom: 1px solid rgba(245, 247, 250, 0.06);
+  padding-block: 0.9rem;
+  background: linear-gradient(90deg, rgba(7, 10, 15, 0) 0%, rgba(13, 19, 29, 0.5) 50%, rgba(7, 10, 15, 0) 100%);
+}
+
+.source-ticker__label {
+  flex: none;
+  padding-left: max(1.25rem, calc((100vw - 1200px) / 2));
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(111, 148, 255, 0.85);
+  white-space: nowrap;
+}
+
+.source-ticker__viewport {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  /* Fades into the page instead of ending at an edge. */
+  mask-image: linear-gradient(90deg, transparent, black 4%, black 96%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 4%, black 96%, transparent);
+}
+
+.source-ticker__track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 52s linear infinite;
+}
+
+.source-ticker[data-paused="true"] .source-ticker__track {
+  animation-play-state: paused;
+}
+
+.source-ticker__run {
+  display: flex;
+  align-items: center;
+}
+
+.source-ticker__item {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 2rem;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: rgba(170, 182, 198, 0.72);
+  white-space: nowrap;
+}
+
+.source-ticker__dot {
+  width: 3px;
+  height: 3px;
+  margin-left: 2rem;
+  border-radius: 999px;
+  background: rgba(63, 111, 255, 0.75);
+}
+
+@keyframes ticker-scroll {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* ── Product tabs: one indicator, sliding between them ───────────────── */
+
+.product-tabs {
+  position: relative;
+}
+
+.product-tabs__indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* Sized and placed by measurement on the first render; hidden until then. */
+  opacity: 0;
+  width: 0;
+  height: 0;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(63, 111, 255, 0.28);
+  background: linear-gradient(120deg, rgba(63, 111, 255, 0.16), rgba(63, 111, 255, 0.05));
+  box-shadow: 0 10px 30px -18px rgba(63, 111, 255, 0.9);
+  /* Only ever moves on a tab change: one element, off the scroll path. */
+  transition:
+    transform 460ms var(--ease),
+    width 460ms var(--ease),
+    height 460ms var(--ease),
+    opacity 260ms ease-out;
+  pointer-events: none;
+}
+
+/* Rows in an answer lift a hair as the pointer crosses them. */
+.metric-row {
+  transition: background-color var(--dur-standard) ease-out;
+}
+
+.metric-row:hover {
+  background-color: rgba(63, 111, 255, 0.05);
+}
+
+/* ── Opening sequence (components/motion/QRALoader.tsx) ────────────── */
+
+/* The overlay ships in the server HTML so the hero never flashes first, and it
+   carries its own dismissal: even if no script ever runs, the guard animation
+   takes it away. `data-intro` is written before first paint, so a returning
+   visitor never sees it at all.
+
+   Timeline (2350ms total): 0.30s logo · 0.80s ring and axes · 1.20s points and
+   wordmark · 1.60s the structure expands and the logo hands off to the navbar. */
+html[data-intro="skip"] .qra-loader {
+  display: none;
+}
+
+.qra-loader {
+  /* The whole sequence is timed from this one value: every delay below is a
+     fraction of it, so the opening can be retimed without touching a keyframe. */
+  --loader-dur: 1900ms;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: #05080d;
+  color: #f5f7fa;
+  overflow: hidden;
+  /* CSS-only hard ceiling: whatever happens next, this clears the screen. One
+     beat past the sequence, because a guard that fires late is a blank screen. */
+  animation: loader-guard 0s linear calc(var(--loader-dur) + 700ms) forwards;
+}
+
+@keyframes loader-guard {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+.qra-loader__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* The environment is already alive while the screen is still empty. */
+.qra-loader::before {
+  content: "";
+  position: absolute;
+  inset: -12%;
+  background:
+    radial-gradient(ellipse 60% 48% at 50% 46%, rgba(63, 111, 255, 0.13), transparent 72%),
+    radial-gradient(ellipse 120% 70% at 50% 118%, rgba(13, 19, 29, 0.9), transparent 70%);
+  animation: loader-field 26s ease-in-out infinite;
+}
+
+@keyframes loader-field {
   0%,
   100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -16px, 0) scale(1.03);
+  }
+}
+
+/* ── The structure around the logo ─────────────────────────────────── */
+
+.qra-loader__structure {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  animation: loader-expand 620ms var(--ease-in) calc(var(--loader-dur) * 0.68) both;
+}
+
+@keyframes loader-expand {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.qra-loader__axes {
+  width: min(132vmin, 1040px);
+  height: min(132vmin, 1040px);
+}
+
+.qra-loader__ring {
+  fill: none;
+  stroke: rgba(245, 247, 250, 0.24);
+  stroke-width: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+  /* Drawn, not faded in: the ring travels once around the logo. */
+  stroke-dasharray: var(--circ);
+  stroke-dashoffset: var(--circ);
+  animation: loader-ring-draw 1250ms var(--ease) both;
+}
+
+.qra-loader__ring--outer {
+  stroke: rgba(111, 148, 255, 0.16);
+  stroke-dasharray: 4 var(--circ);
+}
+
+@keyframes loader-ring-draw {
+  0% {
+    stroke-dashoffset: var(--circ);
+    opacity: 0;
+  }
+  12% {
+    opacity: 1;
+  }
+  70%,
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+.qra-loader__axis,
+.qra-loader__guide {
+  stroke: rgba(245, 247, 250, 0.2);
+  stroke-width: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: loader-draw 1550ms var(--ease) calc(var(--loader-dur) * 0.26) both;
+}
+
+.qra-loader__guide {
+  stroke: rgba(245, 247, 250, 0.1);
+}
+
+.qra-loader__axis--v,
+.qra-loader__guide--v {
+  animation-name: loader-draw-y;
+}
+
+@keyframes loader-draw-x {
+  0% {
+    transform: scaleX(0.02);
+    opacity: 0;
+  }
+  16% {
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 1;
+  }
+}
+
+@keyframes loader-draw-y {
+  0% {
+    transform: scaleY(0.02);
+    opacity: 0;
+  }
+  16% {
+    opacity: 1;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.qra-loader__axis--h {
+  animation-name: loader-draw-x;
+}
+
+.qra-loader__guide--h {
+  animation-name: loader-draw-x;
+}
+
+.qra-loader__point {
+  fill: rgba(111, 148, 255, 0.9);
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: loader-point 560ms var(--ease) both;
+}
+
+@keyframes loader-point {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
     opacity: 1;
     transform: scale(1);
   }
-  50% {
-    opacity: 0.45;
-    transform: scale(0.8);
+}
+
+/* ── The logo, and its handoff to the navbar ───────────────────────── */
+
+.qra-loader__mark {
+  position: relative;
+  z-index: 1;
+  animation: loader-mark-in var(--loader-dur) var(--ease) both;
+}
+
+@keyframes loader-mark-in {
+  0%,
+  9% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.92);
+    filter: blur(8px);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
   }
 }
 
-.pulse-soft {
-  animation: pulse-soft 3.2s ease-in-out infinite;
+/* The logo does not fade away into nothing: it leaves for the navbar, taking
+   the composition with it. The navbar's own mark fades in on the same beat. */
+.qra-loader__handoff {
+  display: block;
+  animation: loader-mark-out 600ms var(--ease-in) calc(var(--loader-dur) * 0.7) both;
 }
 
-@keyframes pulse-soft {
+@keyframes loader-mark-out {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(calc(-50vw + 52px), calc(-50vh + 34px), 0) scale(0.44);
+    opacity: 0;
+  }
+}
+
+.qra-loader__logo {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* ── The name ──────────────────────────────────────────────────────── */
+
+.qra-loader__name {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 0 24px;
+  text-align: center;
+  transform: translateY(76px);
+  animation: loader-name var(--loader-dur) var(--ease) both;
+}
+
+@keyframes loader-name {
   0%,
   100% {
-    opacity: 0.9;
+    opacity: 1;
   }
-  50% {
-    opacity: 0.35;
+  92% {
+    opacity: 1;
   }
-}
-
-/* Continuous dash flow along a chart line */
-.chart-line {
-  stroke-dasharray: 5 9;
-  animation: dash-flow 1.6s linear infinite;
-}
-
-@keyframes dash-flow {
-  to {
-    stroke-dashoffset: -14;
+  100% {
+    opacity: 0;
   }
 }
 
-/* One-shot connector draw, gated on .is-visible (Reveal wrapper) */
-.flow-line {
-  stroke-dasharray: 140;
-  stroke-dashoffset: 140;
+.qra-loader__name-text {
+  display: flex;
+  font-family: var(--font-display, inherit);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  color: #f5f7fa;
+  /* The letter-spacing pushes the last character off-centre; pull it back. */
+  text-indent: 0.34em;
 }
 
-.is-visible .flow-line {
-  animation: flow-draw 1.2s ease-out forwards;
-}
-
-@keyframes flow-draw {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-/* Evidence-chain arrows, gated on .is-visible */
-.chain-arrow {
-  stroke-dasharray: 44;
-  stroke-dashoffset: 44;
-}
-
-.is-visible .chain-arrow {
-  animation: draw-arrow 0.7s ease-out forwards;
-}
-
-@keyframes draw-arrow {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
-
-/* Vertical timeline rail, gated on .is-visible */
-.rail-draw {
-  transform: scaleY(0);
-  transform-origin: top;
-}
-
-.is-visible .rail-draw {
-  animation: rail-grow 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes rail-grow {
-  to {
-    transform: scaleY(1);
-  }
-}
-
-/* Showcase evidence items, gated on .is-visible */
-.ev-item {
+.qra-loader__char {
   opacity: 0;
-  transform: translateX(18px);
+  animation: loader-char 520ms var(--ease) both;
 }
 
-.is-visible .ev-item {
-  animation: ev-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes ev-in {
+@keyframes loader-char {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: none;
   }
 }
 
-/* ── Marquee (signal strip) ────────────────────────────────────────── */
-
-.marquee-track {
-  display: flex;
-  width: max-content;
-  animation: marquee 38s linear infinite;
+.qra-loader__tagline {
+  font-size: 0.68rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(154, 168, 186, 0.9);
+  opacity: 0;
+  animation: loader-char 600ms var(--ease) calc(var(--loader-dur) * 0.66) both;
 }
 
-@keyframes marquee {
+/* ── Reduced path: the mark, a quiet fade, nothing else ────────────── */
+
+.qra-loader[data-mode="reduce"] {
+  animation: loader-fade 520ms ease-out both;
+}
+
+.qra-loader[data-mode="reduce"] .qra-loader__structure,
+.qra-loader[data-mode="reduce"] .qra-loader__name {
+  display: none;
+}
+
+.qra-loader[data-mode="reduce"] .qra-loader__mark {
+  animation: loader-mark-simple 520ms ease-out both;
+}
+
+@keyframes loader-fade {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes loader-mark-simple {
+  0% {
+    opacity: 0;
+  }
+  30%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* ── Typography motion ─────────────────────────────────────────────── */
+
+/* Word reveals use a clip rather than a fade, so lines resolve out of the
+   layout instead of floating in from somewhere. */
+.word-reveal {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  /* Room for descenders, which a clip would otherwise shave. */
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+
+.word-reveal__inner {
+  display: inline-block;
+  transform: translateY(105%);
+  /* Guard: if nothing ever reveals this group, CSS does it anyway. */
+  animation: word-guard 0.8s cubic-bezier(0.16, 1, 0.3, 1) 2.8s both;
+}
+
+.word-reveal-group.is-visible .word-reveal__inner {
+  animation: word-in 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--wd, 0ms);
+}
+
+@keyframes word-in {
+  from {
+    transform: translateY(105%);
+  }
   to {
-    transform: translateX(-50%);
+    transform: none;
   }
 }
 
-/* ── Reduced motion (WCAG 2.3.3) — everything still, content visible ─ */
+@keyframes word-guard {
+  from {
+    transform: translateY(105%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* ── Pointer accent (components/motion/Cursor.tsx) ────────────────────── */
+
+/* The system cursor is never hidden — this sits behind it as a locator, so
+   "where am I pointing" is answered by the arrow and "what can I click" by the
+   ring. Both colours are always present: a light inner ring and core, a dark
+   outer edge, so it reads on light backgrounds and dark ones without ever
+   changing colour. */
+.qra-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 95;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  pointer-events: none;
+  opacity: 0;
+  /* Two shadows rather than a border: an outer dark edge for contrast on light
+     backgrounds, an inner light edge for contrast on dark ones. */
+  box-shadow:
+    0 0 0 1.5px rgba(8, 11, 16, 0.55),
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.92),
+    0 2px 10px rgba(0, 0, 0, 0.35);
+  transition:
+    opacity 200ms ease-out,
+    width 200ms var(--ease),
+    height 200ms var(--ease),
+    box-shadow 200ms ease-out,
+    background-color 200ms ease-out;
+  will-change: transform;
+}
+
+.qra-cursor__core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(8, 11, 16, 0.5);
+  transition: transform 200ms var(--ease), opacity 200ms ease-out;
+}
+
+.qra-cursor[data-visible="true"] {
+  opacity: 1;
+}
+
+.qra-cursor[data-visible="false"] {
+  /* Nothing to point at: get out of the way. */
+  transition-duration: 120ms;
+}
+
+/* Over anything interactive it opens and takes the brand colour — the ring is
+   the "this is clickable" signal, and the core stays put so the aim point never
+   moves. */
+.qra-cursor[data-mode="ring"],
+.qra-cursor[data-mode="focus"] {
+  width: 40px;
+  height: 40px;
+  background-color: rgba(63, 111, 255, 0.16);
+  box-shadow:
+    0 0 0 1.5px rgba(8, 11, 16, 0.5),
+    inset 0 0 0 1.5px rgba(147, 176, 255, 0.95),
+    0 0 20px rgba(63, 111, 255, 0.35);
+}
+
+.qra-cursor[data-mode="ring"] .qra-cursor__core,
+.qra-cursor[data-mode="focus"] .qra-cursor__core {
+  transform: scale(0.6);
+}
+
+.qra-cursor[data-mode="focus"] {
+  width: 52px;
+  height: 52px;
+}
+
+.qra-cursor[data-pressed="true"] {
+  width: 22px;
+  height: 22px;
+}
+
+.qra-cursor[data-mode="ring"][data-pressed="true"],
+.qra-cursor[data-mode="focus"][data-pressed="true"] {
+  width: 32px;
+  height: 32px;
+}
+
+/* ── Source drawer (product transparency) ──────────────────────────── */
+
+.source-drawer[data-open="true"] {
+  opacity: 1;
+}
+
+/* ── Micro-interactions ────────────────────────────────────────────── */
+
+/* Buttons: a 2px lift, a soft bloom, and an arrow that advances. Nothing here
+   is louder than that — the interface is meant to feel precise, not playful. */
+.btn-lift {
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform var(--dur-micro) var(--ease),
+    background-color var(--dur-micro) ease-out,
+    border-color var(--dur-micro) ease-out,
+    box-shadow var(--dur-standard) ease-out;
+}
+
+/* A light sweeps across the face on hover: the one flourish a button gets, and
+   it is a transform on a pseudo-element, so it costs a composite and nothing
+   else. */
+.btn-lift::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 34%,
+    rgba(255, 255, 255, 0.16) 48%,
+    transparent 62%
+  );
+  transform: translate3d(-130%, 0, 0);
+  transition: transform 760ms var(--ease);
+  pointer-events: none;
+}
+
+.btn-lift:hover::after {
+  transform: translate3d(130%, 0, 0);
+}
+
+.btn-lift:hover {
+  transform: translateY(-2px);
+}
+
+.btn-lift:active {
+  transform: translateY(0);
+}
+
+.btn-lift .btn-arrow {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-lift:hover .btn-arrow {
+  transform: translateX(3px);
+}
+
+/* Cards: the border brightens and the content shifts 2px. The card itself never
+   scales — that is the difference between a product and a toy. */
+.card-edge {
+  position: relative;
+  transition:
+    transform var(--dur-standard) var(--ease),
+    border-color var(--dur-standard) ease-out,
+    background-color var(--dur-standard) ease-out,
+    box-shadow var(--dur-standard) ease-out;
+}
+
+/* The card itself lifts — moving the content inside it reads as a wobble,
+   moving the card reads as weight. */
+.card-edge:hover {
+  transform: translate3d(0, -3px, 0);
+  border-color: rgba(245, 247, 250, 0.24);
+  background-color: rgba(21, 30, 42, 0.94);
+  box-shadow:
+    0 22px 44px -30px rgba(0, 0, 0, 0.95),
+    0 0 44px -32px rgba(63, 111, 255, 0.55);
+}
+
+.card-edge::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(120deg, rgba(63, 111, 255, 0.5), transparent 45%);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity var(--dur-smooth) ease-out;
+  pointer-events: none;
+}
+
+.card-edge:hover::after {
+  opacity: 1;
+}
+
+/* Form fields: the focus state draws its own border. */
+/* The hero's panel sits on the environment rather than beside it: a brighter
+   edge on top, a deeper shadow below, and a faint blue bloom in the shadow's
+   place — enough for it to read as the foremost object on the screen. */
+.panel-float {
+  box-shadow:
+    inset 0 1px 0 rgba(245, 247, 250, 0.07),
+    0 40px 80px -48px rgba(0, 0, 0, 0.95),
+    0 0 90px -50px rgba(63, 111, 255, 0.5);
+}
+
+/* ── Product panel transitions ─────────────────────────────────────── */
+
+/* Changing the question swaps one answer for the next: the old one rises out,
+   the new one rises in underneath it. Both are 400ms on the house curve, so it
+   reads as one exchange rather than two animations. */
+.product-panel--enter {
+  animation: panel-enter var(--dur-standard) var(--ease) both;
+}
+
+.product-panel--leave {
+  animation: panel-leave var(--dur-standard) var(--ease) both;
+}
+
+@keyframes panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes panel-leave {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
+/* Each figure resolves into place instead of appearing at its final value. */
+.metric-resolve {
+  animation: metric-resolve var(--dur-smooth) var(--ease) both;
+  animation-delay: var(--d, 0ms);
+}
+
+@keyframes metric-resolve {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
+}
+
+/* The chart: the line draws, then its readings arrive one after another. */
+.chart-point {
+  opacity: 0;
+  animation: chart-point var(--dur-standard) var(--ease) both;
+  animation-delay: var(--pd, 140ms);
+}
+
+@keyframes chart-point {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* The source drawer: measured height and opacity, so it opens smoothly at any
+   content length (including after a font swap or a resize). */
+.source-drawer {
+  overflow: hidden;
+  transition:
+    height var(--dur-standard) var(--ease),
+    opacity var(--dur-micro) ease-out;
+}
+
+/* A drawn chart line. */
+.chart-line {
+  stroke-dasharray: var(--len, 400);
+  stroke-dashoffset: var(--len, 400);
+  animation: chart-draw 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--cd, 0ms);
+}
+
+@keyframes chart-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ── Atmosphere (components/motion/QRAAtmosphere.tsx) ──────────────── */
+
+/* The environment layer behind a section. It is always subordinate: the images
+   arrive already duotoned onto the site's own ink, exposed to a measured mean,
+   and vignetted (scripts/process-backdrops.py), the wash dissolves their edges
+   into the section, and the layer itself sits at 42–62% — high enough that the
+   backdrop is visible as texture, low enough that it never competes with the
+   copy on top of it. */
+.qra-atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: calc(var(--atmosphere-opacity, 0.2) * var(--atmosphere-scale, 1));
+}
+
+.qra-atmosphere__drift {
+  position: absolute;
+  /* Inset slightly, so a cover-fit image has room to breathe without the edge
+     showing. No `will-change`: nothing moves this any more, and promoting seven
+     full-width layers for no reason is exactly the sort of cost that made the
+     page stutter. */
+  inset: -6%;
+}
+
+.qra-atmosphere__image,
+.qra-atmosphere__video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  /* A final trim only. The sources are written to this register already
+     (duotoned, exposed, vignetted) by scripts/process-backdrops.py, so darkening
+     them again here — as this rule used to — is what flattened the whole layer
+     to black. */
+  filter: saturate(0.82) contrast(0.97) brightness(0.92);
+}
+
+/* No filter on a playing video, deliberately. A CSS filter over decoded frames
+   is a GPU pass on every frame, and everything it used to do — desaturation,
+   darkening, the vignette — is baked into the frames by the renderer instead.
+   The browser now has nothing to do but composite the video it already has. */
+
+/* A still arrives once and then holds. It used to breathe forever — seven
+   full-width filtered layers animating permanently, for a 2.5% scale change
+   nobody could see. The moving positions play a pre-rendered loop instead;
+   everything else is a designed background, not an animation. */
+.qra-atmosphere__image {
+  transform: scale(1.02);
+  animation: atmosphere-intro 1200ms var(--ease) both;
+  animation-delay: calc(var(--intro-delay, 0ms) + 240ms);
+}
+
+/* The pre-rendered loop does its own moving, so it only fades in over the
+   poster that shares its frame. */
+.qra-atmosphere__video {
+  animation: atmosphere-intro 700ms var(--ease) both;
+}
+
+@keyframes atmosphere-intro {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* The wash ties the image to the page's own background. */
+.qra-atmosphere__wash {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(7, 10, 15, 0.88) 0%,
+      rgba(7, 10, 15, 0.24) 46%,
+      rgba(7, 10, 15, 0.9) 100%
+    ),
+    radial-gradient(
+      ellipse 86% 70% at 50% 50%,
+      rgba(7, 10, 15, 0.02) 20%,
+      rgba(7, 10, 15, 0.8) 100%
+    );
+}
+
+/* Each section frames a different part of its environment. */
+.qra-atmosphere[data-variant="hero"] .qra-atmosphere__image {
+  object-position: 62% 50%;
+}
+
+/* The hero's environment is read from the left, where the headline sits: the
+   image is allowed to show on the right, behind the interface, and is pulled
+   almost entirely into the background on the text side. */
+.qra-atmosphere[data-variant="hero"] .qra-atmosphere__wash {
+  background:
+    linear-gradient(
+      92deg,
+      rgba(7, 10, 15, 0.92) 0%,
+      rgba(7, 10, 15, 0.72) 38%,
+      rgba(7, 10, 15, 0.3) 64%,
+      rgba(7, 10, 15, 0.5) 100%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(7, 10, 15, 0.86) 0%,
+      rgba(7, 10, 15, 0.2) 48%,
+      rgba(7, 10, 15, 0.88) 100%
+    );
+}
+
+.qra-atmosphere[data-variant="problem"] .qra-atmosphere__image {
+  object-position: 50% 44%;
+  filter: saturate(0.5) contrast(0.95) brightness(0.7) blur(0.6px);
+}
+
+.qra-atmosphere[data-variant="idea"] .qra-atmosphere__image {
+  object-position: 32% 62%;
+  filter: saturate(0.45) brightness(0.7) blur(1px);
+}
+
+.qra-atmosphere[data-variant="product"] .qra-atmosphere__image {
+  object-position: 72% 42%;
+  filter: saturate(0.4) brightness(0.62) blur(1.4px);
+}
+
+.qra-atmosphere[data-variant="investor"] .qra-atmosphere__image {
+  object-position: 74% 46%;
+  filter: saturate(0.34) brightness(0.6) blur(2px);
+}
+
+.qra-atmosphere[data-variant="trust"] .qra-atmosphere__image {
+  object-position: 50% 55%;
+  filter: saturate(0.28) brightness(0.62) blur(2.4px);
+}
+
+.qra-atmosphere[data-variant="about"] .qra-atmosphere__image {
+  object-position: 38% 50%;
+  filter: saturate(0.5) brightness(0.7) blur(0.8px);
+}
+
+.qra-atmosphere[data-variant="waitlist"] .qra-atmosphere__image {
+  object-position: 50% 64%;
+  filter: saturate(0.42) brightness(0.68) blur(1.2px);
+}
+
+/* Tablet and phone: the environment stays, but further back — less opacity,
+   a slower cycle and, on a phone, no heavy pointer or parallax work. */
+@media (max-width: 1023px) {
+  .qra-atmosphere {
+    --atmosphere-scale: 0.78;
+  }
+
+  .qra-atmosphere__image {
+    animation-duration: 1400ms;
+  }
+
+  .qra-transition__label {
+    display: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .qra-atmosphere {
+    --atmosphere-scale: 0.62;
+  }
+
+  .qra-atmosphere__image {
+    filter: saturate(0.5) brightness(0.7) blur(1.5px);
+  }
+}
+
+/* ── The idea's three moves (components/home/IdeaSection.tsx) ─────────── */
+
+/* A hairline per step, drawing from its own left edge as the step arrives. */
+.idea-rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(63, 111, 255, 0.5), transparent);
+  transform-origin: left center;
+  animation: idea-rule 900ms var(--ease) backwards;
+}
+
+@keyframes idea-rule {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .idea-rule {
+    animation: none !important;
+  }
+}
+
+/* ── Architecture drawing (components/motion/QRAArchitecture.tsx) ───── */
+
+/* A structure described once, as geometry. Every element's dash offset is
+   driven by the same custom properties, so the whole drawing resolves in one
+   pass, top-left to bottom-right, staggered by --i. */
+.qra-architecture line,
+.qra-architecture path,
+.qra-architecture circle {
+  --draw: 1400ms;
+}
+
+.qra-architecture__spines line,
+.qra-architecture__beams line {
+  stroke: rgba(245, 247, 250, 0.16);
+  stroke-width: 1;
+  stroke-dasharray: var(--len);
+  stroke-dashoffset: var(--len);
+  transition: stroke-dashoffset var(--draw) var(--ease);
+  transition-delay: calc(var(--i) * 70ms);
+}
+
+.qra-architecture__pathway {
+  fill: none;
+  stroke: rgba(63, 111, 255, 0.62);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+  stroke-dasharray: var(--len);
+  stroke-dashoffset: var(--len);
+  transition: stroke-dashoffset 1800ms var(--ease) 420ms;
+}
+
+.qra-architecture__nodes circle {
+  fill: rgba(111, 148, 255, 0.85);
+  opacity: 0;
+  transition: opacity var(--dur-standard) ease-out;
+  transition-delay: calc(600ms + var(--i) * 60ms);
+}
+
+.qra-architecture[data-ready="true"] line,
+.qra-architecture[data-ready="true"] path {
+  stroke-dashoffset: 0;
+}
+
+.qra-architecture[data-ready="true"] circle {
+  opacity: 1;
+}
+
+/* ── Section transition (components/motion/QRASectionTransition.tsx) ── */
+
+.qra-transition {
+  position: relative;
+  margin-bottom: 3rem;
+}
+
+.qra-transition__line {
+  display: block;
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(245, 247, 250, 0.22), rgba(245, 247, 250, 0.05));
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.qra-transition__node {
+  position: absolute;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(63, 111, 255, 0.95);
+  box-shadow: 0 0 14px 1px rgba(63, 111, 255, 0.55);
+  opacity: 0;
+}
+
+.qra-transition__label {
+  display: block;
+  margin-top: 0.6rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(154, 168, 186, 0.6);
+  opacity: 0;
+}
+
+/* Drawn once, when the rule is reached. `translateX(calc(100% ...))` would be
+   the node's own width, so the travel is expressed against the rule instead. */
+[data-drawn="true"] .qra-transition__line {
+  animation: transition-line 900ms var(--ease) both;
+}
+
+[data-drawn="true"] .qra-transition__node {
+  animation: transition-node 900ms var(--ease) 200ms both;
+}
+
+[data-drawn="true"] .qra-transition__label {
+  animation: transition-label 400ms ease-out 520ms both;
+}
+
+@keyframes transition-line {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes transition-node {
+  from {
+    left: 0;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  to {
+    left: calc(100% - 5px);
+    opacity: 1;
+  }
+}
+
+@keyframes transition-label {
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Navbar sequence ────────────────────────────────────────────────── */
+
+/* Mark, then navigation, then the action — the same order as the opening
+   sequence, on the same beat. `backwards` fill only, so hover states are never
+   overridden once each item has arrived. */
+.nav-seq {
+  animation: nav-seq-in var(--dur-smooth) var(--ease) backwards;
+  animation-delay: calc(var(--intro-delay, 0ms) + var(--d, 0ms));
+}
+
+@keyframes nav-seq-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Reduced motion (WCAG 2.3.3): everything still, content visible ── */
 
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -246,23 +1539,193 @@ body {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
   }
 
-  .reveal,
-  .hero-rise,
-  .workspace-step,
-  .chip-flow,
-  .ev-item {
-    opacity: 1;
+  .qra-reveal,
+  .qra-reveal--stagger > *,
+  .rise,
+  .panel-settled,
+  .guard-in {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .phase-mark__tick {
     transform: none;
   }
 
-  .flow-line,
-  .chain-arrow {
-    stroke-dashoffset: 0;
+  /* The opening sequence is skipped, not shortened: a 0.01ms "animation" would
+     be a black flash, which is worse than no sequence at all. The reduced path
+     still runs a single quiet fade. */
+  .qra-loader {
+    animation-duration: 0.01s !important;
   }
 
-  .rail-draw {
-    transform: scaleY(1);
+  .qra-loader[data-mode="reduce"] {
+    animation-duration: 0.5s !important;
+  }
+
+  .qra-loader[data-mode="reduce"] .qra-loader__mark {
+    animation-duration: 0.5s !important;
+  }
+
+  /* No cursor replacement, no drawn lines, no slide-ins. */
+  .qra-cursor {
+    display: none !important;
+  }
+
+  .word-reveal__inner {
+    transform: none !important;
+  }
+
+  .chart-line {
+    stroke-dashoffset: 0 !important;
+    animation: none !important;
+  }
+
+  .btn-lift:hover {
+    transform: none;
+  }
+
+  .product-panel--enter,
+  .product-panel--leave,
+  .metric-resolve,
+  .chart-point {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  /* The environment stays, but stops breathing and moving. */
+  .qra-atmosphere__image {
+    animation: none !important;
+    transform: scale(1.02);
+    opacity: 1;
+  }
+
+  .qra-architecture line,
+  .qra-architecture path,
+  .qra-architecture circle {
+    stroke-dashoffset: 0 !important;
+    opacity: 1 !important;
+  }
+
+  /* The three routes are simply drawn, and the chosen one still reads. */
+  .qra-paths__layer--route {
+    transition: none !important;
+    opacity: 1 !important;
+  }
+
+  /* Nothing travels, nothing loops, nothing leans. */
+  .source-ticker__track {
+    animation: none !important;
+  }
+
+  .qra-tilt__glow {
+    display: none !important;
+  }
+
+  .btn-lift::after {
+    display: none !important;
+  }
+
+  /* A loop never mounts under reduced motion; if one is already on screen, it
+     is hidden so a still poster is what remains. */
+  .qra-atmosphere__video {
+    display: none !important;
+  }
+
+  .qra-atmosphere {
+    transform: none !important;
+  }
+
+  .nav-seq {
+    animation-delay: 0ms !important;
+  }
+
+  .metric-resolve {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ── Three paths (components/home/AudienceSection.tsx) ─────────────────── */
+
+.figure-frame {
+  position: relative;
+  padding: clamp(1rem, 2.5vw, 1.75rem);
+  border: 1px solid rgba(245, 247, 250, 0.07);
+  border-radius: 1rem;
+  background:
+    radial-gradient(ellipse 70% 100% at 80% 0%, rgba(63, 111, 255, 0.06), transparent 60%),
+    linear-gradient(180deg, rgba(13, 19, 29, 0.8), rgba(9, 13, 20, 0.55));
+}
+
+/* Four pre-rendered layers, stacked on the same canvas: the structure and one
+   image per route. Choosing a route changes one attribute, and the browser
+   crossfades — there is nothing to recompute and nothing to repaint. */
+.qra-paths {
+  position: relative;
+  aspect-ratio: 760 / 260;
+}
+
+.qra-paths__layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.qra-paths__layer--structure {
+  opacity: 0.9;
+}
+
+.qra-paths__layer--route {
+  opacity: 0.16;
+  transition: opacity 420ms var(--ease);
+}
+
+.qra-paths__layer--route[data-active="true"] {
+  opacity: 1;
+}
+
+/* The node names: HTML, positioned over the geometry as percentages of the same
+   canvas the SVGs use. */
+.qra-paths__label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(170, 182, 198, 0.62);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ── Trust (components/home/TrustSection.tsx) ─────────────────────────── */
+
+/* One hairline per row, drawing from its own left edge as the row arrives.
+   scaleX is a compositor property: the rule never repaints, however many of
+   them there are. */
+.trust-rule {
+  height: 1px;
+  background: rgba(245, 247, 250, 0.12);
+  transform-origin: left center;
+  animation: trust-rule 1100ms var(--ease) backwards;
+}
+
+@keyframes trust-rule {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trust-rule {
+    animation: none !important;
   }
 }

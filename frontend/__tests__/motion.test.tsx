@@ -1,0 +1,350 @@
+/* The motion system: the opening sequence, the data field, and typographic
+ * reveals. These run in jsdom, which has no canvas and no layout — which is
+ * exactly the point: none of these components may throw or trap the page when
+ * their drawing surface or their observer is unavailable. */
+
+import { act, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+
+import {
+  QRALoader,
+  INTRO_ATTRIBUTE,
+  INTRO_BOOTSTRAP,
+  INTRO_HERO_DELAY,
+} from "@/components/motion/QRALoader";
+import { ProductPreview } from "@/components/ProductPreview";
+import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { QRAArchitecture } from "@/components/motion/QRAArchitecture";
+import { AudienceSection } from "@/components/home/AudienceSection";
+import { QRASourceTicker } from "@/components/motion/QRASourceTicker";
+import { QRATilt } from "@/components/motion/QRATilt";
+import { QRAReveal } from "@/components/motion/QRAReveal";
+import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
+import { TextReveal } from "@/components/motion/TextReveal";
+import { LOADER } from "@/lib/content";
+
+const root = () => document.documentElement;
+
+beforeEach(() => {
+  sessionStorage.clear();
+  root().removeAttribute(INTRO_ATTRIBUTE);
+});
+
+afterEach(() => {
+  root().removeAttribute(INTRO_ATTRIBUTE);
+});
+
+describe("Loader", () => {
+  it("plays for a first visit and announces itself to assistive tech", () => {
+    root().setAttribute(INTRO_ATTRIBUTE, "play");
+    render(<QRALoader />);
+
+    expect(screen.getByTestId("qra-loader")).toHaveAttribute("data-mode", "play");
+    // The brand, character by character, as the sequence requires.
+    expect(screen.getByText(LOADER.tagline)).toBeInTheDocument();
+    expect(LOADER.name).toBe("QUANTRELIC");
+    for (const character of LOADER.name) {
+      expect(screen.getAllByText(character).length).toBeGreaterThan(0);
+    }
+    expect(screen.getByText(LOADER.announcement)).toHaveClass("sr-only");
+  });
+
+  it("does not play again in the same session", () => {
+    root().setAttribute(INTRO_ATTRIBUTE, "skip");
+    sessionStorage.setItem("qra-loader-seen", "1");
+    const { container } = render(<QRALoader />);
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it("uses the quiet version when motion is reduced", () => {
+    root().setAttribute(INTRO_ATTRIBUTE, "reduce");
+    render(<QRALoader />);
+    const overlay = screen.getByTestId("qra-loader");
+    expect(overlay).toHaveAttribute("data-mode", "reduce");
+    // The mark and wordmark carry the reduced path; nothing else is required.
+    expect(overlay.querySelector(".qra-loader__mark")).toBeInTheDocument();
+  });
+
+  it("removes itself and records the visit", async () => {
+    root().setAttribute(INTRO_ATTRIBUTE, "play");
+    render(<QRALoader />);
+    expect(root().getAttribute(INTRO_ATTRIBUTE)).toBe("play");
+
+    // The hard ceiling is 3.8s; the sequence timer fires well before it.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 2600));
+    });
+    expect(sessionStorage.getItem("qra-loader-seen")).toBe("1");
+    expect(root().getAttribute(INTRO_ATTRIBUTE)).toBeNull();
+  }, 6000);
+});
+
+describe("QRAAtmosphere environments", () => {
+  it("ships a poster for every looping position", () => {
+    const { container } = render(<QRAAtmosphere variant="hero" />);
+    const image = container.querySelector(".qra-atmosphere__image");
+    // The poster is what reduced motion, slow connections and autoplay refusal
+    // all land on, so it must be in the markup from the start.
+    expect(image).toHaveAttribute("src", "/motion/hero-poster.webp");
+  });
+
+  it("falls back to a generated still for positions that do not carry a loop", () => {
+    const { container } = render(<QRAAtmosphere variant="trust" />);
+    expect(container.querySelector(".qra-atmosphere__image")).toHaveAttribute(
+      "src",
+      "/images/ai-trust.webp",
+    );
+    expect(container.querySelector("video")).toBeNull();
+  });
+
+  it("does not mount the loop until its section is close", () => {
+    const { container } = render(<QRAAtmosphere variant="waitlist" />);
+    // jsdom has no IntersectionObserver here, so this is the load-time shape:
+    // a poster, and no decoder until the section approaches.
+    expect(container.querySelector("video")).toBeNull();
+    expect(container.querySelector(".qra-atmosphere__image")).toHaveAttribute(
+      "src",
+      "/motion/waitlist-poster.webp",
+    );
+  });
+
+  it("never mounts a video under reduced motion", () => {
+    const original = window.matchMedia;
+    window.matchMedia = ((query: string) => ({
+      matches: query.includes("reduce"),
+      media: query,
+      onchange: null,
+      addListener() {},
+      removeListener() {},
+      addEventListener() {},
+      removeEventListener() {},
+      dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia;
+    try {
+      const { container } = render(<QRAAtmosphere variant="hero" />);
+      expect(container.querySelector("video")).toBeNull();
+      expect(container.querySelector(".qra-atmosphere__image")).not.toBeNull();
+    } finally {
+      window.matchMedia = original;
+    }
+  });
+});
+
+describe("TextReveal", () => {
+  it("keeps every word in the markup, reachable without motion", () => {
+    render(<TextReveal text="Make sense of your investments." />);
+    // Each word is its own clipped element, and all of them are present.
+    for (const word of ["Make", "sense", "of", "your", "investments."]) {
+      expect(screen.getByText(word)).toBeInTheDocument();
+    }
+  });
+});
+
+describe("QRAAtmosphere", () => {
+  it("renders the environment as a decorative layer behind the section", () => {
+    const { container } = render(<QRAAtmosphere variant="hero" />);
+    const layer = container.querySelector(".qra-atmosphere");
+    expect(layer).not.toBeNull();
+    expect(layer).toHaveAttribute("data-variant", "hero");
+    // Decorative: it must never be announced, and never catch a pointer.
+    expect(layer).toHaveAttribute("aria-hidden", "true");
+    const image = container.querySelector(".qra-atmosphere__image");
+    expect(image).toHaveAttribute("alt", "");
+    expect(image).toHaveAttribute("src", "/motion/hero-poster.webp");
+    // The wash is what keeps it subordinate to the content.
+    expect(container.querySelector(".qra-atmosphere__wash")).not.toBeNull();
+  });
+
+  it("scales its strength from the section it sits in", () => {
+    const { container } = render(<QRAAtmosphere variant="trust" intensity={0.5} />);
+    const layer = container.querySelector(".qra-atmosphere") as HTMLElement;
+    // Half strength: subtle enough to sit behind copy, present enough to read as
+    // texture rather than as a flat panel.
+    const opacity = Number(layer.style.getPropertyValue("--atmosphere-opacity"));
+    expect(opacity).toBeGreaterThan(0.15);
+    expect(opacity).toBeLessThan(0.35);
+  });
+});
+
+describe("QRASectionTransition", () => {
+  it("names the state the next section arrives in", () => {
+    render(<QRASectionTransition label="Organized" />);
+    expect(screen.getByText("Organized")).toBeInTheDocument();
+  });
+
+  it("plays the rule from CSS, not from a scroll scene", () => {
+    const { container } = render(<QRASectionTransition label="Organized" />);
+    const root = container.querySelector(".qra-transition") as HTMLElement;
+    // The attribute the stylesheet's draw animation hangs off. Where there is no
+    // observer to wait for (as here), it is set straight away — the rule is
+    // drawn rather than left at scaleX(0).
+    expect(root).toHaveAttribute("data-drawn", "true");
+    expect(container.querySelector(".qra-transition__line")).not.toBeNull();
+    expect(container.querySelector(".qra-transition__node")).not.toBeNull();
+  });
+});
+
+describe("ProductPreview exchange", () => {
+  it("exchanges answers rather than swapping them, keeping one tabpanel", async () => {
+    render(<ProductPreview />);
+    await userEvent.click(screen.getByRole("tab", { name: /Growth/ }));
+
+    // One panel is live; the outgoing answer is stacked behind it and hidden.
+    const panels = screen.getAllByRole("tabpanel");
+    expect(panels).toHaveLength(1);
+    const leaving = document.querySelector(".product-panel--leave");
+    expect(leaving).not.toBeNull();
+    expect(leaving).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("reveals the readings along the chart", async () => {
+    const { container } = render(<ProductPreview />);
+    await userEvent.click(screen.getByRole("tab", { name: /Financials/ }));
+    expect(container.querySelectorAll(".chart-point").length).toBeGreaterThan(3);
+  });
+});
+
+describe("reveal paths without an observer", () => {
+  it("shows block reveals immediately when IntersectionObserver is unavailable", () => {
+    // jsdom has no observer: the safe path is to show the content, never to
+    // leave it hidden behind an animation that will not run.
+    const { container } = render(<QRAReveal>Content</QRAReveal>);
+    expect(container.firstElementChild).toHaveClass("is-visible");
+  });
+
+  it("keeps the environment visible when it cannot be observed", () => {
+    const { container } = render(<QRAAtmosphere variant="problem" />);
+    // The gating attribute is only ever written to pause motion; a page that
+    // cannot observe keeps its image.
+    expect(container.querySelector(".qra-atmosphere__image")).not.toBeNull();
+  });
+});
+
+describe("opening sequence across navigation", () => {
+  it("does not replay when the session has already seen it", () => {
+    // Soft navigation re-renders the layout without the bootstrap having run
+    // again: no attribute, no sequence.
+    sessionStorage.setItem("qra-loader-seen", "1");
+    const { container } = render(<QRALoader />);
+    expect(container).toBeEmptyDOMElement();
+  });
+});
+
+describe("intro bootstrap (runs before first paint)", () => {
+  const run = () => new Function(INTRO_BOOTSTRAP)();
+  const withReducedMotion = (run: () => void) => {
+    const original = window.matchMedia;
+    window.matchMedia = ((query: string) => ({
+      matches: query.includes("reduce"),
+      media: query,
+      onchange: null,
+      addListener() {},
+      removeListener() {},
+      addEventListener() {},
+      removeEventListener() {},
+      dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia;
+    try {
+      run();
+    } finally {
+      window.matchMedia = original;
+    }
+  };
+
+  it("plays for a first visit, and delays the hero by the same amount", () => {
+    sessionStorage.clear();
+    root().removeAttribute(INTRO_ATTRIBUTE);
+    root().style.removeProperty("--intro-delay");
+
+    run();
+
+    expect(root().getAttribute(INTRO_ATTRIBUTE)).toBe("play");
+    // The hero waits for the sequence rather than being paused by it.
+    expect(root().style.getPropertyValue("--intro-delay")).toBe(`${INTRO_HERO_DELAY}ms`);
+  });
+
+  it("skips on a later visit in the same session", () => {
+    sessionStorage.setItem("qra-loader-seen", "1");
+    root().removeAttribute(INTRO_ATTRIBUTE);
+    run();
+    expect(root().getAttribute(INTRO_ATTRIBUTE)).toBe("skip");
+  });
+
+  it("uses the quiet path when motion is not wanted", () => {
+    sessionStorage.clear();
+    root().removeAttribute(INTRO_ATTRIBUTE);
+    withReducedMotion(run);
+    expect(root().getAttribute(INTRO_ATTRIBUTE)).toBe("reduce");
+  });
+});
+
+describe("product figures", () => {
+  it("shows real values, formatted as the interface reads them", async () => {
+    render(<ProductPreview />);
+    await userEvent.click(screen.getByRole("tab", { name: /Financials/ }));
+
+    // Indian-digit grouping, crore scale, and a margin with its decimal.
+    expect(screen.getByText("₹1,24,300 Cr")).toBeInTheDocument();
+    expect(screen.getByText("15.1%")).toBeInTheDocument();
+  });
+
+  it("changes the figures when the question changes", async () => {
+    render(<ProductPreview />);
+    await userEvent.click(screen.getByRole("tab", { name: /Financials/ }));
+    expect(within(screen.getByRole("tabpanel")).getByText("₹1,24,300 Cr")).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("tab", { name: /Growth/ }));
+    const panel = within(screen.getByRole("tabpanel"));
+    expect(panel.getByText("6.2%")).toBeInTheDocument();
+    // The outgoing answer is still leaving the frame, but it is not the live
+    // one: the panel you read from carries only the current question's figures.
+    expect(panel.queryByText("₹1,24,300 Cr")).not.toBeInTheDocument();
+  });
+});
+
+describe("the architecture drawing", () => {
+  it("draws structure as geometry rather than a simulation", () => {
+    const { container } = render(<QRAArchitecture />);
+    const svg = container.querySelector(".qra-architecture");
+    expect(svg).toHaveAttribute("data-ready", "false");
+    expect(container.querySelectorAll(".qra-architecture__spines line").length).toBe(6);
+    expect(container.querySelector(".qra-architecture__pathway")).not.toBeNull();
+  });
+});
+
+describe("the three paths", () => {
+  it("stacks one pre-rendered layer per investor over the structure", () => {
+    const { container } = render(<AudienceSection />);
+    const layers = container.querySelectorAll(".qra-paths__layer--route");
+    expect(layers).toHaveLength(3);
+    expect(Array.from(layers).map((layer) => layer.getAttribute("src"))).toEqual([
+      "/graphics/investor-beginner.svg",
+      "/graphics/investor-curious.svg",
+      "/graphics/investor-busy.svg",
+    ]);
+    expect(container.querySelector(".qra-paths__layer--structure")).toHaveAttribute(
+      "src",
+      "/graphics/investors-structure.svg",
+    );
+  });
+
+  it("lights exactly one route at a time, and keeps only that one described", () => {
+    const { container } = render(<AudienceSection />);
+    const active = container.querySelectorAll(".qra-paths__layer--route[data-active='true']");
+    expect(active).toHaveLength(1);
+    // Only the lit route carries a description; the others are decorative.
+    expect(active[0].getAttribute("alt")).toBeTruthy();
+    const rest = container.querySelectorAll(".qra-paths__layer--route[data-active='false']");
+    for (const layer of Array.from(rest)) {
+      expect(layer).toHaveAttribute("alt", "");
+    }
+  });
+
+  it("names the four nodes in HTML, not in the image", () => {
+    const { container } = render(<AudienceSection />);
+    const labels = container.querySelectorAll(".qra-paths__label");
+    expect(labels).toHaveLength(4);
+    expect(container.textContent).toContain("Plain language");
+  });
+});

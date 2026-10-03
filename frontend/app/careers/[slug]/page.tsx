@@ -3,9 +3,10 @@ import { notFound } from "next/navigation";
 
 import { ApplyForm } from "@/components/ApplyForm";
 import { Markdown } from "@/components/Markdown";
-import { Reveal } from "@/components/Reveal";
-import { Badge } from "@/components/ui";
+import { QRAReveal } from "@/components/motion/QRAReveal";
+import { SectionLabel } from "@/components/ui";
 import { apiGet } from "@/lib/api";
+import { SITE_NAME } from "@/lib/constants";
 import { FALLBACK_POSTINGS } from "@/lib/seed";
 
 export const dynamic = "force-dynamic";
@@ -34,7 +35,10 @@ async function getPosting(slug: string): Promise<Posting | null> {
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const posting = await getPosting(params.slug);
   if (!posting) return { title: "Role not found" };
-  return { title: posting.title, description: `${posting.title} at Quantrelic Analytics — ${posting.location}` };
+  return {
+    title: posting.title,
+    description: `${posting.title} at Quantrelic Analytics \u2014 ${posting.location}.`,
+  };
 }
 
 export default async function CareerPage({ params }: { params: { slug: string } }) {
@@ -42,45 +46,51 @@ export default async function CareerPage({ params }: { params: { slug: string } 
   if (!posting) notFound();
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-20">
+    <div className="mx-auto max-w-shell px-5 pb-20 pt-14 sm:px-6 sm:pt-20">
       <div className="mx-auto max-w-3xl">
-        <Reveal>
-          <div className="mb-6 flex flex-wrap items-center gap-3">
-            <Badge tone="brand">Open</Badge>
-            <Badge tone="muted">{posting.location}</Badge>
-            {posting.compensation_range && <Badge tone="muted">{posting.compensation_range}</Badge>}
-          </div>
-          <h1 className="font-display text-4xl font-semibold tracking-tightest text-paper">{posting.title}</h1>
-          <p className="mt-3 text-paper-dim/70">
-            {posting.department} · {posting.employment_type.replace("_", " ")} ·{" "}
-            {posting.location_type.replace("_", " ")}
+        <QRAReveal>
+          <SectionLabel tone="brand">Careers</SectionLabel>
+          <h1 className="mt-5 font-display text-[2.2rem] font-semibold leading-[1.06] tracking-tightest text-paper sm:text-5xl">
+            {posting.title}
+          </h1>
+          <p className="mt-4 text-sm text-paper-mute">
+            {posting.department} \u00b7 {posting.employment_type.replace("_", " ")} \u00b7{" "}
+            {posting.location_type.replace("_", " ")} \u00b7 {posting.location}
           </p>
-        </Reveal>
+        </QRAReveal>
 
-        <div className="mt-10 space-y-10">
-          <Reveal delay={100}>
-            <div className="rounded-2xl border border-white/5 bg-ink-900/60 p-8">
-              <h2 className="mb-2 text-lg font-semibold text-paper">About the role</h2>
-              <Markdown source={posting.description_md} />
-            </div>
-          </Reveal>
-          <Reveal delay={180}>
-            <div className="rounded-2xl border border-white/5 bg-ink-900/60 p-8">
-              <h2 className="mb-2 text-lg font-semibold text-paper">Requirements</h2>
-              <Markdown source={posting.requirements_md} />
-            </div>
-          </Reveal>
+        <div className="mt-12 grid gap-10 sm:grid-cols-2">
+          <QRAReveal>
+            <section>
+              <h2 className="font-display text-lg font-semibold tracking-tight text-paper">
+                About the role
+              </h2>
+              <div className="mt-3 text-base">
+                <Markdown source={posting.description_md} />
+              </div>
+            </section>
+          </QRAReveal>
+          <QRAReveal delay={90}>
+            <section>
+              <h2 className="font-display text-lg font-semibold tracking-tight text-paper">
+                Requirements
+              </h2>
+              <div className="mt-3 text-base">
+                <Markdown source={posting.requirements_md} />
+              </div>
+            </section>
+          </QRAReveal>
         </div>
 
-        <Reveal delay={260}>
-          <div className="mt-16 rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-8">
-            <h2 className="font-display text-2xl font-semibold tracking-tight text-paper">Apply</h2>
-            <p className="mt-2 mb-6 text-sm text-paper-dim/60">
-              Resume (PDF) + a few details. We reply to every application.
+        <QRAReveal delay={140}>
+          <section className="mt-14 rounded-xl border border-line bg-ink-850/80 p-6 shadow-panel sm:p-8">
+            <h2 className="font-display text-xl font-semibold tracking-tight text-paper">Apply</h2>
+            <p className="mb-6 mt-2 text-sm text-paper-mute">
+              Resume (PDF) and a few details. A person at {SITE_NAME} reads every application.
             </p>
             <ApplyForm slug={posting.slug} title={posting.title} />
-          </div>
-        </Reveal>
+          </section>
+        </QRAReveal>
       </div>
     </div>
   );

@@ -1,66 +1,90 @@
-import { Reveal } from "@/components/Reveal";
-import { Eyebrow } from "@/components/ui";
+"use client";
 
-const SOURCES = [
-  "Company filings",
-  "News",
-  "Financial statements",
-  "Market data",
-  "Presentations",
-  "Screeners",
-  "Charts",
-  "Management commentary",
-];
+import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
+import { QRAReveal } from "@/components/motion/QRAReveal";
+import { Section, SectionLabel, SectionStatement } from "@/components/ui";
+import { PROBLEM } from "@/lib/content";
 
+/**
+ * THE PROBLEM — too much information, not enough clarity.
+ *
+ * This section is copy and one quiet list. It used to carry a full-width stage:
+ * a film of drifting documents behind seven chips, two statements alternating
+ * over them and a node underneath. It never worked — at any width the overlays
+ * fought the copy, and the film read as noise rather than as depth — so it is
+ * gone rather than adjusted.
+ *
+ * What is left is the argument itself, stated once, and the seven sources as an
+ * editorial list: numbered, ruled, and readable at a glance. The atmosphere
+ * behind it is an AI-generated backdrop held at low opacity, which is the only
+ * moving part and the only thing that does not have to be read.
+ */
 export function ProblemSection() {
   return (
-    <section className="mx-auto max-w-6xl px-6 py-24">
-      <div className="grid gap-14 lg:grid-cols-[1fr_1.1fr] lg:gap-20">
-        <Reveal>
-          <Eyebrow>The problem</Eyebrow>
-          <h2 className="mt-5 font-display text-4xl font-semibold leading-[1.08] tracking-tightest text-paper sm:text-5xl">
-            Research is everywhere.
-            <br />
-            <span className="text-paper-dim/50">The process isn't.</span>
-          </h2>
-          <blockquote className="mt-9 border-l-2 border-signal-500/60 pl-6 text-lg leading-relaxed text-paper-dim/90">
-            “The problem isn't finding another source of information. The problem is connecting the
-            information that already exists.”
-          </blockquote>
-        </Reveal>
+    <Section
+      id="problem"
+      tone="raised"
+      labelledBy="problem-heading"
+      className="relative overflow-x-clip"
+    >
+      <QRASectionTransition label="Fragmented" />
 
-        <Reveal delay={120}>
-          <div className="grid grid-cols-2 gap-3">
-            {SOURCES.map((source, index) => (
-              <div
-                key={source}
-                className="flex items-center gap-2.5 rounded-lg border border-white/5 bg-ink-900/60 px-4 py-3"
-                style={{ transform: `translateY(${(index % 2) * 14}px)` }}
+      {/* The environment: a dark generated backdrop, felt rather than seen. */}
+      <QRAAtmosphere variant="problem" />
+
+      <div className="relative z-10">
+        <QRAReveal>
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <SectionLabel tone="brand">{PROBLEM.label}</SectionLabel>
+              <SectionStatement
+                id="problem-heading"
+                lines={PROBLEM.statement}
+                as="h2"
+                className="mt-5"
+              />
+            </div>
+            <p className="max-w-sm text-sm leading-relaxed text-paper-mute lg:text-right">
+              {PROBLEM.note}
+            </p>
+          </div>
+        </QRAReveal>
+
+        {/* The sources, as themselves. A hairline each, a number, a name — no
+            cards, no motion, nothing competing with the sentence above. */}
+        <div className="mt-14 lg:mt-16">
+          <QRAReveal variant="line" className="border-t border-line" />
+          <ol className="grid sm:grid-cols-2 sm:gap-x-14">
+            {PROBLEM.fragments.map((fragment, index) => (
+              <QRAReveal
+                as="li"
+                key={fragment.label}
+                delay={60 + index * 50}
+                className="flex items-baseline gap-5 border-b border-line-faint py-5"
               >
-                <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-paper-dim/30" aria-hidden="true" />
-                <span className="text-sm text-paper-dim/75">{source}</span>
-              </div>
+                <span className="font-mono text-xs text-brand-400">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="font-display text-base font-medium tracking-tight text-paper sm:text-lg">
+                  {fragment.label}
+                </span>
+              </QRAReveal>
             ))}
-          </div>
+          </ol>
+        </div>
 
-          <div className="relative mt-10 overflow-hidden rounded-2xl border border-signal-500/25 bg-gradient-to-b from-signal-600/[0.12] to-ink-900/60 p-6 sm:p-7">
-            <svg
-              className="chart-line absolute right-6 top-6 h-8 w-24 text-signal-400/50"
-              viewBox="0 0 96 32"
-              fill="none"
-              aria-hidden="true"
-            >
-              <path d="M2 28 L18 22 L34 25 L50 14 L66 18 L82 8 L94 4" stroke="currentColor" strokeWidth="1.5" />
-            </svg>
-            <p className="font-display text-lg font-semibold tracking-tight text-paper">
-              QRA · one coherent research workflow
-            </p>
-            <p className="mt-2 max-w-md text-sm leading-relaxed text-paper-dim/75">
-              Everything, connected — so you can investigate instead of gather.
-            </p>
-          </div>
-        </Reveal>
+        {/* The two statements, one after the other. Read in order, they are the
+            whole argument; there is no need to animate them. */}
+        <div className="mt-12 flex flex-col gap-3 sm:flex-row sm:items-baseline sm:gap-6">
+          <p className="font-display text-xl font-semibold tracking-tight text-paper sm:text-2xl">
+            {PROBLEM.overload}
+          </p>
+          <p className="font-display text-xl font-semibold tracking-tight text-brand-300 sm:text-2xl">
+            {PROBLEM.clarity}
+          </p>
+        </div>
       </div>
-    </section>
+    </Section>
   );
 }

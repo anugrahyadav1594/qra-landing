@@ -1,33 +1,61 @@
 import type { Metadata } from "next";
 
-import { Reveal } from "@/components/Reveal";
+import { socialMetadata } from "@/lib/seo";
+
+import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { WaitlistForm } from "@/components/WaitlistForm";
-import { SectionHeading } from "@/components/ui";
+import { SectionLabel, SectionStatement } from "@/components/ui";
+import { COMPANY_NAME, PRODUCT_NAME, SITE_NAME, SITE_URL } from "@/lib/constants";
+import { WAITLIST_PAGE } from "@/lib/content";
 
 export const metadata: Metadata = {
   title: "Join the waitlist",
   description:
-    "Get early access to QRA — the Quantrelic Research Agent. Early access opens in cohorts, in waitlist order.",
+    "Join the waitlist for QRA — Quantrelic Analytics' product that makes financial information easier to understand. Early access opens in cohorts.",
+  ...socialMetadata({
+    title: `Join the waitlist · ${SITE_NAME}`,
+    description: "We are building QRA now. We will email you when early access opens.",
+    url: `${SITE_URL}/waitlist`,
+  }),
 };
 
 export default function WaitlistPage() {
   return (
-    <div className="mx-auto max-w-6xl px-6 py-20">
-      <Reveal>
-        <SectionHeading
-          eyebrow="Early access"
-          title="Get early access to QRA."
-          description="One email per person. Duplicates are ignored, your position is fixed at join time, and opting out takes one click."
-        />
-      </Reveal>
-      <Reveal delay={120}>
-        <div className="mx-auto max-w-xl rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-8 sm:p-10">
+    <div className="relative overflow-hidden">
+      {/* The last environment: the same convergence the landing page ends on.
+          The form itself is left completely alone. */}
+      <div aria-hidden="true" className="absolute inset-x-0 top-0 h-[560px]">
+        <QRAAtmosphere variant="waitlist" />
+      </div>
+
+      <div className="relative z-10 mx-auto max-w-shell px-5 pb-20 pt-14 sm:px-6 sm:pt-20">
+      <div className="grid gap-12 lg:grid-cols-[1fr_minmax(0,520px)] lg:gap-20">
+        <div>
+          <SectionLabel tone="brand">{WAITLIST_PAGE.eyebrow}</SectionLabel>
+          <SectionStatement
+            id="waitlist-heading"
+            as="h2"
+            size="lg"
+            lines={[WAITLIST_PAGE.headline]}
+            className="mt-5"
+          />
+          <p className="mt-6 text-lg leading-relaxed text-paper-dim">{WAITLIST_PAGE.support}</p>
+          <ul className="mt-8 space-y-3 text-sm text-paper-mute">
+            <li>One email per person \u2014 duplicates are ignored.</li>
+            <li>Waitlist updates only; marketing needs a separate opt-in.</li>
+            <li>Ask us to remove your details at any time.</li>
+          </ul>
+          <p className="mt-8 text-xs leading-relaxed text-paper-faint">
+            {PRODUCT_NAME} explains financial information; you decide what to do with it.
+            {" "}{COMPANY_NAME}.
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-line bg-ink-850/80 p-6 shadow-panel sm:p-7">
           <WaitlistForm />
         </div>
-      </Reveal>
-      <p className="mx-auto mt-8 max-w-xl text-center text-xs text-paper-dim/40">
-        QRA does not provide investment advice. QRA investigates. You decide.
-      </p>
+      </div>
+      </div>
     </div>
   );
 }

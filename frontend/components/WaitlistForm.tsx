@@ -112,12 +112,12 @@ export function WaitlistForm({ compact = false }: { compact?: boolean }) {
       <div
         data-testid="waitlist-success"
         role="status"
-        className="rounded-xl border border-aqua-500/30 bg-aqua-500/10 p-5 text-sm text-aqua-300"
+        className="rounded-lg border border-positive/30 bg-positive/[0.08] p-5 text-sm"
       >
-        <p className="font-semibold">
+        <p className="font-semibold text-paper">
           {state.alreadyPresent ? "You're already on the list." : "You're on the list!"}
         </p>
-        <p className="mt-1 text-paper-dim/80">
+        <p className="mt-1.5 leading-relaxed text-paper-dim">
           {state.alreadyPresent
             ? "We already have this email for QRA — no action needed."
             : "We'll email you when early access opens. Waitlist updates only — no spam."}
@@ -127,7 +127,7 @@ export function WaitlistForm({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-4">
+    <form onSubmit={handleSubmit} noValidate className="space-y-5">
       <div>
         <label htmlFor="waitlist-email" className={labelClass}>
           Email
@@ -150,8 +150,8 @@ export function WaitlistForm({ compact = false }: { compact?: boolean }) {
 
       <div>
         <label htmlFor="waitlist-interest" className={labelClass}>
-          What are you most interested in?{" "}
-          <span className="text-paper-dim/40">(optional)</span>
+          What would you like to understand better?{" "}
+          <span className="font-normal text-paper-mute">(optional)</span>
         </label>
         <select
           id="waitlist-interest"
@@ -160,40 +160,38 @@ export function WaitlistForm({ compact = false }: { compact?: boolean }) {
           onChange={(e) => setInterest(e.target.value)}
           className={inputClass}
         >
-          <option value="" className="bg-ink-900">
-            Choose an area
-          </option>
+          <option value="">Choose an area</option>
           {WAITLIST_INTERESTS.map((option) => (
-            <option key={option} value={option} className="bg-ink-900">
+            <option key={option} value={option}>
               {option}
             </option>
           ))}
         </select>
       </div>
 
-      <div className="space-y-2">
-        <label className="flex items-start gap-2.5 text-sm text-paper-dim/90">
+      <div className="space-y-3">
+        <label className="flex items-start gap-2.5 text-sm leading-relaxed text-paper-dim">
           <input
             type="checkbox"
             data-testid="waitlist-consent"
             checked={consent}
             onChange={(e) => setConsent(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 accent-signal-500"
+            className="mt-0.5 h-4 w-4 rounded border-line-strong accent-brand-500"
             aria-describedby={fieldErrors.consentWaitlistContact ? "waitlist-consent-error" : undefined}
           />
           <span>
             I agree to be contacted about waitlist updates and early access for QRA.{" "}
-            <span className="text-paper-dim/40">(required)</span>
+            <span className="text-paper-mute">(required)</span>
           </span>
         </label>
         <FieldError id="waitlist-consent-error">{fieldErrors.consentWaitlistContact}</FieldError>
-        <label className="flex items-start gap-2.5 text-sm text-paper-dim/70">
+        <label className="flex items-start gap-2.5 text-sm leading-relaxed text-paper-mute">
           <input
             type="checkbox"
             data-testid="waitlist-marketing"
             checked={marketing}
             onChange={(e) => setMarketing(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-white/20 bg-white/5 accent-signal-500"
+            className="mt-0.5 h-4 w-4 rounded border-line-strong accent-brand-500"
           />
           <span>Optional: send me occasional product news (marketing consent, separate).</span>
         </label>
@@ -213,19 +211,24 @@ export function WaitlistForm({ compact = false }: { compact?: boolean }) {
         type="submit"
         data-testid="waitlist-submit"
         disabled={submitting}
-        className={`${compact ? "w-full" : "w-full sm:w-auto"} inline-flex items-center justify-center gap-2 rounded-full bg-paper px-6 py-3 text-sm font-semibold text-ink-950 transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-paper/40 disabled:opacity-60`}
+        className={`${
+          compact ? "w-full" : "w-full sm:w-auto"
+        } inline-flex items-center justify-center rounded-md bg-brand-500 px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-600 disabled:opacity-60`}
       >
         {submitting ? "Joining…" : "Join the waitlist"}
       </button>
 
       {state.kind === "error" && (
-        <p data-testid="waitlist-error" role="alert" className="text-sm text-red-400">
+        <p data-testid="waitlist-error" role="alert" className="text-sm text-danger">
           {state.message}
         </p>
       )}
-      <p className="text-xs text-paper-dim/40">
+      <p className="text-xs leading-relaxed text-paper-mute">
         Protected by rate limits, bot checks and spam filters. Read the{" "}
-        <a href="/privacy" className="underline hover:text-paper-dim">privacy policy</a>.
+        <a href="/privacy" className="underline hover:text-paper-dim">
+          privacy policy
+        </a>
+        .
       </p>
     </form>
   );

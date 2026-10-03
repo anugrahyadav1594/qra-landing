@@ -1,5 +1,12 @@
 import type { Config } from "tailwindcss";
 
+/**
+ * Dark-first design system for Quantrelic Analytics.
+ *
+ * Deep navy surfaces, white typography and three meaningful accents:
+ * cobalt blue (information / action), emerald (positive financial movement)
+ * and amber (attention / context). No neon, no purple, no glassmorphism.
+ */
 const config: Config = {
   content: [
     "./app/**/*.{ts,tsx}",
@@ -10,33 +17,43 @@ const config: Config = {
     extend: {
       colors: {
         ink: {
-          950: "#07080C",
-          900: "#0B0D12",
-          850: "#0E1118",
-          800: "#12151D",
-          750: "#161A24",
-          700: "#1B202C",
-          600: "#242B3A",
+          950: "#070A0F", // page background
+          900: "#0D131D", // raised section background
+          850: "#111925", // panels
+          800: "#151E2A", // elevated panels
+          750: "#1A2334", // hover / inset
+          700: "#222C3E", // borders strong, chips
         },
         paper: {
-          DEFAULT: "#F2F0E9",
-          dim: "#C9CCD4",
+          DEFAULT: "#F5F7FA", // primary text
+          dim: "#9AA8BA", // secondary text
+          mute: "#8B99AB", // tertiary text (contrast-safe on ink-950)
+          faint: "#6F7D91", // micro labels, decorations
         },
-        signal: {
-          300: "#8FA3FF",
-          400: "#6E87FF",
-          500: "#4C6FFF",
-          600: "#3D55D6",
-          700: "#33449F",
+        brand: {
+          300: "#9DB4FF",
+          400: "#6F94FF",
+          500: "#3F6FFF", // primary accent
+          600: "#2F58E0",
+          700: "#2545BE",
         },
-        aqua: {
-          300: "#6FE3F0",
-          400: "#3ED0E0",
-          500: "#22B7C9",
+        positive: {
+          DEFAULT: "#20C997",
+          300: "#5FDDB6",
+          700: "#0F7A5C",
         },
-      },
-      letterSpacing: {
-        tightest: "-0.045em",
+        amber: {
+          DEFAULT: "#F2B84B",
+          300: "#FFD27A",
+        },
+        danger: {
+          DEFAULT: "#FF5B6E",
+        },
+        line: {
+          DEFAULT: "rgba(245, 247, 250, 0.10)",
+          strong: "rgba(245, 247, 250, 0.18)",
+          faint: "rgba(245, 247, 250, 0.06)",
+        },
       },
       fontFamily: {
         sans: [
@@ -59,6 +76,21 @@ const config: Config = {
           "sans-serif",
         ],
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
+      },
+      letterSpacing: {
+        tightest: "-0.04em",
+        microl: "0.22em",
+      },
+      maxWidth: {
+        shell: "1200px",
+        contact: "1100px",
+      },
+      transitionTimingFunction: {
+        editorial: "cubic-bezier(0.16, 1, 0.3, 1)",
+      },
+      boxShadow: {
+        panel: "0 30px 60px -40px rgba(0, 0, 0, 0.9)",
+        glow: "0 0 0 1px rgba(59, 102, 255, 0.25), 0 24px 60px -30px rgba(59, 102, 255, 0.35)",
       },
     },
   },

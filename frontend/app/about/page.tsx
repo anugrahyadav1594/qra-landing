@@ -1,84 +1,100 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
-import { Reveal } from "@/components/Reveal";
-import { Eyebrow } from "@/components/ui";
-import { COMPANY_NAME, PRODUCT_FULL_NAME, SITE_NAME } from "@/lib/constants";
+import { socialMetadata } from "@/lib/seo";
+
+import { QRAArchitecture } from "@/components/motion/QRAArchitecture";
+import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { QRAReveal } from "@/components/motion/QRAReveal";
+import { Button, SectionLabel, SectionStatement } from "@/components/ui";
+import { ABOUT } from "@/lib/content";
+import { COMPANY_NAME, SITE_NAME, SITE_URL } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "About",
-  description: `${COMPANY_NAME} builds intelligent financial research infrastructure and products.`,
+  description:
+    "Quantrelic Analytics Private Limited is building technology that makes financial information easier to understand and investing simpler for everyday investors.",
+  ...socialMetadata({
+    title: `About · ${SITE_NAME}`,
+    description: "Quantrelic Analytics Private Limited is building technology that makes financial information easier to understand.",
+    url: `${SITE_URL}/about`,
+  }),
 };
-
-const VALUES = [
-  {
-    title: "Evidence before opinion",
-    body: "Every statement QRA produces is designed to trace back to the source it came from — filings, statements, news, market data. No source, no statement.",
-  },
-  {
-    title: "Research, not advice",
-    body: "QRA is built to investigate and organize — never to tell you what to do. The investment decision stays with the investor, always.",
-  },
-  {
-    title: "Consent is explicit",
-    body: "Joining the waitlist is not signing up for marketing. Every purpose gets its own opt-in, its own record, and its own off switch.",
-  },
-  {
-    title: "Boring architecture, serious controls",
-    body: "Rate limits on every surface, hashed IPs, audit trails, honest error messages. The controls live in the code, not the pitch.",
-  },
-];
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-6xl px-6 py-20">
-      <Reveal>
+    <div className="mx-auto max-w-shell px-5 pb-20 pt-14 sm:px-6 sm:pt-20">
+      <QRAReveal>
         <div className="max-w-3xl">
-          <Eyebrow>About</Eyebrow>
-          <h1 className="mt-5 font-display text-4xl font-semibold leading-[1.05] tracking-tightest text-paper sm:text-6xl">
-            {SITE_NAME}
-          </h1>
+          <SectionLabel tone="brand">{ABOUT.eyebrow}</SectionLabel>
+          <SectionStatement id="about-heading" as="h2" lines={ABOUT.headline} className="mt-5" />
         </div>
-        <div className="mt-10 max-w-3xl space-y-6 text-base leading-relaxed text-paper-dim/80">
-          <p>
-            {COMPANY_NAME} builds intelligent financial research infrastructure and products.
-            QRA — the {PRODUCT_FULL_NAME} — is its first.
-          </p>
-          <p>
-            The company started from a simple observation: researching a company today means
-            stitching together filings, terminals, news feeds and PDFs — and the connections
-            between them are made by hand, in a notebook, in a spreadsheet. The information
-            exists. The process doesn't.
-          </p>
-          <p>
-            QRA is our answer: an evidence-first research companion that investigates, organizes
-            and cites — so you can spend your attention on reasoning, not gathering. We're
-            pre-launch and building it in the open, with early access rolling out in cohorts.
-          </p>
-          <p>
-            We're a small, remote-first team based in India. If any of this sounds like the kind
-            of thing you want to build,{" "}
-            <Link
-              href="/careers"
-              className="text-signal-300 underline decoration-signal-400/40 underline-offset-2 hover:text-signal-400"
-            >
-              come work with us
-            </Link>
-            .
-          </p>
-        </div>
-      </Reveal>
+      </QRAReveal>
 
-      <div className="mt-16 grid gap-6 sm:grid-cols-2">
-        {VALUES.map((value, index) => (
-          <Reveal key={value.title} delay={index * 70}>
-            <div className="h-full rounded-2xl border border-white/5 bg-ink-900/60 p-6">
-              <h2 className="font-display text-lg font-semibold tracking-tight text-paper">{value.title}</h2>
-              <p className="mt-3 text-sm leading-relaxed text-paper-dim/70">{value.body}</p>
+      <QRAReveal variant="scale" className="mt-10">
+        {/* The Quantrelic architecture: vertical spines, horizontal pathways and
+            nodes, constructing itself. No photograph — the same visual system
+            as every other section, in its most structural pose. */}
+        <div className="relative h-[220px] overflow-hidden rounded-xl border border-line sm:h-[280px] lg:h-[320px]">
+          <QRAAtmosphere variant="about" className="rounded-xl" />
+          {/* The architecture, drawn rather than simulated. */}
+          <QRAArchitecture className="absolute inset-0 h-full w-full opacity-90" />
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950 via-transparent to-ink-950/60"
+          />
+          <p className="micro absolute bottom-4 left-4 !tracking-[0.2em]">
+            Infrastructure for understanding
+          </p>
+        </div>
+      </QRAReveal>
+
+      <div className="mt-12 grid gap-12 lg:grid-cols-[1.1fr_minmax(0,420px)] lg:gap-16">
+        <QRAReveal>
+          <div className="max-w-2xl space-y-6 text-lg leading-relaxed text-paper-dim">
+            {ABOUT.paragraphs.map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
+          </div>
+
+          <ul className="mt-12 grid gap-8 sm:grid-cols-3">
+            {ABOUT.principles.map((principle, index) => (
+              <QRAReveal as="li" key={principle.title} delay={index * 90}>
+                <div className="border-t border-line pt-5">
+                  <h2 className="font-display text-base font-semibold tracking-tight text-paper">
+                    {principle.title}
+                  </h2>
+                  <p className="mt-2 text-sm leading-relaxed text-paper-mute">{principle.body}</p>
+                </div>
+              </QRAReveal>
+            ))}
+          </ul>
+        </QRAReveal>
+
+        <QRAReveal delay={120} variant="scale">
+          <div className="rounded-xl border border-line bg-ink-850/80 p-6 shadow-panel sm:p-7">
+            <dl className="divide-y divide-line-faint">
+              {ABOUT.facts.map((fact) => (
+                <div key={fact.label} className="flex items-baseline justify-between gap-4 py-3">
+                  <dt className="micro !tracking-[0.16em]">{fact.label}</dt>
+                  <dd className="text-sm text-paper">{fact.value}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-5 text-xs leading-relaxed text-paper-faint">
+              QRA is in early development. We are pre-launch, so there are no customers, results or
+              partnerships to report yet — when there is something true to say, it will appear here.
+            </p>
+            <div className="mt-6 flex flex-col gap-3">
+              <Button href="/waitlist">Join the waitlist</Button>
+              <Button href="/careers" variant="outline">
+                We’re hiring
+              </Button>
             </div>
-          </Reveal>
-        ))}
+          </div>
+        </QRAReveal>
       </div>
+
+      <p className="mt-16 border-t border-line pt-8 text-sm text-paper-faint">{COMPANY_NAME}</p>
     </div>
   );
 }

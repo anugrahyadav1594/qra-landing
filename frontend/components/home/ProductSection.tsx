@@ -1,0 +1,50 @@
+import { ProductPreview } from "@/components/ProductPreview";
+import { QRAReveal } from "@/components/motion/QRAReveal";
+import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
+import { Button, Section, SectionLabel, SectionStatement } from "@/components/ui";
+import { PRODUCT } from "@/lib/content";
+
+/** The product: one company, five questions, an explanation and its source. */
+export function ProductSection() {
+  return (
+    <Section id="product" tone="raised" labelledBy="product-heading" className="relative overflow-hidden">
+      <QRASectionTransition label="Structured" />
+
+      {/* Barely there: the product interface is the brightest thing on screen. */}
+      <QRAAtmosphere variant="product" />
+
+      <div className="relative z-10">
+      <QRAReveal>
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <SectionLabel tone="brand">{PRODUCT.label}</SectionLabel>
+            <SectionStatement id="product-heading" lines={PRODUCT.statement} as="h2" className="mt-5" />
+          </div>
+          <p className="max-w-sm text-sm leading-relaxed text-paper-mute lg:text-right">
+            {PRODUCT.support}
+          </p>
+        </div>
+      </QRAReveal>
+
+      {/* The product interface, with the room to be the subject of the page:
+          a wider gap above it than below, so the hierarchy reads as
+          statement → interface → next step. */}
+      <QRAReveal delay={120} variant="scale" className="mt-16 lg:mt-20">
+        <ProductPreview />
+      </QRAReveal>
+
+      <QRAReveal delay={80}>
+        <div className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center lg:mt-12">
+          <Button href="/product" variant="outline">
+            See the full product page
+          </Button>
+          <p className="text-sm text-paper-mute">
+            Numbers are easy. Knowing what they mean isn’t — that’s the part we’re building.
+          </p>
+        </div>
+      </QRAReveal>
+      </div>
+    </Section>
+  );
+}
