@@ -96,6 +96,17 @@ describe("QRAAtmosphere environments", () => {
     expect(container.querySelector("video")).toBeNull();
   });
 
+  it("does not mount the loop until its section is close", () => {
+    const { container } = render(<QRAAtmosphere variant="waitlist" />);
+    // jsdom has no IntersectionObserver here, so this is the load-time shape:
+    // a poster, and no decoder until the section approaches.
+    expect(container.querySelector("video")).toBeNull();
+    expect(container.querySelector(".qra-atmosphere__image")).toHaveAttribute(
+      "src",
+      "/motion/waitlist-poster.webp",
+    );
+  });
+
   it("never mounts a video under reduced motion", () => {
     const original = window.matchMedia;
     window.matchMedia = ((query: string) => ({

@@ -26,7 +26,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { deviceTier, prefersReducedMotion } from "@/lib/motion";
 
-import { observeOnScreen } from "./screen-observer";
+import { observeAhead, observeOnScreen } from "./screen-observer";
 import { useScrollScene } from "./useScrollScene";
 
 export type AtmosphereVariant =
@@ -94,6 +94,7 @@ export function QRAAtmosphere({
   const driftRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playVideo, setPlayVideo] = useState(false);
+  const [armed, setArmed] = useState(false);
 
   const loop = LOOPS[variant];
 
@@ -149,17 +150,28 @@ export function QRAAtmosphere({
     setPlayVideo(true);
   }, [loop]);
 
-  // Only the visible section's loop runs: seven decoders would be a waste of
-  // everything. Playback is also cheap to pause and resume.
+  // A loop is only *mounted* once its section is within one viewport of the
+  // screen, so a loop a page and a half below the fold costs nothing at load.
+  useEffect(() => {
+    if (!playVideo || armed) return;
+    const scope = ref.current;
+    if (!scope) return;
+
+    return observeAhead(scope, () => setArmed(true));
+  }, [playVideo, armed]);
+
+  // And once mounted, it only runs while its section is visible: two decoders
+  // playing behind each other would be a waste of everything. Playback is cheap
+  // to pause and resume.
   useEffect(() => {
     const element = videoRef.current;
-    if (!element || !playVideo) return;
+    if (!element || !armed) return;
 
     return observeOnScreen(element, (onScreen) => {
       if (onScreen) void element.play().catch(() => {});
       else element.pause();
     });
-  }, [playVideo]);
+  }, [armed]);
 
   return (
     <div
@@ -190,7 +202,7 @@ export function QRAAtmosphere({
               decoding="async"
               className="qra-atmosphere__image"
             />
-            {playVideo && (
+            {playVideo && armed && (
               <video
                 ref={videoRef}
                 className="qra-atmosphere__video"
@@ -198,7 +210,7 @@ export function QRAAtmosphere({
                 muted
                 loop
                 playsInline
-                preload="metadata"
+                preload="auto"
                 aria-hidden="true"
                 tabIndex={-1}
               >
