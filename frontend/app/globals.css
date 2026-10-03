@@ -90,11 +90,11 @@ body {
 .qra-reveal {
   --reveal-y: 30px;
   --reveal-scale: 1;
-  animation: reveal-guard 1ms linear 3s both;
+  animation: reveal-guard 1ms linear 3s backwards;
 }
 
 .qra-reveal.is-visible {
-  animation: reveal-in 900ms var(--ease) both;
+  animation: reveal-in 900ms var(--ease) backwards;
   /* Every reveal is a pair: the entrance, and up to 240ms of stagger. */
   animation-delay: var(--reveal-delay, 0ms);
 }
@@ -117,11 +117,11 @@ body {
 .qra-reveal--line {
   --reveal-y: 0px;
   --reveal-scale: 1;
-  animation: line-guard 1ms linear 3s both;
+  animation: line-guard 1ms linear 3s backwards;
 }
 
 .qra-reveal--line.is-visible {
-  animation: line-in 900ms var(--ease) both;
+  animation: line-in 900ms var(--ease) backwards;
   animation-delay: var(--reveal-delay, 0ms);
 }
 
@@ -162,11 +162,11 @@ body {
 }
 
 .qra-reveal--stagger > * {
-  animation: reveal-guard 1ms linear 3s both;
+  animation: reveal-guard 1ms linear 3s backwards;
 }
 
 .qra-reveal--stagger.is-visible > * {
-  animation: reveal-in 820ms var(--ease) both;
+  animation: reveal-in 820ms var(--ease) backwards;
   animation-delay: calc(var(--reveal-delay, 0ms) + var(--step, 70ms) * var(--i, 0));
 }
 
@@ -517,6 +517,8 @@ body {
   position: absolute;
   top: 0;
   left: 0;
+  /* Sized and placed by measurement on the first render; hidden until then. */
+  opacity: 0;
   width: 0;
   height: 0;
   border-radius: 0.5rem;
@@ -1577,6 +1579,7 @@ html[data-cursor="custom"] [contenteditable="true"] {
   }
 
   .qra-reveal,
+  .qra-reveal--stagger > *,
   .rise,
   .panel-settled,
   .guard-in {
