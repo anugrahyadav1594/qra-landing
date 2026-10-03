@@ -47,7 +47,7 @@ export function WaitlistSection() {
         </QRAReveal>
 
         <QRAReveal delay={120} variant="scale">
-          <div className="panel-float card-edge rounded-xl border border-line-strong bg-ink-900/92 p-6 backdrop-blur-xl sm:p-7">
+          <div className="panel-float card-edge rounded-xl border border-line-strong bg-ink-900/97 p-6 sm:p-7">
             <WaitlistForm />
           </div>
         </QRAReveal>

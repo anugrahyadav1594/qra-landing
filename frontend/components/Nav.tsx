@@ -89,7 +89,7 @@ export function Nav() {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 border-b backdrop-blur-xl transition-colors duration-300 ${
+        className={`sticky top-0 z-50 border-b transition-colors duration-300 ${
           scrolled ? "border-line bg-ink-950/85" : "border-transparent bg-ink-950/60"
         }`}
       >
@@ -221,7 +221,7 @@ export function Nav() {
           menuOpen ? "pointer-events-auto" : "pointer-events-none"
         }`}
       >
-        <div className="flex h-full flex-col justify-between overflow-y-auto bg-ink-950/[0.96] px-5 pb-10 pt-8 backdrop-blur-xl sm:px-6">
+        <div className="flex h-full flex-col justify-between overflow-y-auto bg-ink-950/[0.985] px-5 pb-10 pt-8 sm:px-6">
           <div className="space-y-1">
             {[...NAV_LINKS, ...SECONDARY_LINKS].map((link, index) => {
               const active = isActive(link.href, link.sectionId);

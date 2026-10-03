@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { AudienceSection } from "@/components/home/AudienceSection";
 import { Hero } from "@/components/home/Hero";
+import { QRASourceTicker } from "@/components/motion/QRASourceTicker";
 import { IdeaSection } from "@/components/home/IdeaSection";
 import { ProblemSection } from "@/components/home/ProblemSection";
 import { ProductSection } from "@/components/home/ProductSection";
@@ -48,6 +49,7 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(ORGANIZATION_JSONLD) }}
       />
       <Hero />
+      <QRASourceTicker />
       <ProblemSection />
       <IdeaSection />
       <ProductSection />

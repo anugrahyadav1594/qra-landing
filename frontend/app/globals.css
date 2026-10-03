@@ -74,43 +74,134 @@ body {
 
 /* ── Motion system ─────────────────────────────────────────────────── */
 
-/* Block reveal (one shared observer: components/motion/reveal-observer.ts). */
+/* Block reveal (one shared observer: components/motion/reveal-observer.ts).
+ *
+ * Opacity and transform only — both are composited, so a reveal never costs the
+ * main thread and never repaints what is behind it. No clip-path (it is a paint
+ * every frame on a full-width panel) and no `will-change` (it would pin a GPU
+ * layer for every revealed block on the page, permanently).
+ *
+ * The visible state is the element's *own* state, and the hidden state lives in
+ * the animation. That is what makes the guard below safe: if nothing ever
+ * reveals this element — a chunk that failed to load, an observer that never
+ * fires, JavaScript switched off — CSS reveals it anyway after three seconds.
+ * A reveal can delay content. It can never strand it.
+ */
 .qra-reveal {
-  opacity: 0;
-  transform: translateY(16px);
-  transition:
-    opacity var(--dur-smooth) var(--ease),
-    transform var(--dur-smooth) var(--ease),
-    clip-path var(--dur-cinematic) var(--ease);
-  transition-delay: var(--reveal-delay, 0ms);
-  will-change: opacity, transform;
-}
-
-.qra-reveal--fade {
-  transform: none;
-}
-
-/* Panels and figures open upward out of their own line. */
-.qra-reveal--clip {
-  transform: translateY(12px);
-  clip-path: inset(0 0 14% 0);
-}
-
-.qra-reveal--scale {
-  transform: translateY(14px) scale(0.988);
-}
-
-/* Rules and seams draw from their own left edge. */
-.qra-reveal--line {
-  transform: scaleX(0);
-  transform-origin: left center;
-  opacity: 1;
+  --reveal-y: 30px;
+  --reveal-scale: 1;
+  animation: reveal-guard 1ms linear 3s both;
 }
 
 .qra-reveal.is-visible {
-  opacity: 1;
-  transform: none;
-  clip-path: inset(0 0 0 0);
+  animation: reveal-in 900ms var(--ease) both;
+  /* Every reveal is a pair: the entrance, and up to 240ms of stagger. */
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--reveal-y), 0) scale(var(--reveal-scale));
+  }
+}
+
+@keyframes reveal-guard {
+  from {
+    opacity: 0;
+    transform: translate3d(0, var(--reveal-y), 0) scale(var(--reveal-scale));
+  }
+}
+
+/* A line draws from its own left edge. */
+.qra-reveal--line {
+  --reveal-y: 0px;
+  --reveal-scale: 1;
+  animation: line-guard 1ms linear 3s both;
+}
+
+.qra-reveal--line.is-visible {
+  animation: line-in 900ms var(--ease) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+
+@keyframes line-in {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes line-guard {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.qra-reveal--fade {
+  --reveal-y: 0px;
+}
+
+/* Panels and figures lift into place and settle. */
+.qra-reveal--scale {
+  --reveal-y: 26px;
+  --reveal-scale: 0.97;
+}
+
+.qra-reveal--clip {
+  --reveal-y: 22px;
+  --reveal-scale: 0.985;
+}
+
+/* ── Cascades ────────────────────────────────────────────────────────── */
+
+/* A container whose children arrive in reading order, one after another.
+   `--step` sets the gap (70ms by default), so a band of cards behaves like a
+   deal rather than a single object fading in. */
+.qra-reveal--stagger {
+  animation: none;
+}
+
+.qra-reveal--stagger > * {
+  animation: reveal-guard 1ms linear 3s both;
+}
+
+.qra-reveal--stagger.is-visible > * {
+  animation: reveal-in 820ms var(--ease) both;
+  animation-delay: calc(var(--reveal-delay, 0ms) + var(--step, 70ms) * var(--i, 0));
+}
+
+.qra-reveal--stagger > :nth-child(1) {
+  --i: 1;
+}
+.qra-reveal--stagger > :nth-child(2) {
+  --i: 2;
+}
+.qra-reveal--stagger > :nth-child(3) {
+  --i: 3;
+}
+.qra-reveal--stagger > :nth-child(4) {
+  --i: 4;
+}
+.qra-reveal--stagger > :nth-child(5) {
+  --i: 5;
+}
+.qra-reveal--stagger > :nth-child(6) {
+  --i: 6;
+}
+.qra-reveal--stagger > :nth-child(7) {
+  --i: 7;
+}
+.qra-reveal--stagger > :nth-child(8) {
+  --i: 8;
+}
+.qra-reveal--stagger > :nth-child(9) {
+  --i: 9;
+}
+.qra-reveal--stagger > :nth-child(10) {
+  --i: 10;
+}
+.qra-reveal--stagger > :nth-child(n + 11) {
+  --i: 11;
 }
 
 /* Hero load-in: brand → headline → support → CTA → visual, in sequence. */
@@ -125,7 +216,7 @@ body {
 @keyframes rise-in {
   from {
     opacity: 0;
-    transform: translateY(18px);
+    transform: translate3d(0, 26px, 0);
   }
   to {
     opacity: 1;
@@ -274,6 +365,14 @@ body {
   inset: 0;
 }
 
+/* Forty cells, one cascade: fast enough to read as a single movement. Scoped to
+   the revealed state on purpose — overriding the delay for every state would
+   override the guard's, and the pile would appear before it was reached. */
+.problem-pile__grid.is-visible > .problem-pile__cell {
+  animation-duration: 620ms;
+  animation-delay: calc(16ms * var(--i, 0));
+}
+
 .problem-pile__label {
   position: absolute;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -287,6 +386,159 @@ body {
   .problem-pile {
     height: 320px;
   }
+}
+
+/* ── Tilt (components/motion/QRATilt.tsx) ───────────────────────────── */
+
+/* The hero's panel leaning toward the pointer. Transforms only, on two
+   elements, written straight to the DOM from one animation frame — so the
+   interface moves with the pointer instead of after it. */
+.qra-tilt {
+  position: relative;
+}
+
+.qra-tilt__surface {
+  position: relative;
+  transform: perspective(1200px);
+  /* The return is slower than the follow: it settles rather than snaps back. */
+  transition: transform 620ms var(--ease);
+}
+
+.qra-tilt__surface[data-active="true"] {
+  transition-duration: 110ms;
+}
+
+.qra-tilt__glow {
+  position: absolute;
+  inset: -30%;
+  z-index: 2;
+  border-radius: 20%;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(120, 158, 255, 0.15),
+    rgba(63, 111, 255, 0.07) 40%,
+    transparent 66%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(0, 0, 0);
+  transition:
+    transform 620ms var(--ease),
+    opacity 420ms ease-out;
+}
+
+.qra-tilt:hover .qra-tilt__glow {
+  opacity: 1;
+}
+
+/* ── Sources band (components/motion/QRASourceTicker.tsx) ───────────── */
+
+.source-ticker {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  border-top: 1px solid rgba(245, 247, 250, 0.06);
+  border-bottom: 1px solid rgba(245, 247, 250, 0.06);
+  padding-block: 0.9rem;
+  background: linear-gradient(90deg, rgba(7, 10, 15, 0) 0%, rgba(13, 19, 29, 0.5) 50%, rgba(7, 10, 15, 0) 100%);
+}
+
+.source-ticker__label {
+  flex: none;
+  padding-left: max(1.25rem, calc((100vw - 1200px) / 2));
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(111, 148, 255, 0.85);
+  white-space: nowrap;
+}
+
+.source-ticker__viewport {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  /* Fades into the page instead of ending at an edge. */
+  mask-image: linear-gradient(90deg, transparent, black 4%, black 96%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 4%, black 96%, transparent);
+}
+
+.source-ticker__track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 52s linear infinite;
+}
+
+.source-ticker[data-paused="true"] .source-ticker__track {
+  animation-play-state: paused;
+}
+
+.source-ticker__run {
+  display: flex;
+  align-items: center;
+}
+
+.source-ticker__item {
+  display: inline-flex;
+  align-items: center;
+  margin-right: 2rem;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: rgba(170, 182, 198, 0.72);
+  white-space: nowrap;
+}
+
+.source-ticker__dot {
+  width: 3px;
+  height: 3px;
+  margin-left: 2rem;
+  border-radius: 999px;
+  background: rgba(63, 111, 255, 0.75);
+}
+
+@keyframes ticker-scroll {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* ── Product tabs: one indicator, sliding between them ───────────────── */
+
+.product-tabs {
+  position: relative;
+}
+
+.product-tabs__indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(63, 111, 255, 0.28);
+  background: linear-gradient(120deg, rgba(63, 111, 255, 0.16), rgba(63, 111, 255, 0.05));
+  box-shadow: 0 10px 30px -18px rgba(63, 111, 255, 0.9);
+  /* Only ever moves on a tab change: one element, off the scroll path. */
+  transition:
+    transform 460ms var(--ease),
+    width 460ms var(--ease),
+    height 460ms var(--ease),
+    opacity 260ms ease-out;
+  pointer-events: none;
+}
+
+/* Rows in an answer lift a hair as the pointer crosses them. */
+.metric-row {
+  transition: background-color var(--dur-standard) ease-out;
+}
+
+.metric-row:hover {
+  background-color: rgba(63, 111, 255, 0.05);
 }
 
 /* ── Opening sequence (components/motion/QRALoader.tsx) ────────────── */
@@ -755,11 +1007,34 @@ html[data-cursor="custom"] [contenteditable="true"] {
    is louder than that — the interface is meant to feel precise, not playful. */
 .btn-lift {
   position: relative;
+  overflow: hidden;
   transition:
     transform var(--dur-micro) var(--ease),
     background-color var(--dur-micro) ease-out,
     border-color var(--dur-micro) ease-out,
     box-shadow var(--dur-standard) ease-out;
+}
+
+/* A light sweeps across the face on hover: the one flourish a button gets, and
+   it is a transform on a pseudo-element, so it costs a composite and nothing
+   else. */
+.btn-lift::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 34%,
+    rgba(255, 255, 255, 0.16) 48%,
+    transparent 62%
+  );
+  transform: translate3d(-130%, 0, 0);
+  transition: transform 760ms var(--ease);
+  pointer-events: none;
+}
+
+.btn-lift:hover::after {
+  transform: translate3d(130%, 0, 0);
 }
 
 .btn-lift:hover {
@@ -783,21 +1058,21 @@ html[data-cursor="custom"] [contenteditable="true"] {
 .card-edge {
   position: relative;
   transition:
+    transform var(--dur-standard) var(--ease),
     border-color var(--dur-standard) ease-out,
-    background-color var(--dur-standard) ease-out;
+    background-color var(--dur-standard) ease-out,
+    box-shadow var(--dur-standard) ease-out;
 }
 
-.card-edge > * {
-  transition: transform var(--dur-standard) var(--ease);
-}
-
+/* The card itself lifts — moving the content inside it reads as a wobble,
+   moving the card reads as weight. */
 .card-edge:hover {
-  border-color: rgba(245, 247, 250, 0.22);
-  background-color: rgba(21, 30, 42, 0.92);
-}
-
-.card-edge:hover > * {
-  transform: translateY(-2px);
+  transform: translate3d(0, -3px, 0);
+  border-color: rgba(245, 247, 250, 0.24);
+  background-color: rgba(21, 30, 42, 0.94);
+  box-shadow:
+    0 22px 44px -30px rgba(0, 0, 0, 0.95),
+    0 0 44px -32px rgba(63, 111, 255, 0.55);
 }
 
 .card-edge::after {
@@ -955,20 +1230,25 @@ html[data-cursor="custom"] [contenteditable="true"] {
   height: 100%;
   object-fit: cover;
   object-position: center;
-  /* Blurred, desaturated and darkened so it reads as depth, not as a picture. */
+  /* Desaturated and darkened so it reads as depth, not as a picture. */
   filter: saturate(0.55) contrast(0.94) brightness(0.75);
 }
 
-/* Stills breathe on their own — a still that never moves reads as a mistake. */
+/* The loop is already desaturated and vignetted by the renderer, so it takes
+   only a brightness pass — a colour filter would re-run on every decoded frame
+   for a difference nobody can see. */
+.qra-atmosphere__video {
+  filter: brightness(0.8);
+}
+
+/* A still arrives once and then holds. It used to breathe forever — seven
+   full-width filtered layers animating permanently, for a 2.5% scale change
+   nobody could see. The moving positions play a pre-rendered loop instead;
+   everything else is a designed background, not an animation. */
 .qra-atmosphere__image {
   transform: scale(1.02);
-  /* Two movements: the arrival (once) and the breathing (always, very slowly). */
-  animation-name: atmosphere-intro, atmosphere-breathe;
-  animation-duration: 1200ms, var(--atmosphere-speed, 26s);
-  animation-timing-function: var(--ease), ease-in-out;
-  animation-fill-mode: both, none;
-  animation-iteration-count: 1, infinite;
-  animation-delay: calc(var(--intro-delay, 0ms) + 240ms), 0s;
+  animation: atmosphere-intro 1200ms var(--ease) both;
+  animation-delay: calc(var(--intro-delay, 0ms) + 240ms);
 }
 
 /* The pre-rendered loop does its own moving, so it only fades in over the
@@ -977,29 +1257,12 @@ html[data-cursor="custom"] [contenteditable="true"] {
   animation: atmosphere-intro 700ms var(--ease) both;
 }
 
-/* Off screen, nothing is animating: the compositor is not asked to keep seven
-   breathing images alive behind the page. (Playing loops are paused in JS, so
-   the decoder stops as well as the painting.) */
-.qra-atmosphere[data-onscreen="false"] .qra-atmosphere__image {
-  animation-play-state: paused;
-}
-
 @keyframes atmosphere-intro {
   from {
     opacity: 0;
   }
   to {
     opacity: 1;
-  }
-}
-
-@keyframes atmosphere-breathe {
-  0%,
-  100% {
-    transform: scale(1.02) translate3d(0, 0, 0);
-  }
-  50% {
-    transform: scale(1.045) translate3d(-10px, -9px, 0);
   }
 }
 
@@ -1383,6 +1646,19 @@ html[data-cursor="custom"] [contenteditable="true"] {
 
   .qra-architecture circle {
     opacity: 1 !important;
+  }
+
+  /* Nothing travels, nothing loops, nothing leans. */
+  .source-ticker__track {
+    animation: none !important;
+  }
+
+  .qra-tilt__glow {
+    display: none !important;
+  }
+
+  .btn-lift::after {
+    display: none !important;
   }
 
   /* A loop never mounts under reduced motion; if one is already on screen, it

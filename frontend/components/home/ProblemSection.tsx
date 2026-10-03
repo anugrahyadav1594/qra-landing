@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { QRAReveal } from "@/components/motion/QRAReveal";
 import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
 import { Section, SectionLabel, SectionStatement } from "@/components/ui";
 import { useScrollScene } from "@/components/motion/useScrollScene";
@@ -148,15 +149,19 @@ export function ProblemSection() {
 
 
       {/* The composition: one full-width band of the same sources the copy
-          names, crowded until it stops being readable. Authored as a grid and
-          held there — it is an image of too much information, not an animation
-          of it. */}
+          names, crowded until it stops being readable. It assembles in reading
+          order — forty cells, 16ms apart — so the pile arrives rather than
+          appearing, and then it holds. */}
       <div aria-hidden="true" className="problem-pile relative z-0 mb-14 lg:mb-20">
-        <div className="problem-pile__grid">
+        <QRAReveal stagger step={16} variant="fade" className="problem-pile__grid">
           {Array.from({ length: 40 }, (_, index) => (
-            <span key={index} className="problem-pile__cell" />
+            <span
+              key={index}
+              className="problem-pile__cell"
+              style={{ "--i": index } as React.CSSProperties}
+            />
           ))}
-        </div>
+        </QRAReveal>
         <div className="problem-pile__labels">
           {[...PROBLEM.fragments.map((f) => f.label), ...PROBLEM.fragments.map((f) => f.label)].map(
             (label, index) => (
@@ -209,7 +214,7 @@ export function ProblemSection() {
                   <div
                     key={fragment.label}
                     data-fragment
-                    className="card-edge rounded-md border border-line bg-ink-850/85 px-3 py-3 backdrop-blur-sm"
+                    className="card-edge rounded-md border border-line bg-ink-850/95 px-3 py-3"
                   >
                     <span className="micro !tracking-[0.14em] !text-paper-faint">
                       {String(index + 1).padStart(2, "0")}

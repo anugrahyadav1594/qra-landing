@@ -33,6 +33,8 @@ export function QRAReveal({
   className = "",
   delay = 0,
   variant = "up",
+  stagger = false,
+  step = 70,
   as = "div",
 }: {
   children?: ReactNode;
@@ -40,6 +42,10 @@ export function QRAReveal({
   /** Stagger, in ms. Keep to the 40–80ms band. */
   delay?: number;
   variant?: RevealVariant;
+  /** Reveal direct children one after another, in order. */
+  stagger?: boolean;
+  /** Gap between staggered children, in ms. */
+  step?: number;
   as?: "div" | "li" | "section" | "span" | "p";
 }) {
   const ref = useRef<HTMLElement | null>(null);
@@ -64,8 +70,13 @@ export function QRAReveal({
     as,
     {
       ref,
-      className: `qra-reveal ${VARIANT_CLASS[variant]} ${className}`.trim(),
-      style: delay ? ({ "--reveal-delay": `${delay}ms` } as React.CSSProperties) : undefined,
+      className: `qra-reveal ${VARIANT_CLASS[variant]} ${
+        stagger ? "qra-reveal--stagger" : ""
+      } ${className}`.trim(),
+      style: {
+        ...(delay ? { "--reveal-delay": `${delay}ms` } : {}),
+        ...(step !== 70 ? { "--step": `${step}ms` } : {}),
+      } as React.CSSProperties,
     },
     children,
   );

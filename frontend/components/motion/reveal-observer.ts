@@ -34,10 +34,13 @@ function createObserver(): IntersectionObserver | null {
         instance?.unobserve(entry.target);
       }
     },
-    // One threshold for the site: a block has to be meaningfully in view before
-    // its motion starts, and the negative bottom margin keeps reveals from
-    // firing while something is still only peeking over the fold.
-    { threshold: 0.16, rootMargin: "0px 0px -64px 0px" },
+    // No threshold, and this matters: an intersection *ratio* can be
+    // unreachable for a block taller than the viewport (a 6000px block can
+    // never be 16% visible on a 700px screen), which left tall blocks invisible
+    // for good. The negative bottom margin is the trigger instead — a reveal
+    // starts once the element's top edge is 12% inside the viewport, whatever
+    // its height, exactly once.
+    { threshold: 0, rootMargin: "0px 0px -12% 0px" },
   );
 }
 

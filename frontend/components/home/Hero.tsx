@@ -1,5 +1,6 @@
 import { ClarityPanel } from "@/components/ClarityPanel";
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { QRATilt } from "@/components/motion/QRATilt";
 import { TextReveal } from "@/components/motion/TextReveal";
 import { Button } from "@/components/ui";
 import { HERO } from "@/lib/content";
@@ -87,7 +88,11 @@ export function Hero() {
             rather than on a second animation, so the panel is unambiguously the
             brightest, sharpest thing on the screen. */}
         <div className="rise relative w-full" style={{ "--d": "700ms" } as React.CSSProperties}>
-          <ClarityPanel />
+          {/* The interface leans toward the pointer, with a light travelling
+              across it. */}
+          <QRATilt>
+            <ClarityPanel />
+          </QRATilt>
         </div>
       </div>
     </section>

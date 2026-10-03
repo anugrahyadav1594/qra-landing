@@ -129,7 +129,7 @@ export function Button({
   type = "button",
   ...rest
 }: ButtonProps) {
-  const classes = `inline-flex items-center justify-center gap-2 rounded-md font-semibold transition duration-200 ease-editorial disabled:opacity-60 ${BUTTON_VARIANTS[variant]} ${BUTTON_SIZES[size]} ${className}`;
+  const classes = `btn-lift inline-flex items-center justify-center gap-2 rounded-md font-semibold transition duration-200 ease-editorial disabled:opacity-60 ${BUTTON_VARIANTS[variant]} ${BUTTON_SIZES[size]} ${className}`;
 
   if (href) {
     return (

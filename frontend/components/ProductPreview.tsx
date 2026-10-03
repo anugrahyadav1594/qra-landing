@@ -50,6 +50,8 @@ export function ProductPreview({ className = "" }: { className?: string }) {
   const [drawerHeight, setDrawerHeight] = useState(0);
 
   const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const listRef = useRef<HTMLDivElement>(null);
+  const indicatorRef = useRef<HTMLSpanElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
 
   const active: ProductTab = PRODUCT.tabs.find((tab) => tab.id === displayId) ?? PRODUCT.tabs[0];
@@ -74,6 +76,25 @@ export function ProductPreview({ className = "" }: { className?: string }) {
     const timer = window.setTimeout(() => setLeavingId(null), EXCHANGE_MS + 60);
     return () => window.clearTimeout(timer);
   }, [leavingId, displayId]);
+
+  // Where the selection is, measured from the list itself — the tabs reflow from
+  // a horizontal strip to a vertical column, so this is the only reliable
+  // answer. Runs when the question changes, never on scroll.
+  useEffect(() => {
+    const list = listRef.current;
+    const indicator = indicatorRef.current;
+    const selected = tabRefs.current[activeId];
+    if (!list || !indicator || !selected) return;
+
+    const listBox = list.getBoundingClientRect();
+    const tabBox = selected.getBoundingClientRect();
+    indicator.style.transform = `translate3d(${(tabBox.left - listBox.left).toFixed(
+      1,
+    )}px, ${(tabBox.top - listBox.top).toFixed(1)}px, 0)`;
+    indicator.style.width = `${tabBox.width.toFixed(1)}px`;
+    indicator.style.height = `${tabBox.height.toFixed(1)}px`;
+    indicator.style.opacity = "1";
+  }, [activeId]);
 
   // The drawer opens to its real height, and stays right if the content
   // reflows (a font swapping in, a resize, a longer source line).
@@ -128,7 +149,7 @@ export function ProductPreview({ className = "" }: { className?: string }) {
             {tab.metrics.map((metric, index) => (
               <div
                 key={metric.label}
-                className="flex items-baseline justify-between gap-4 border-b border-line-faint py-2.5 last:border-b-0"
+                className="metric-row -mx-2 flex items-baseline justify-between gap-4 border-b border-line-faint px-2 py-2.5 last:border-b-0"
               >
                 <span className="text-sm text-paper-dim">{metric.label}</span>
                 <span
@@ -262,7 +283,7 @@ export function ProductPreview({ className = "" }: { className?: string }) {
 
   return (
     <div
-      className={`panel-float overflow-hidden rounded-xl border border-line-strong bg-ink-900/92 backdrop-blur-xl ${className}`}
+      className={`panel-float overflow-hidden rounded-xl border border-line-strong bg-ink-900/97 ${className}`}
       data-cursor="focus"
     >
       {/* Header */}
@@ -283,8 +304,12 @@ export function ProductPreview({ className = "" }: { className?: string }) {
           aria-label="Questions about this company"
           aria-orientation="vertical"
           onKeyDown={onKeyDown}
-          className="flex gap-2 overflow-x-auto border-b border-line p-3 lg:flex-col lg:gap-1 lg:overflow-visible lg:border-b-0 lg:border-r lg:p-4"
+          ref={listRef}
+          className="product-tabs flex gap-2 overflow-x-auto border-b border-line p-3 lg:flex-col lg:gap-1 lg:overflow-visible lg:border-b-0 lg:border-r lg:p-4"
         >
+          {/* One indicator, travelling. */}
+          <span aria-hidden="true" ref={indicatorRef} className="product-tabs__indicator" />
+
           {PRODUCT.tabs.map((tab) => {
             const selected = tab.id === activeId;
             return (
@@ -300,19 +325,10 @@ export function ProductPreview({ className = "" }: { className?: string }) {
                 aria-controls={`product-panel-${tab.id}`}
                 tabIndex={selected ? 0 : -1}
                 onClick={() => select(tab.id)}
-                className={`group relative shrink-0 overflow-hidden rounded-md px-3.5 py-3 text-left transition-colors duration-300 lg:w-full ${
-                  selected
-                    ? "bg-brand-500/[0.10] text-paper"
-                    : "text-paper-dim hover:bg-ink-800/60 hover:text-paper"
+                className={`group relative z-10 shrink-0 rounded-md px-3.5 py-3 text-left transition-colors duration-300 lg:w-full ${
+                  selected ? "text-paper" : "text-paper-dim hover:text-paper"
                 }`}
               >
-                {/* The selection bar grows into place rather than appearing. */}
-                <span
-                  aria-hidden="true"
-                  className={`absolute inset-y-2 left-0 w-px origin-bottom bg-brand-500 transition-transform duration-[400ms] ease-editorial ${
-                    selected ? "scale-y-100" : "scale-y-0"
-                  }`}
-                />
                 <span className="block font-display text-sm font-semibold tracking-tight">
                   {tab.label}
                 </span>

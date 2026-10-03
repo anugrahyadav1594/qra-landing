@@ -16,6 +16,8 @@ import {
 import { ProductPreview } from "@/components/ProductPreview";
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { QRAArchitecture } from "@/components/motion/QRAArchitecture";
+import { QRASourceTicker } from "@/components/motion/QRASourceTicker";
+import { QRATilt } from "@/components/motion/QRATilt";
 import { QRAProcessDiagram } from "@/components/motion/QRAProcessDiagram";
 import { QRAReveal } from "@/components/motion/QRAReveal";
 import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
@@ -313,5 +315,41 @@ describe("pre-rendered graphics", () => {
     expect(svg).toHaveAttribute("data-ready", "false");
     expect(container.querySelectorAll(".qra-architecture__spines line").length).toBe(6);
     expect(container.querySelector(".qra-architecture__pathway")).not.toBeNull();
+  });
+});
+
+describe("the motion layer", () => {
+  it("cascades children when asked, and stays a single reveal when not", () => {
+    const { container: cascaded } = render(
+      <QRAReveal stagger step={50}>
+        <span>one</span>
+        <span>two</span>
+      </QRAReveal>,
+    );
+    const wrapper = cascaded.querySelector(".qra-reveal--stagger");
+    expect(wrapper).not.toBeNull();
+    expect((wrapper as HTMLElement).style.getPropertyValue("--step")).toBe("50ms");
+
+    const { container: plain } = render(<QRAReveal>alone</QRAReveal>);
+    expect(plain.querySelector(".qra-reveal--stagger")).toBeNull();
+  });
+
+  it("runs the sources band twice, so the loop has no seam", () => {
+    const { container } = render(<QRASourceTicker />);
+    const runs = container.querySelectorAll(".source-ticker__run");
+    expect(runs).toHaveLength(2);
+    expect(runs[0].children.length).toBe(runs[1].children.length);
+    // Decorative here: the same sources are named in full further down the page.
+    expect(container.querySelector(".source-ticker__track")).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("keeps the tilt wrapper transparent to its content", () => {
+    const { container } = render(
+      <QRATilt>
+        <div data-testid="panel">panel</div>
+      </QRATilt>,
+    );
+    expect(container.querySelector(".qra-tilt__surface")).not.toBeNull();
+    expect(container.querySelector("[data-testid='panel']")).not.toBeNull();
   });
 });
