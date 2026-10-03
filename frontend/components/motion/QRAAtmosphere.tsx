@@ -14,7 +14,7 @@
  *            and it is free.
  *
  * Both are wrapped in the same layer stack: image → wash → (the section's own
- * SVG) → content. The environment is always subordinate: held at 14–30%
+ * SVG) → content. The environment is always subordinate: held at 42–62%
  * opacity, desaturated, darkened, and desaturated again by the wash.
  *
  * Under reduced motion, when the connection is slow, or when the browser

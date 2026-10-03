@@ -1184,9 +1184,11 @@ html[data-intro="skip"] .qra-loader {
 
 /* ── Atmosphere (components/motion/QRAAtmosphere.tsx) ──────────────── */
 
-/* The environment layer behind a section. It is always subordinate: the image
-   is desaturated and darkened, the wash dissolves its edges into the section,
-   and the whole layer sits at 14–30% before the content is drawn. */
+/* The environment layer behind a section. It is always subordinate: the images
+   arrive already desaturated, darkened and vignetted (see the export notes in
+   public/images), the wash dissolves their edges into the section, and the layer
+   itself sits at 42–62% — high enough that the backdrop is visible as texture,
+   low enough that it never competes with the copy on top of it. */
 .qra-atmosphere {
   position: absolute;
   inset: 0;
@@ -1213,8 +1215,11 @@ html[data-intro="skip"] .qra-loader {
   height: 100%;
   object-fit: cover;
   object-position: center;
-  /* Desaturated and darkened so it reads as depth, not as a picture. */
-  filter: saturate(0.55) contrast(0.94) brightness(0.75);
+  /* A final trim only. The sources are written to this register already
+     (desaturated, darkened, vignetted) when they are exported to public/images,
+     so darkening them again here — as this rule used to — is what flattened
+     the whole layer to black. */
+  filter: saturate(0.82) contrast(0.97) brightness(0.92);
 }
 
 /* No filter on a playing video, deliberately. A CSS filter over decoded frames
@@ -1254,14 +1259,14 @@ html[data-intro="skip"] .qra-loader {
   background:
     linear-gradient(
       180deg,
-      rgba(7, 10, 15, 0.94) 0%,
-      rgba(7, 10, 15, 0.32) 42%,
-      rgba(7, 10, 15, 0.96) 100%
+      rgba(7, 10, 15, 0.88) 0%,
+      rgba(7, 10, 15, 0.24) 46%,
+      rgba(7, 10, 15, 0.9) 100%
     ),
     radial-gradient(
-      ellipse 78% 58% at 50% 50%,
-      rgba(7, 10, 15, 0.08) 18%,
-      rgba(7, 10, 15, 0.9) 100%
+      ellipse 86% 70% at 50% 50%,
+      rgba(7, 10, 15, 0.02) 20%,
+      rgba(7, 10, 15, 0.8) 100%
     );
 }
 
@@ -1277,16 +1282,16 @@ html[data-intro="skip"] .qra-loader {
   background:
     linear-gradient(
       92deg,
-      rgba(7, 10, 15, 0.97) 0%,
-      rgba(7, 10, 15, 0.88) 38%,
-      rgba(7, 10, 15, 0.5) 62%,
-      rgba(7, 10, 15, 0.68) 100%
+      rgba(7, 10, 15, 0.92) 0%,
+      rgba(7, 10, 15, 0.72) 38%,
+      rgba(7, 10, 15, 0.3) 64%,
+      rgba(7, 10, 15, 0.5) 100%
     ),
     linear-gradient(
       180deg,
-      rgba(7, 10, 15, 0.92) 0%,
-      rgba(7, 10, 15, 0.3) 45%,
-      rgba(7, 10, 15, 0.95) 100%
+      rgba(7, 10, 15, 0.86) 0%,
+      rgba(7, 10, 15, 0.2) 48%,
+      rgba(7, 10, 15, 0.88) 100%
     );
 }
 
