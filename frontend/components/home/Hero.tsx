@@ -1,5 +1,4 @@
 import { ClarityPanel } from "@/components/ClarityPanel";
-import { QRADataField } from "@/components/motion/QRADataField";
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { TextReveal } from "@/components/motion/TextReveal";
 import { Button } from "@/components/ui";
@@ -27,15 +26,6 @@ export function Hero() {
       {/* A fine grid at 3.5% — structure you feel rather than see. */}
       <div aria-hidden="true" className="grid-backdrop pointer-events-none absolute inset-0" />
 
-      {/* The information field: long thin lines, drifting. */}
-      <QRADataField
-        variant="ambient"
-        interactive
-        intensity={0.62}
-        speed={0.6}
-        density={0.9}
-        className="qra-data-field--interactive opacity-[0.42]"
-      />
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_20%_30%,rgba(63,111,255,0.07),transparent_70%)]"
@@ -93,18 +83,11 @@ export function Hero() {
           </p>
         </div>
 
-        {/* Product interface, with the transformation completing behind it */}
+        {/* The product interface. It now sits directly on the environment
+            rather than on a second animation, so the panel is unambiguously the
+            brightest, sharpest thing on the screen. */}
         <div className="rise relative w-full" style={{ "--d": "700ms" } as React.CSSProperties}>
-          <QRADataField
-            variant="scatter"
-            autoPlay
-            density={0.8}
-            intensity={0.9}
-            className="opacity-70"
-          />
-          <div className="relative">
-            <ClarityPanel />
-          </div>
+          <ClarityPanel />
         </div>
       </div>
     </section>

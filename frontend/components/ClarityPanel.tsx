@@ -78,7 +78,7 @@ export function ClarityPanel() {
     <div ref={ref} data-stage={stage} data-ready={ready} className="relative">
       <div aria-hidden="true" className="pointer-events-none absolute -inset-6 grid-backdrop opacity-50" />
 
-      <div className="relative overflow-hidden rounded-xl border border-line bg-ink-900/90 shadow-panel backdrop-blur-xl">
+      <div className="panel-float relative overflow-hidden rounded-xl border border-line-strong bg-ink-900/92 backdrop-blur-xl">
         <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-4">
           <span className="font-display text-sm font-semibold tracking-[0.08em] text-paper">
             {HERO_PANEL.company}

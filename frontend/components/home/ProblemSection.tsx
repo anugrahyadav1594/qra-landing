@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { QRADataField } from "@/components/motion/QRADataField";
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
 import { Section, SectionLabel, SectionStatement } from "@/components/ui";
@@ -147,8 +146,35 @@ export function ProblemSection() {
       {/* The environment: the pile, felt rather than seen. */}
       <QRAAtmosphere variant="problem" />
 
-      {/* The field behaves the same way the fragments do: chaos, then order. */}
-      <QRADataField variant="converge" intensity={0.85} density={1.2} stickyCanvas className="opacity-80" />
+
+      {/* The composition: one full-width band of the same sources the copy
+          names, crowded until it stops being readable. Authored as a grid and
+          held there — it is an image of too much information, not an animation
+          of it. */}
+      <div aria-hidden="true" className="problem-pile relative z-0 mb-14 lg:mb-20">
+        <div className="problem-pile__grid">
+          {Array.from({ length: 40 }, (_, index) => (
+            <span key={index} className="problem-pile__cell" />
+          ))}
+        </div>
+        <div className="problem-pile__labels">
+          {[...PROBLEM.fragments.map((f) => f.label), ...PROBLEM.fragments.map((f) => f.label)].map(
+            (label, index) => (
+              <span
+                key={`${label}-${index}`}
+                className="problem-pile__label"
+                style={{
+                  top: `${(index % 5) * 19 + 4}%`,
+                  left: `${(index * 37) % 78}%`,
+                  opacity: 0.18 + (index % 4) * 0.06,
+                }}
+              >
+                {label}
+              </span>
+            ),
+          )}
+        </div>
+      </div>
 
       <div ref={ref} className={`relative z-10 ${active ? "lg:min-h-[190vh]" : ""}`}>
         <div className={active ? "lg:sticky lg:top-20" : ""}>

@@ -7,11 +7,15 @@ import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { QRALoader, INTRO_ATTRIBUTE, INTRO_BOOTSTRAP } from "@/components/motion/QRALoader";
+import {
+  QRALoader,
+  INTRO_ATTRIBUTE,
+  INTRO_BOOTSTRAP,
+  INTRO_HERO_DELAY,
+} from "@/components/motion/QRALoader";
 import { ProductPreview } from "@/components/ProductPreview";
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { QRAReveal } from "@/components/motion/QRAReveal";
-import { QRADataField } from "@/components/motion/QRADataField";
 import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
 import { TextReveal } from "@/components/motion/TextReveal";
 import { LOADER } from "@/lib/content";
@@ -72,18 +76,43 @@ describe("Loader", () => {
   }, 6000);
 });
 
-describe("QRADataField", () => {
-  it("renders its surface, and survives a context without canvas support", () => {
-    const { container } = render(<QRADataField variant="scatter" />);
-    const wrapper = container.querySelector(".qra-data-field");
-    expect(wrapper).not.toBeNull();
-    expect(wrapper).toHaveAttribute("data-variant", "scatter");
-    expect(container.querySelector("canvas")).not.toBeNull();
+describe("QRAAtmosphere environments", () => {
+  it("ships a poster for every looping position", () => {
+    const { container } = render(<QRAAtmosphere variant="hero" />);
+    const image = container.querySelector(".qra-atmosphere__image");
+    // The poster is what reduced motion, slow connections and autoplay refusal
+    // all land on, so it must be in the markup from the start.
+    expect(image).toHaveAttribute("src", "/motion/hero-poster.webp");
   });
 
-  it("pins the canvas when the field spans a taller section", () => {
-    const { container } = render(<QRADataField variant="converge" stickyCanvas />);
-    expect(container.querySelector(".sticky")).not.toBeNull();
+  it("falls back to the still for positions that do not carry a loop", () => {
+    const { container } = render(<QRAAtmosphere variant="trust" />);
+    expect(container.querySelector(".qra-atmosphere__image")).toHaveAttribute(
+      "src",
+      "/images/qra-trust.webp",
+    );
+    expect(container.querySelector("video")).toBeNull();
+  });
+
+  it("never mounts a video under reduced motion", () => {
+    const original = window.matchMedia;
+    window.matchMedia = ((query: string) => ({
+      matches: query.includes("reduce"),
+      media: query,
+      onchange: null,
+      addListener() {},
+      removeListener() {},
+      addEventListener() {},
+      removeEventListener() {},
+      dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia;
+    try {
+      const { container } = render(<QRAAtmosphere variant="hero" />);
+      expect(container.querySelector("video")).toBeNull();
+      expect(container.querySelector(".qra-atmosphere__image")).not.toBeNull();
+    } finally {
+      window.matchMedia = original;
+    }
   });
 });
 
@@ -107,7 +136,7 @@ describe("QRAAtmosphere", () => {
     expect(layer).toHaveAttribute("aria-hidden", "true");
     const image = container.querySelector(".qra-atmosphere__image");
     expect(image).toHaveAttribute("alt", "");
-    expect(image).toHaveAttribute("src", "/images/qra-hero.webp");
+    expect(image).toHaveAttribute("src", "/motion/hero-poster.webp");
     // The wash is what keeps it subordinate to the content.
     expect(container.querySelector(".qra-atmosphere__wash")).not.toBeNull();
   });
@@ -206,7 +235,7 @@ describe("intro bootstrap (runs before first paint)", () => {
 
     expect(root().getAttribute(INTRO_ATTRIBUTE)).toBe("play");
     // The hero waits for the sequence rather than being paused by it.
-    expect(root().style.getPropertyValue("--intro-delay")).toBe("2150ms");
+    expect(root().style.getPropertyValue("--intro-delay")).toBe(`${INTRO_HERO_DELAY}ms`);
   });
 
   it("skips on a later visit in the same session", () => {

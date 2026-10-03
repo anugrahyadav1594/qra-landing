@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import { socialMetadata } from "@/lib/seo";
 
-import { QRADataField } from "@/components/motion/QRADataField";
+import { QRAArchitecture } from "@/components/motion/QRAArchitecture";
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { QRAReveal } from "@/components/motion/QRAReveal";
 import { Button, SectionLabel, SectionStatement } from "@/components/ui";
@@ -36,9 +36,8 @@ export default function AboutPage() {
             as every other section, in its most structural pose. */}
         <div className="relative h-[220px] overflow-hidden rounded-xl border border-line sm:h-[280px] lg:h-[320px]">
           <QRAAtmosphere variant="about" className="rounded-xl" />
-          {/* Scrubbed rather than played once: the structure assembles across
-              the band as the page moves through it. */}
-          <QRADataField variant="structure" density={1.3} intensity={0.9} className="opacity-85" />
+          {/* The architecture, drawn rather than simulated. */}
+          <QRAArchitecture className="absolute inset-0 h-full w-full opacity-90" />
           <div
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950 via-transparent to-ink-950/60"

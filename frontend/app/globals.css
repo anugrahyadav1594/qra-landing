@@ -246,18 +246,47 @@ body {
 }
 
 
-/* ── QRA DATA FIELD ────────────────────────────────────────────────── */
+/* ── The problem pile (components/home/ProblemSection.tsx) ─────────── */
 
-/* The site's one visual system (components/QRADataField.tsx). Everything is
-   drawn on canvas, so this is only the frame it lives in. */
-.qra-data-field {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+/* One composition, held still: a grid of the sources the copy names, fading
+   out at the edges so it reads as a field rather than a table. */
+.problem-pile {
+  height: 260px;
+  overflow: hidden;
+  mask-image: linear-gradient(180deg, transparent, black 12%, black 74%, transparent);
+  -webkit-mask-image: linear-gradient(180deg, transparent, black 12%, black 74%, transparent);
 }
 
-.qra-data-field--interactive {
-  pointer-events: auto;
+.problem-pile__grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  height: 100%;
+}
+
+.problem-pile__cell {
+  border: 1px solid rgba(245, 247, 250, 0.045);
+  background: linear-gradient(160deg, rgba(21, 30, 42, 0.5), rgba(13, 19, 29, 0.2));
+}
+
+.problem-pile__labels {
+  position: absolute;
+  inset: 0;
+}
+
+.problem-pile__label {
+  position: absolute;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  color: rgba(154, 168, 186, 0.9);
+  white-space: nowrap;
+}
+
+@media (min-width: 1024px) {
+  .problem-pile {
+    height: 320px;
+  }
 }
 
 /* ── Opening sequence (components/motion/QRALoader.tsx) ────────────── */
@@ -274,6 +303,9 @@ html[data-intro="skip"] .qra-loader {
 }
 
 .qra-loader {
+  /* The whole sequence is timed from this one value: every delay below is a
+     fraction of it, so the opening can be retimed without touching a keyframe. */
+  --loader-dur: 1900ms;
   position: fixed;
   inset: 0;
   z-index: 100;
@@ -330,7 +362,7 @@ html[data-intro="skip"] .qra-loader {
   inset: 0;
   display: grid;
   place-items: center;
-  animation: loader-expand 750ms var(--ease-in) 1600ms both;
+  animation: loader-expand 620ms var(--ease-in) calc(var(--loader-dur) * 0.68) both;
 }
 
 @keyframes loader-expand {
@@ -358,7 +390,7 @@ html[data-intro="skip"] .qra-loader {
   /* Drawn, not faded in: the ring travels once around the logo. */
   stroke-dasharray: var(--circ);
   stroke-dashoffset: var(--circ);
-  animation: loader-ring-draw 1500ms var(--ease) both;
+  animation: loader-ring-draw 1250ms var(--ease) both;
 }
 
 .qra-loader__ring--outer {
@@ -387,7 +419,7 @@ html[data-intro="skip"] .qra-loader {
   stroke-width: 1;
   transform-box: fill-box;
   transform-origin: center;
-  animation: loader-draw 1900ms var(--ease) 620ms both;
+  animation: loader-draw 1550ms var(--ease) calc(var(--loader-dur) * 0.26) both;
 }
 
 .qra-loader__guide {
@@ -440,7 +472,7 @@ html[data-intro="skip"] .qra-loader {
   transform-box: fill-box;
   transform-origin: center;
   opacity: 0;
-  animation: loader-point 700ms var(--ease) both;
+  animation: loader-point 560ms var(--ease) both;
 }
 
 @keyframes loader-point {
@@ -459,17 +491,17 @@ html[data-intro="skip"] .qra-loader {
 .qra-loader__mark {
   position: relative;
   z-index: 1;
-  animation: loader-mark-in 2350ms var(--ease) both;
+  animation: loader-mark-in var(--loader-dur) var(--ease) both;
 }
 
 @keyframes loader-mark-in {
   0%,
-  11% {
+  9% {
     opacity: 0;
     transform: translateY(10px) scale(0.92);
     filter: blur(8px);
   }
-  31% {
+  30% {
     opacity: 1;
     transform: translateY(0) scale(1);
     filter: blur(0);
@@ -485,7 +517,7 @@ html[data-intro="skip"] .qra-loader {
    the composition with it. The navbar's own mark fades in on the same beat. */
 .qra-loader__handoff {
   display: block;
-  animation: loader-mark-out 720ms var(--ease-in) 1630ms both;
+  animation: loader-mark-out 600ms var(--ease-in) calc(var(--loader-dur) * 0.7) both;
 }
 
 @keyframes loader-mark-out {
@@ -519,7 +551,7 @@ html[data-intro="skip"] .qra-loader {
   padding: 0 24px;
   text-align: center;
   transform: translateY(76px);
-  animation: loader-name 2350ms var(--ease) both;
+  animation: loader-name var(--loader-dur) var(--ease) both;
 }
 
 @keyframes loader-name {
@@ -548,7 +580,7 @@ html[data-intro="skip"] .qra-loader {
 
 .qra-loader__char {
   opacity: 0;
-  animation: loader-char 620ms var(--ease) both;
+  animation: loader-char 520ms var(--ease) both;
 }
 
 @keyframes loader-char {
@@ -568,7 +600,7 @@ html[data-intro="skip"] .qra-loader {
   text-transform: uppercase;
   color: rgba(154, 168, 186, 0.9);
   opacity: 0;
-  animation: loader-char 700ms var(--ease) 1560ms both;
+  animation: loader-char 600ms var(--ease) calc(var(--loader-dur) * 0.66) both;
 }
 
 /* ── Reduced path: the mark, a quiet fade, nothing else ────────────── */
@@ -789,6 +821,16 @@ html[data-cursor="custom"] [contenteditable="true"] {
 }
 
 /* Form fields: the focus state draws its own border. */
+/* The hero's panel sits on the environment rather than beside it: a brighter
+   edge on top, a deeper shadow below, and a faint blue bloom in the shadow's
+   place — enough for it to read as the foremost object on the screen. */
+.panel-float {
+  box-shadow:
+    inset 0 1px 0 rgba(245, 247, 250, 0.07),
+    0 40px 80px -48px rgba(0, 0, 0, 0.95),
+    0 0 90px -50px rgba(63, 111, 255, 0.5);
+}
+
 /* ── Product panel transitions ─────────────────────────────────────── */
 
 /* Changing the question swaps one answer for the next: the old one rises out,
@@ -904,13 +946,20 @@ html[data-cursor="custom"] [contenteditable="true"] {
   will-change: transform;
 }
 
-.qra-atmosphere__image {
+.qra-atmosphere__image,
+.qra-atmosphere__video {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
   /* Blurred, desaturated and darkened so it reads as depth, not as a picture. */
   filter: saturate(0.55) contrast(0.94) brightness(0.75);
+}
+
+/* Stills breathe on their own — a still that never moves reads as a mistake. */
+.qra-atmosphere__image {
   transform: scale(1.02);
   /* Two movements: the arrival (once) and the breathing (always, very slowly). */
   animation-name: atmosphere-intro, atmosphere-breathe;
@@ -921,8 +970,15 @@ html[data-cursor="custom"] [contenteditable="true"] {
   animation-delay: calc(var(--intro-delay, 0ms) + 240ms), 0s;
 }
 
+/* The pre-rendered loop does its own moving, so it only fades in over the
+   poster that shares its frame. */
+.qra-atmosphere__video {
+  animation: atmosphere-intro 700ms var(--ease) both;
+}
+
 /* Off screen, nothing is animating: the compositor is not asked to keep seven
-   breathing images alive behind the page. */
+   breathing images alive behind the page. (Playing loops are paused in JS, so
+   the decoder stops as well as the painting.) */
 .qra-atmosphere[data-onscreen="false"] .qra-atmosphere__image {
   animation-play-state: paused;
 }
@@ -1048,6 +1104,53 @@ html[data-cursor="custom"] [contenteditable="true"] {
   .qra-atmosphere__image {
     filter: saturate(0.5) brightness(0.7) blur(1.5px);
   }
+}
+
+/* ── Architecture drawing (components/motion/QRAArchitecture.tsx) ───── */
+
+/* A structure described once, as geometry. Every element's dash offset is
+   driven by the same custom properties, so the whole drawing resolves in one
+   pass, top-left to bottom-right, staggered by --i. */
+.qra-architecture line,
+.qra-architecture path,
+.qra-architecture circle {
+  --draw: 1400ms;
+}
+
+.qra-architecture__spines line,
+.qra-architecture__beams line {
+  stroke: rgba(245, 247, 250, 0.16);
+  stroke-width: 1;
+  stroke-dasharray: var(--len);
+  stroke-dashoffset: var(--len);
+  transition: stroke-dashoffset var(--draw) var(--ease);
+  transition-delay: calc(var(--i) * 70ms);
+}
+
+.qra-architecture__pathway {
+  fill: none;
+  stroke: rgba(63, 111, 255, 0.62);
+  stroke-width: 1.25;
+  stroke-linejoin: round;
+  stroke-dasharray: var(--len);
+  stroke-dashoffset: var(--len);
+  transition: stroke-dashoffset 1800ms var(--ease) 420ms;
+}
+
+.qra-architecture__nodes circle {
+  fill: rgba(111, 148, 255, 0.85);
+  opacity: 0;
+  transition: opacity var(--dur-standard) ease-out;
+  transition-delay: calc(600ms + var(--i) * 60ms);
+}
+
+.qra-architecture[data-ready="true"] line,
+.qra-architecture[data-ready="true"] path {
+  stroke-dashoffset: 0;
+}
+
+.qra-architecture[data-ready="true"] circle {
+  opacity: 1;
 }
 
 /* ── Section transition (components/motion/QRASectionTransition.tsx) ── */
@@ -1202,6 +1305,21 @@ html[data-cursor="custom"] [contenteditable="true"] {
     animation: none !important;
     transform: scale(1.02);
     opacity: 1;
+  }
+
+  .qra-architecture line,
+  .qra-architecture path {
+    stroke-dashoffset: 0 !important;
+  }
+
+  .qra-architecture circle {
+    opacity: 1 !important;
+  }
+
+  /* A loop never mounts under reduced motion; if one is already on screen, it
+     is hidden so a still poster is what remains. */
+  .qra-atmosphere__video {
+    display: none !important;
   }
 
   .qra-atmosphere {

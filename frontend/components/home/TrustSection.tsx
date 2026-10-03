@@ -2,7 +2,6 @@
 
 import { useRef } from "react";
 
-import { QRADataField } from "@/components/motion/QRADataField";
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
 import { Section, SectionLabel } from "@/components/ui";
@@ -51,16 +50,6 @@ export function TrustSection() {
       {/* The quietest environment on the site. */}
       <QRAAtmosphere variant="trust" />
 
-      <QRADataField variant="organize" intensity={0.5} density={0.5} className="opacity-30" />
-
-      {/* Slow vertical rules — structure, not decoration */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden lg:block">
-        <div className="mx-auto grid h-full max-w-shell grid-cols-4 px-6">
-          {[0, 1, 2, 3].map((column) => (
-            <div key={column} className="border-l border-line-faint last:border-r" />
-          ))}
-        </div>
-      </div>
 
       <div className="relative z-10" ref={ref}>
         <div className="max-w-2xl">

@@ -8,11 +8,11 @@
  * information, then the product.
  *
  *   0.00s  a near-black field; only the environment is alive
- *   0.30s  the logo arrives — opacity, scale, blur and a short lift, together
- *   0.80s  a ring draws around it, then coordinate lines extend from it
- *   1.20s  data points settle where the lines cross; the wordmark resolves
- *   1.60s  the structure expands outward, and the logo travels into the navbar
- *   2.35s  the hero is below it, already in place
+ *   0.25s  the logo arrives — opacity, scale, blur and a short lift, together
+ *   0.60s  a ring draws around it, then coordinate lines extend from it
+ *   0.90s  data points settle where the lines cross; the wordmark resolves
+ *   1.30s  the structure expands outward, and the logo travels into the navbar
+ *   1.90s  the hero is below it, already in place
  *
  * Two rules shape the implementation:
  *
@@ -38,18 +38,21 @@ const SEEN_KEY = "qra-loader-seen";
 
 /** Timings (ms) — the whole sequence stays under 2.5s. */
 const TIMING = {
-  full: 2350,
+  full: 1900,
   reduced: 520,
   /** Hard ceiling: whatever happens, the overlay is gone by now. */
   timeout: 3800,
 };
+
+/** How long the hero waits for the sequence (a beat before it ends). */
+export const INTRO_HERO_DELAY = TIMING.full - 200;
 
 /** How the browser should treat this visit. */
 export type IntroMode = "play" | "skip" | "reduce";
 
 /** Read by the inline script in the layout, before first paint. */
 export const INTRO_BOOTSTRAP =
-  `(function(){try{var d=document.documentElement,n="${SEEN_KEY}",f=${TIMING.full - 200};` +
+  `(function(){try{var d=document.documentElement,n="${SEEN_KEY}",f=${INTRO_HERO_DELAY};` +
   `if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches){` +
   `d.setAttribute("${INTRO_ATTRIBUTE}","reduce");}` +
   `else if(sessionStorage.getItem(n)==="1"){d.setAttribute("${INTRO_ATTRIBUTE}","skip");}` +
@@ -58,8 +61,8 @@ export const INTRO_BOOTSTRAP =
 
 /** Two rings, in the same coordinate space as the lines. */
 const RINGS = [
-  { radius: 132, className: "qra-loader__ring qra-loader__ring--inner", delay: 780 },
-  { radius: 236, className: "qra-loader__ring qra-loader__ring--outer", delay: 1000 },
+  { radius: 132, className: "qra-loader__ring qra-loader__ring--inner", at: 0.31 },
+  { radius: 236, className: "qra-loader__ring qra-loader__ring--outer", at: 0.41 },
 ];
 
 /** Guides at a quarter and three quarters of the field. */
@@ -146,7 +149,7 @@ export function QRALoader() {
                 r={ring.radius}
                 style={{
                   "--circ": `${Math.round(2 * Math.PI * ring.radius)}`,
-                  animationDelay: `${ring.delay}ms`,
+                  animationDelay: `calc(var(--loader-dur) * ${ring.at})`,
                 } as React.CSSProperties}
               />
             ))}
@@ -182,7 +185,7 @@ export function QRALoader() {
                 cx={x * 1000}
                 cy={y * 1000}
                 r="3.5"
-                style={{ animationDelay: `${1180 + index * 40}ms` }}
+                style={{ animationDelay: `calc(var(--loader-dur) * 0.46 + ${index * 34}ms)` }}
               />
             ))}
           </svg>
@@ -203,7 +206,7 @@ export function QRALoader() {
               <span
                 key={`${character}-${index}`}
                 className="qra-loader__char"
-                style={{ animationDelay: `${1260 + index * 34}ms` }}
+                style={{ animationDelay: `calc(var(--loader-dur) * 0.5 + ${index * 28}ms)` }}
               >
                 {character}
               </span>

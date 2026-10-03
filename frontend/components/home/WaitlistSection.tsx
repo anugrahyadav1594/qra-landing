@@ -1,4 +1,3 @@
-import { QRADataField } from "@/components/motion/QRADataField";
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
 import { QRAReveal } from "@/components/motion/QRAReveal";
@@ -21,15 +20,13 @@ export function WaitlistSection() {
       {/* The last environment: everything drawing toward one point. */}
       <QRAAtmosphere variant="waitlist" />
 
-      {/* The convergence: scattered → one point, and then stillness. */}
-      <QRADataField variant="converge" intensity={0.55} density={0.6} speed={0.5} className="opacity-35" />
 
       <div className="relative z-10 grid gap-12 lg:grid-cols-[1fr_minmax(0,520px)] lg:gap-20">
         <QRAReveal>
           <SectionLabel tone="brand">{EARLY_ACCESS.label}</SectionLabel>
           <h2
             id="waitlist-heading"
-            className="mt-5 font-display text-[2.2rem] font-semibold leading-[1.06] tracking-tightest text-paper sm:text-5xl"
+            className="mt-5 font-display text-[2.5rem] font-semibold leading-[1.03] tracking-tightest text-paper sm:text-6xl lg:text-[4rem]"
           >
             {EARLY_ACCESS.statement.map((line, index) => (
               <span key={line} className="block">
@@ -50,7 +47,7 @@ export function WaitlistSection() {
         </QRAReveal>
 
         <QRAReveal delay={120} variant="scale">
-          <div className="card-edge rounded-xl border border-line bg-ink-850/80 p-6 shadow-panel sm:p-7">
+          <div className="panel-float card-edge rounded-xl border border-line-strong bg-ink-900/92 p-6 backdrop-blur-xl sm:p-7">
             <WaitlistForm />
           </div>
         </QRAReveal>
