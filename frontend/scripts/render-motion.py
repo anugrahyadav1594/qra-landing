@@ -187,9 +187,11 @@ def render_loop(
 
 ASSETS: dict[str, dict] = {
     # The hero's information space: streaks resolving into ordered lines.
-    "hero": dict(source="qra-hero.webp", seconds=4.0, zoom=0.05, pan=22, brightness=0.82),
+    # Brightness is baked, not applied in CSS: a filter over a playing video
+    # is a per-frame GPU pass, and the value is a constant anyway.
+    "hero": dict(source="qra-hero.webp", seconds=4.0, zoom=0.05, pan=22, brightness=0.62),
     # The final CTA: light converging on one line, barely moving.
-    "waitlist": dict(source="qra-clarity.webp", seconds=4.0, zoom=0.04, pan=18, brightness=0.9),
+    "waitlist": dict(source="qra-clarity.webp", seconds=4.0, zoom=0.04, pan=18, brightness=0.7),
 }
 
 

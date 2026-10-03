@@ -157,8 +157,8 @@ describe("QRAAtmosphere", () => {
     expect(container.querySelector(".qra-atmosphere__wash")).not.toBeNull();
   });
 
-  it("accepts the calibrated per-section controls", () => {
-    const { container } = render(<QRAAtmosphere variant="trust" intensity={0.5} speed={2} />);
+  it("scales its strength from the section it sits in", () => {
+    const { container } = render(<QRAAtmosphere variant="trust" intensity={0.5} />);
     const layer = container.querySelector(".qra-atmosphere") as HTMLElement;
     // Trust is the quietest environment on the site.
     expect(Number(layer.style.getPropertyValue("--atmosphere-opacity"))).toBeLessThan(0.2);
@@ -166,12 +166,20 @@ describe("QRAAtmosphere", () => {
 });
 
 describe("QRASectionTransition", () => {
-  it("draws the thread and names the state the next section arrives in", () => {
-    const { container } = render(<QRASectionTransition label="Organized" />);
-    expect(container.querySelector("[data-transition-line]")).not.toBeNull();
-    expect(container.querySelector("[data-transition-node]")).not.toBeNull();
+  it("names the state the next section arrives in", () => {
+    render(<QRASectionTransition label="Organized" />);
     expect(screen.getByText("Organized")).toBeInTheDocument();
-    expect(container.firstElementChild).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("plays the rule from CSS, not from a scroll scene", () => {
+    const { container } = render(<QRASectionTransition label="Organized" />);
+    const root = container.querySelector(".qra-transition") as HTMLElement;
+    // The attribute the stylesheet's draw animation hangs off. Where there is no
+    // observer to wait for (as here), it is set straight away — the rule is
+    // drawn rather than left at scaleX(0).
+    expect(root).toHaveAttribute("data-drawn", "true");
+    expect(container.querySelector(".qra-transition__line")).not.toBeNull();
+    expect(container.querySelector(".qra-transition__node")).not.toBeNull();
   });
 });
 
@@ -294,28 +302,20 @@ describe("product figures", () => {
 });
 
 describe("pre-rendered graphics", () => {
-  it("names the three stages of the route", () => {
+  it("names the three stages in HTML, next to the drawing", () => {
     render(<QRAProcessDiagram />);
     for (const stage of ["Find it", "Explain it", "Understand it"]) {
       expect(screen.getByText(stage)).toBeInTheDocument();
     }
   });
 
-  it("draws the route as one normalised path over a plan", () => {
+  it("shows the route as a pre-rendered file rather than inline geometry", () => {
     const { container } = render(<QRAProcessDiagram />);
-    const route = container.querySelector("[data-route]");
-    // pathLength=1 makes progress a single number, and the plan underneath keeps
-    // the whole route readable before it is drawn.
-    expect(route).toHaveAttribute("pathLength", "1");
-    expect(container.querySelector(".qra-route__plan")).not.toBeNull();
-  });
-
-  it("rides a packet along the route", () => {
-    const { container } = render(<QRAProcessDiagram />);
-    expect(container.querySelector("[data-packet]")).not.toBeNull();
-    // Three stations, three captions, one route.
-    expect(container.querySelectorAll("[data-station]")).toHaveLength(3);
-    expect(container.querySelectorAll("[data-caption]")).toHaveLength(3);
+    const image = container.querySelector("img");
+    expect(image).toHaveAttribute("src", "/graphics/route.svg");
+    // Nothing to animate in the page: the file carries its own animation.
+    expect(container.querySelector("svg")).toBeNull();
+    expect(container.querySelector("[data-route]")).toBeNull();
   });
 
   it("draws the architecture as geometry rather than a simulation", () => {
@@ -364,19 +364,37 @@ describe("the motion layer", () => {
 });
 
 describe("the three paths", () => {
-  it("draws one route per investor, all normalised", () => {
+  it("stacks one pre-rendered layer per investor over the structure", () => {
     const { container } = render(<AudienceSection />);
-    const routes = container.querySelectorAll("[data-route-path]");
-    expect(routes).toHaveLength(3);
-    for (const route of Array.from(routes)) {
-      expect(route).toHaveAttribute("pathLength", "1");
+    const layers = container.querySelectorAll(".qra-paths__layer--route");
+    expect(layers).toHaveLength(3);
+    expect(Array.from(layers).map((layer) => layer.getAttribute("src"))).toEqual([
+      "/graphics/investor-beginner.svg",
+      "/graphics/investor-curious.svg",
+      "/graphics/investor-busy.svg",
+    ]);
+    expect(container.querySelector(".qra-paths__layer--structure")).toHaveAttribute(
+      "src",
+      "/graphics/investors-structure.svg",
+    );
+  });
+
+  it("lights exactly one route at a time, and keeps only that one described", () => {
+    const { container } = render(<AudienceSection />);
+    const active = container.querySelectorAll(".qra-paths__layer--route[data-active='true']");
+    expect(active).toHaveLength(1);
+    // Only the lit route carries a description; the others are decorative.
+    expect(active[0].getAttribute("alt")).toBeTruthy();
+    const rest = container.querySelectorAll(".qra-paths__layer--route[data-active='false']");
+    for (const layer of Array.from(rest)) {
+      expect(layer).toHaveAttribute("alt", "");
     }
   });
 
-  it("lights exactly one route at a time", () => {
+  it("names the four nodes in HTML, not in the image", () => {
     const { container } = render(<AudienceSection />);
-    const active = container.querySelectorAll("[data-route-path][data-active='true']");
-    expect(active).toHaveLength(1);
-    expect(active[0]).toHaveAttribute("data-route", "beginner");
+    const labels = container.querySelectorAll(".qra-paths__label");
+    expect(labels).toHaveLength(4);
+    expect(container.textContent).toContain("Plain language");
   });
 });

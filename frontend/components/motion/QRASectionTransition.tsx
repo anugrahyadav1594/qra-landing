@@ -1,24 +1,27 @@
 "use client";
 
 /**
- * QRA SECTION TRANSITION — the thread between two sections.
+ * THE RULE BETWEEN SECTIONS.
  *
- * Sections used to simply end and the next one begin. This is the small piece
- * of connective tissue that makes the page read as one journey: a hairline that
- * draws across the width as the boundary enters view, a single node travelling
- * along it, and — where the site has a word for it — the state the next section
- * arrives in.
+ * A hairline that draws itself, a node that rides it, and the word the next
+ * section arrives in — the page's connective tissue, and the one place where the
+ * thread from section to section is made explicit.
  *
- * It is deliberately the same object every time, at every boundary. One line,
- * one node, one label. Nothing else moves here, which is what keeps the seams
- * from competing with the sections they join.
+ * This used to be scroll-scrubbed: a GSAP timeline drove `scaleX`, a measured
+ * pixel travel and an opacity, recomputed continuously while the section passed
+ * the viewport. It is now a CSS animation that plays once when the rule comes
+ * into view — the same movement, on the compositor, with nothing to recalculate
+ * and no relationship to how fast anyone scrolls.
+ *
+ * The travel distance is expressed as a percentage of the rule, so there is no
+ * measurement to take and nothing to keep in sync on resize.
  */
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { EASE, TIMING } from "@/lib/motion";
+import { prefersReducedMotion } from "@/lib/motion";
 
-import { useScrollScene } from "./useScrollScene";
+import { sharedRevealObserver } from "./reveal-observer";
 
 export function QRASectionTransition({
   label,
@@ -29,64 +32,30 @@ export function QRASectionTransition({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const [drawn, setDrawn] = useState(false);
 
-  useScrollScene(ref, ({ gsap }) => {
-    const scope = ref.current;
-    if (!scope) return;
-
-    const line = scope.querySelector("[data-transition-line]");
-    const node = scope.querySelector("[data-transition-node]");
-    const caption = scope.querySelector("[data-transition-label]");
-    if (!line) return;
-
-    const timeline = gsap.timeline({
-      defaults: { ease: EASE.none },
-      scrollTrigger: {
-        trigger: scope,
-        start: "top 92%",
-        end: "bottom 60%",
-        scrub: 0.4,
-      },
-    });
-
-    timeline.fromTo(line, { scaleX: 0, transformOrigin: "left center" }, { scaleX: 1, duration: 1 });
-
-    if (node) {
-      timeline.fromTo(
-        node,
-        { x: 0, opacity: 0 },
-        {
-          // Travels the full width of the rule it rides on.
-          x: () => Math.max(0, (line as HTMLElement).offsetWidth - (node as HTMLElement).offsetWidth),
-          opacity: 1,
-          duration: 1,
-          ease: EASE.inOut,
-        },
-        0,
-      );
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    if (prefersReducedMotion()) {
+      setDrawn(true);
+      return;
     }
-
-    if (caption) {
-      timeline.fromTo(
-        caption,
-        { opacity: 0, y: 6 },
-        { opacity: 1, y: 0, duration: TIMING.micro, ease: EASE.out },
-        0.45,
-      );
-    }
-  });
+    return sharedRevealObserver().observe(element, () => setDrawn(true));
+  }, []);
 
   return (
-    <div ref={ref} aria-hidden="true" className={`qra-transition ${className}`}>
+    <div
+      ref={ref}
+      aria-hidden="true"
+      data-drawn={drawn ? "true" : "false"}
+      className={`qra-transition ${className}`}
+    >
       <div className="relative flex items-center gap-4">
-        <span data-transition-line className="qra-transition__line" />
-        <span data-transition-node className="qra-transition__node" />
+        <span className="qra-transition__line" />
+        <span className="qra-transition__node" />
       </div>
-      {label ? (
-        <span data-transition-label className="qra-transition__label">
-          {label}
-        </span>
-      ) : null}
+      {label ? <span className="qra-transition__label">{label}</span> : null}
     </div>
   );
 }

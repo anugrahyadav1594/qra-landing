@@ -27,7 +27,6 @@ import { useEffect, useRef, useState } from "react";
 import { deviceTier, prefersReducedMotion } from "@/lib/motion";
 
 import { observeAhead, observeOnScreen } from "./screen-observer";
-import { useScrollScene } from "./useScrollScene";
 
 export type AtmosphereVariant =
   | "hero"
@@ -84,68 +83,25 @@ const LOOPS: Partial<Record<AtmosphereVariant, { webm: string; mp4: string; post
 export function QRAAtmosphere({
   variant,
   intensity = 1,
-  speed = 1,
   opacity,
   image,
-  drift = true,
   className = "",
 }: {
   variant: AtmosphereVariant;
-  /** Opacity and drift multiplier (1 = the calibrated default). */
+  /** Opacity multiplier (1 = the calibrated default). */
   intensity?: number;
-  /** Ambient speed multiplier (1 = the calibrated default). */
-  speed?: number;
   /** Explicit opacity, overriding the variant's calibrated value. */
   opacity?: number;
   /** Override the environment image. */
   image?: string;
-  /** Run the variant's scroll drift. Off when a parent stage drives the motion. */
-  drift?: boolean;
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const driftRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playVideo, setPlayVideo] = useState(false);
   const [armed, setArmed] = useState(false);
 
   const loop = LOOPS[variant];
-
-  // Scroll drift: every variant moves the same way — a small, linear travel
-  // tied to its own section — with one parameter changed so the page reads as
-  // one environment rather than six effects.
-  useScrollScene(ref, ({ gsap }) => {
-    const scope = ref.current;
-    const drifting = driftRef.current;
-    if (!drift || !scope || !drifting) return;
-
-    const recipes: Record<AtmosphereVariant, gsap.TweenVars> = {
-      hero: { from: { y: 14 }, to: { y: -32 } },
-      problem: { from: { x: 18 }, to: { x: -22 } },
-      idea: { from: { scale: 1.04, y: 8 }, to: { scale: 1.0, y: -10 } },
-      product: { from: { scale: 1.02 }, to: { scale: 1.05 } },
-      investor: { from: { y: -12 }, to: { y: 14 } },
-      trust: { from: { y: 8, rotate: -0.2 }, to: { y: -8, rotate: 0.2 } },
-      about: { from: { scale: 1.05 }, to: { scale: 1.0 } },
-      waitlist: { from: { scale: 1.05, y: 10 }, to: { scale: 1.0, y: -8 } },
-    };
-
-    const recipe = recipes[variant];
-    gsap.fromTo(
-      drifting,
-      { ...recipe.from, transformOrigin: "50% 50%" },
-      {
-        ...recipe.to,
-        ease: "none",
-        scrollTrigger: {
-          trigger: scope,
-          start: "top bottom",
-          end: "bottom top",
-          scrub: 0.8,
-        },
-      },
-    );
-  }, [variant, drift]);
 
   // Playback is a privilege, not an assumption: a desktop-class device, a
   // connection that is not deliberately slow, and motion that has not been
@@ -195,11 +151,10 @@ export function QRAAtmosphere({
       style={
         {
           "--atmosphere-opacity": ((opacity ?? DEFAULT_OPACITY[variant]) * intensity).toFixed(3),
-          "--atmosphere-speed": `${(AMBIENT_SECONDS[variant] / Math.max(0.4, speed)).toFixed(1)}s`,
         } as React.CSSProperties
       }
     >
-      <div ref={driftRef} className="qra-atmosphere__drift">
+      <div className="qra-atmosphere__drift">
         {loop ? (
           <>
             {/* The poster is always present, so there is something to see
@@ -242,7 +197,7 @@ export function QRAAtmosphere({
         ) : (
           /* Plain <img> on purpose: a decorative layer behind content, sized by
              CSS, so there is no layout to shift and nothing for an optimiser to
-             do — and the drift animation needs the raw element. */
+             do — and the layer needs the raw element. */
           /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={image ?? IMAGES[variant]}
@@ -273,16 +228,5 @@ const DEFAULT_OPACITY: Record<AtmosphereVariant, number> = {
   waitlist: 0.3,
 };
 
-/** One breathing cycle per variant, in seconds — used by the still layers. */
-const AMBIENT_SECONDS: Record<AtmosphereVariant, number> = {
-  hero: 26,
-  problem: 22,
-  idea: 24,
-  product: 28,
-  investor: 24,
-  trust: 30,
-  about: 26,
-  waitlist: 22,
-};
 
-export { DEFAULT_OPACITY, IMAGES as ATMOSPHERE_IMAGES, AMBIENT_SECONDS, LOOPS as ATMOSPHERE_LOOPS };
+export { DEFAULT_OPACITY, IMAGES as ATMOSPHERE_IMAGES, LOOPS as ATMOSPHERE_LOOPS };

@@ -51,7 +51,7 @@ export function IdeaSection() {
             order on the left, leaving in rows on the right. */}
         <QRAReveal delay={100} variant="scale" className="mt-14">
           <div className="flow-band">
-            <QRAAtmosphere variant="idea" drift={false} opacity={0.95} className="flow-band__film" />
+            <QRAAtmosphere variant="idea" opacity={0.95} className="flow-band__film" />
             <div aria-hidden="true" className="flow-band__labels">
               <span>Scattered</span>
               <span>Aligned</span>

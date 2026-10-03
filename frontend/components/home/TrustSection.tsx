@@ -1,11 +1,9 @@
 "use client";
 
-import { useRef } from "react";
-
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { QRAReveal } from "@/components/motion/QRAReveal";
 import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
 import { Section, SectionLabel } from "@/components/ui";
-import { useScrollScene } from "@/components/motion/useScrollScene";
 import { TRUST } from "@/lib/content";
 
 /**
@@ -16,33 +14,6 @@ import { TRUST } from "@/lib/content";
  * down here on purpose — after everything before it, precision is the point.
  */
 export function TrustSection() {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useScrollScene(ref, ({ gsap }) => {
-    const timeline = gsap.timeline({
-      defaults: { ease: "none" },
-      scrollTrigger: {
-        trigger: ref.current,
-        start: "top 72%",
-        end: "bottom 60%",
-        scrub: 0.8,
-      },
-    });
-
-    timeline.from("[data-rule]", {
-      scaleX: 0,
-      transformOrigin: "left center",
-      duration: 1.1,
-      stagger: 0.5,
-    });
-    timeline.from(
-      "[data-principle]",
-      { opacity: 0, y: 10, duration: 0.6, stagger: 0.5 },
-      0.15,
-    );
-    timeline.from("[data-closing]", { opacity: 0, y: 12, duration: 0.8 }, ">-0.3");
-  });
-
   return (
     <Section id="trust" tone="deep" labelledBy="trust-heading" className="relative overflow-hidden">
       <QRASectionTransition label="Calmer" />
@@ -51,7 +22,7 @@ export function TrustSection() {
       <QRAAtmosphere variant="trust" />
 
 
-      <div className="relative z-10" ref={ref}>
+      <QRAReveal stagger step={160} className="relative z-10">
         <div className="max-w-2xl">
           <SectionLabel tone="brand">{TRUST.label}</SectionLabel>
           <h2
@@ -69,7 +40,7 @@ export function TrustSection() {
 
         {/* One line, extended three times. */}
         <div className="mt-16 max-w-3xl">
-          <div className="h-px w-full origin-left bg-line-strong" data-rule aria-hidden="true" />
+          <div className="trust-rule w-full" aria-hidden="true" />
           <ul>
             {TRUST.principles.map((principle) => (
               <li key={principle.n}>
@@ -79,7 +50,7 @@ export function TrustSection() {
                     {principle.line}
                   </p>
                 </div>
-                <div className="h-px w-full origin-left bg-line" data-rule aria-hidden="true" />
+                <div className="trust-rule w-full" aria-hidden="true" />
               </li>
             ))}
           </ul>
@@ -92,7 +63,7 @@ export function TrustSection() {
           </p>
           <p className="mt-6 max-w-xl text-sm leading-relaxed text-paper-faint">{TRUST.note}</p>
         </div>
-      </div>
+      </QRAReveal>
     </Section>
   );
 }

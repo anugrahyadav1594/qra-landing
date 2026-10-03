@@ -339,38 +339,37 @@ body {
 
 /* ── The problem stage (components/home/ProblemSection.tsx) ─────────── */
 
-/* A full-bleed stage holding a pre-rendered film of information arriving, the
-   seven readable sources, and the node they resolve to. Everything above the
-   film is HTML, so it is readable and animated on the compositor. */
+/* A full-bleed stage holding a pre-rendered film, the seven sources, and the two
+   statements that alternate over them. Nothing in here is scroll-linked: the
+   film plays on the compositor and the statements crossfade on the compositor,
+   and the readable layer never moves at all. */
 .problem-stage {
   position: relative;
   display: grid;
   place-items: center;
-  height: 420px;
+  height: 440px;
   overflow: hidden;
   border-radius: 0.9rem;
+  border: 1px solid rgba(63, 111, 255, 0.16);
   isolation: isolate;
 }
 
 @media (min-width: 640px) {
   .problem-stage {
-    height: 480px;
+    height: 500px;
   }
 }
 
 @media (min-width: 1024px) {
   .problem-stage {
-    height: 560px;
+    height: 580px;
   }
 }
 
-/* The film, dimmed to begin with: it comes forward as the pile does. */
 .problem-stage__flood {
   position: absolute;
   inset: 0;
   z-index: 0;
-  opacity: 0.55;
-  transform-origin: center;
 }
 
 .problem-stage__flood .qra-atmosphere {
@@ -384,12 +383,12 @@ body {
   inset: 0;
   z-index: 1;
   background:
-    radial-gradient(ellipse 54% 46% at 50% 52%, rgba(7, 10, 15, 0.88), rgba(7, 10, 15, 0.3) 72%),
-    linear-gradient(180deg, rgba(7, 10, 15, 0.92), rgba(7, 10, 15, 0.36) 32% 68%, rgba(7, 10, 15, 0.94));
+    radial-gradient(ellipse 54% 46% at 50% 50%, rgba(7, 10, 15, 0.9), rgba(7, 10, 15, 0.34) 72%),
+    linear-gradient(180deg, rgba(7, 10, 15, 0.94), rgba(7, 10, 15, 0.4) 32% 68%, rgba(7, 10, 15, 0.96));
   pointer-events: none;
 }
 
-/* The row of sources: authored orderly, and the scene takes it apart. */
+/* The sources, arranged so the seven of them are all readable at once. */
 .problem-stage__row {
   position: relative;
   z-index: 3;
@@ -397,7 +396,7 @@ body {
   flex-wrap: wrap;
   justify-content: center;
   gap: 0.5rem;
-  max-width: 46rem;
+  max-width: 44rem;
   padding: 0 1.5rem;
 }
 
@@ -406,12 +405,9 @@ body {
   align-items: baseline;
   gap: 0.5rem;
   padding: 0.55rem 0.8rem;
-  border: 1px solid rgba(245, 247, 250, 0.14);
+  border: 1px solid rgba(245, 247, 250, 0.16);
   border-radius: 0.4rem;
-  background-color: rgba(13, 19, 29, 0.96);
-  /* The scene animates transform and colour on this element; a transition here
-     would fight the scrub, so there is none. */
-  will-change: transform;
+  background-color: rgba(13, 19, 29, 0.97);
 }
 
 .problem-chip__n {
@@ -428,8 +424,22 @@ body {
   white-space: nowrap;
 }
 
-/* The two statements stand in the middle of the stage, one at a time: they
-   cannot both be true of the same pile, which is the section's argument. */
+/* The two statements alternate. They cannot both be true of the same pile, which
+   is the section's argument, so the stage says one and then the other. Opacity
+   only, on separate elements, so this is pure compositing — and both are in the
+   accessibility tree, because neither is ever display:none. */
+@keyframes statement-a {
+  0%, 42% { opacity: 1; }
+  50%, 92% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes statement-b {
+  0%, 42% { opacity: 0; }
+  50%, 92% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
 .problem-stage__statement {
   position: absolute;
   z-index: 4;
@@ -444,21 +454,31 @@ body {
   font-size: clamp(1.5rem, 4.2vw, 2.6rem);
   line-height: 1.1;
   pointer-events: none;
+  animation-duration: 11s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
 }
 
 .problem-stage__statement--alarm {
-  top: 20%;
+  top: 19%;
   color: rgba(245, 247, 250, 0.96);
   text-shadow: 0 12px 40px rgba(0, 0, 0, 0.92);
+  animation-name: statement-a;
 }
 
 .problem-stage__statement--clarity {
-  bottom: 15%;
+  bottom: 16%;
   color: #93b0ff;
   text-shadow: 0 12px 40px rgba(0, 0, 0, 0.92);
+  animation-name: statement-b;
 }
 
-/* Where it resolves. */
+/* Where it resolves: a slow pulse on the one element that is the conclusion. */
+@keyframes node-breathe {
+  0%, 100% { opacity: 0.86; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.03); }
+}
+
 .problem-stage__node {
   position: absolute;
   z-index: 5;
@@ -466,13 +486,14 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 0.6rem;
+  animation: node-breathe 6.5s ease-in-out infinite;
 }
 
 .problem-stage__node-mark {
   padding: 0.5rem 1rem;
   border: 1px solid rgba(63, 111, 255, 0.45);
   border-radius: 0.45rem;
-  background: rgba(63, 111, 255, 0.1);
+  background: rgba(63, 111, 255, 0.12);
   box-shadow: 0 0 60px -20px rgba(63, 111, 255, 0.9);
   font-family: var(--font-display), var(--font-sans), sans-serif;
   font-size: 0.9rem;
@@ -495,15 +516,23 @@ body {
   color: rgba(111, 148, 255, 0.9);
 }
 
-/* Reduced motion: the settled frame, everything readable. */
+/* Reduced motion: both statements present, nothing pulsing, nothing moving. */
 @media (prefers-reduced-motion: reduce) {
-  .problem-stage__flood {
-    opacity: 0.4 !important;
-    transform: none !important;
+  .problem-stage__statement {
+    animation: none !important;
+    opacity: 1 !important;
   }
 
-  .problem-chip {
-    will-change: auto;
+  .problem-stage__statement--alarm {
+    top: 14%;
+  }
+
+  .problem-stage__statement--clarity {
+    bottom: 12%;
+  }
+
+  .problem-stage__node {
+    animation: none !important;
   }
 }
 
@@ -1333,14 +1362,15 @@ html[data-cursor="custom"] [contenteditable="true"] {
   overflow: hidden;
   pointer-events: none;
   opacity: calc(var(--atmosphere-opacity, 0.2) * var(--atmosphere-scale, 1));
-  transform: translate3d(var(--atmosphere-px, 0px), var(--atmosphere-py, 0px), 0);
-  transition: opacity var(--dur-cinematic) ease-out, transform var(--dur-standard) ease-out;
 }
 
 .qra-atmosphere__drift {
   position: absolute;
+  /* Inset slightly, so a cover-fit image has room to breathe without the edge
+     showing. No `will-change`: nothing moves this any more, and promoting seven
+     full-width layers for no reason is exactly the sort of cost that made the
+     page stutter. */
   inset: -6%;
-  will-change: transform;
 }
 
 .qra-atmosphere__image,
@@ -1355,12 +1385,10 @@ html[data-cursor="custom"] [contenteditable="true"] {
   filter: saturate(0.55) contrast(0.94) brightness(0.75);
 }
 
-/* The loop is already desaturated and vignetted by the renderer, so it takes
-   only a brightness pass — a colour filter would re-run on every decoded frame
-   for a difference nobody can see. */
-.qra-atmosphere__video {
-  filter: brightness(0.8);
-}
+/* No filter on a playing video, deliberately. A CSS filter over decoded frames
+   is a GPU pass on every frame, and everything it used to do — desaturation,
+   darkening, the vignette — is baked into the frames by the renderer instead.
+   The browser now has nothing to do but composite the video it already has. */
 
 /* A still arrives once and then holds. It used to breathe forever — seven
    full-width filtered layers animating permanently, for a 2.5% scale change
@@ -1473,7 +1501,7 @@ html[data-cursor="custom"] [contenteditable="true"] {
   }
 
   .qra-atmosphere__image {
-    animation-duration: 1200ms, calc(var(--atmosphere-speed, 26s) * 1.4);
+    animation-duration: 1400ms;
   }
 
   .qra-transition__label {
@@ -1493,8 +1521,8 @@ html[data-cursor="custom"] [contenteditable="true"] {
 
 /* ── The route (components/motion/QRAProcessDiagram.tsx) ─────────────── */
 
-/* The diagram sits on its own ground: a graded panel with a faint grid, so the
-   route reads as a plan rather than as a line floating in a section. */
+/* The diagram is a pre-rendered SVG file shown as an image: it brings its own
+   geometry and its own animation. This is only the ground it sits on. */
 .route-frame {
   position: relative;
   padding: clamp(1.25rem, 3vw, 2.25rem) clamp(0.75rem, 2vw, 1.5rem);
@@ -1519,85 +1547,12 @@ html[data-cursor="custom"] [contenteditable="true"] {
   pointer-events: none;
 }
 
-.qra-route__plan,
-.qra-route__route {
-  fill: none;
-  stroke-linecap: round;
+.route-frame > img {
+  position: relative;
+  z-index: 1;
 }
 
-.qra-route__plan {
-  stroke: rgba(245, 247, 250, 0.08);
-  stroke-width: 1;
-}
-
-.qra-route__route {
-  stroke: rgba(111, 148, 255, 0.55);
-  stroke-width: 1.4;
-  stroke-dasharray: 1;
-  /* Undrawn until the scroll says otherwise, and finished outright when there
-     is no motion to want. */
-  stroke-dashoffset: 1;
-}
-
-[data-still="true"] .qra-route__route {
-  stroke-dashoffset: 0;
-}
-
-.qra-route__ring {
-  fill: none;
-  stroke: rgba(111, 148, 255, 0.3);
-  stroke-width: 1;
-}
-
-.qra-route__node {
-  fill: #3f6fff;
-}
-
-.qra-route__stem {
-  stroke: rgba(245, 247, 250, 0.13);
-  stroke-width: 1;
-}
-
-.qra-route__speck {
-  fill: rgba(170, 182, 198, 0.75);
-}
-
-.qra-route__ray {
-  stroke: rgba(245, 247, 250, 0.08);
-  stroke-width: 1;
-}
-
-.qra-route__words {
-  fill: rgba(245, 247, 250, 0.22);
-}
-
-.qra-route__words--lead {
-  fill: rgba(245, 247, 250, 0.4);
-}
-
-/* Geometry the scroll brings up, station by station. */
-[data-station] [data-geometry] {
-  opacity: 0.5;
-}
-
-[data-still="true"] [data-station] [data-geometry] {
-  opacity: 1;
-}
-
-.qra-route__packet-halo {
-  fill: rgba(63, 111, 255, 0.22);
-}
-
-.qra-route__packet-dot {
-  fill: #93b0ff;
-}
-
-/* Without motion the packet is simply at the end of the route. */
-[data-still="true"] .qra-route__packet {
-  transform: translate(750px, 86px);
-}
-
-/* The captions under each station. */
+/* The captions under the three stations. */
 .route-caption {
   display: flex;
   flex-direction: column;
@@ -1682,57 +1637,80 @@ html[data-cursor="custom"] [contenteditable="true"] {
 
 /* ── Section transition (components/motion/QRASectionTransition.tsx) ── */
 
-/* The thread between two sections: one hairline, one node, one label. */
 .qra-transition {
   position: relative;
-  z-index: 10;
-  padding: 0 0 2.25rem;
-}
-
-.qra-transition > div {
-  position: relative;
-  display: flex;
-  align-items: center;
+  margin-bottom: 3rem;
 }
 
 .qra-transition__line {
+  display: block;
   flex: 1;
   height: 1px;
-  background: linear-gradient(
-    90deg,
-    rgba(245, 247, 250, 0.03),
-    rgba(245, 247, 250, 0.14) 30%,
-    rgba(245, 247, 250, 0.14) 70%,
-    rgba(63, 111, 255, 0.42)
-  );
+  background: linear-gradient(90deg, rgba(245, 247, 250, 0.22), rgba(245, 247, 250, 0.05));
+  transform: scaleX(0);
   transform-origin: left center;
 }
 
 .qra-transition__node {
   position: absolute;
   left: 0;
-  top: calc(50% - 3px);
-  width: 6px;
-  height: 6px;
-  /* `rotate` rather than `transform`, so the scroll scene can own `x`. */
-  rotate: 45deg;
-  background: #3f6fff;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(63, 111, 255, 0.95);
+  box-shadow: 0 0 14px 1px rgba(63, 111, 255, 0.55);
+  opacity: 0;
 }
 
 .qra-transition__label {
-  position: absolute;
-  right: 0;
-  bottom: 0.4rem;
+  display: block;
+  margin-top: 0.6rem;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.22em;
+  font-size: 0.6rem;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: rgba(154, 168, 186, 0.7);
+  color: rgba(154, 168, 186, 0.6);
+  opacity: 0;
 }
 
-.qra-transition__label::before {
-  content: "→ ";
-  color: rgba(63, 111, 255, 0.7);
+/* Drawn once, when the rule is reached. `translateX(calc(100% ...))` would be
+   the node's own width, so the travel is expressed against the rule instead. */
+[data-drawn="true"] .qra-transition__line {
+  animation: transition-line 900ms var(--ease) both;
+}
+
+[data-drawn="true"] .qra-transition__node {
+  animation: transition-node 900ms var(--ease) 200ms both;
+}
+
+[data-drawn="true"] .qra-transition__label {
+  animation: transition-label 400ms ease-out 520ms both;
+}
+
+@keyframes transition-line {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes transition-node {
+  from {
+    left: 0;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  to {
+    left: calc(100% - 5px);
+    opacity: 1;
+  }
+}
+
+@keyframes transition-label {
+  to {
+    opacity: 1;
+  }
 }
 
 /* ── Navbar sequence ────────────────────────────────────────────────── */
@@ -1837,20 +1815,14 @@ html[data-cursor="custom"] [contenteditable="true"] {
 
   .qra-architecture line,
   .qra-architecture path,
-  .qra-route__route {
-    stroke-dashoffset: 0 !important;
-  }
-
-  /* The packet has arrived; the stations are fully drawn. */
-  .qra-route__packet {
-    opacity: 1 !important;
-  }
-
-  [data-station] [data-geometry] {
-    opacity: 1 !important;
-  }
-
   .qra-architecture circle {
+    stroke-dashoffset: 0 !important;
+    opacity: 1 !important;
+  }
+
+  /* The three routes are simply drawn, and the chosen one still reads. */
+  .qra-paths__layer--route {
+    transition: none !important;
     opacity: 1 !important;
   }
 
@@ -1900,133 +1872,68 @@ html[data-cursor="custom"] [contenteditable="true"] {
     linear-gradient(180deg, rgba(13, 19, 29, 0.8), rgba(9, 13, 20, 0.55));
 }
 
-.qra-paths__link {
-  stroke: rgba(245, 247, 250, 0.09);
-  stroke-width: 1;
+/* Four pre-rendered layers, stacked on the same canvas: the structure and one
+   image per route. Choosing a route changes one attribute, and the browser
+   crossfades — there is nothing to recompute and nothing to repaint. */
+.qra-paths {
+  position: relative;
+  aspect-ratio: 760 / 260;
 }
 
-.qra-paths__halo {
-  fill: none;
-  stroke: rgba(245, 247, 250, 0.08);
-  stroke-width: 1;
+.qra-paths__layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
-.qra-paths__node {
-  fill: rgba(245, 247, 250, 0.78);
+.qra-paths__layer--structure {
+  opacity: 0.9;
 }
 
-.qra-paths__route {
-  fill: none;
-  stroke-linecap: round;
-  stroke-width: 1.6;
-  /* Undrawn until the scroll draws it. */
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  transition: stroke 420ms ease-out, stroke-width 420ms ease-out;
+.qra-paths__layer--route {
+  opacity: 0.16;
+  transition: opacity 420ms var(--ease);
 }
 
-/* The floor: if no scene draws them, the routes are simply drawn. A running
-   scene writes stroke-dashoffset inline, and inline always wins over this. */
-[data-static="true"] .qra-paths__route {
-  stroke-dashoffset: 0;
-}
-
-[data-static="true"] .qra-paths__node {
+.qra-paths__layer--route[data-active="true"] {
   opacity: 1;
 }
 
-/* Every route sits back; the chosen one comes forward. This is the only thing
-   that reacts to the pointer, and it costs one paint. */
-.qra-paths__route[data-active="false"] {
-  stroke: rgba(154, 168, 186, 0.22);
-}
-
-.qra-paths__route[data-active="true"] {
-  stroke: rgba(147, 176, 255, 0.95);
-  stroke-width: 2.1;
-}
-
+/* The node names: HTML, positioned over the geometry as percentages of the same
+   canvas the SVGs use. */
 .qra-paths__label {
+  position: absolute;
+  transform: translate(-50%, -50%);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 10px;
-  letter-spacing: 0.14em;
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  fill: rgba(170, 182, 198, 0.6);
-  transition: fill 420ms ease-out;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .qra-paths__route {
-    stroke-dashoffset: 0 !important;
-  }
-}
-
-/* ── The flow band (components/home/IdeaSection.tsx) ───────────────────── */
-
-/* A wide window onto the idea film: the section's argument, stated as motion
-   before it is stated as a diagram. */
-.flow-band {
-  position: relative;
-  height: 220px;
-  overflow: hidden;
-  border: 1px solid rgba(245, 247, 250, 0.07);
-  border-radius: 1rem;
-  background: #070a0f;
-}
-
-@media (min-width: 640px) {
-  .flow-band {
-    height: 260px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .flow-band {
-    height: 300px;
-  }
-}
-
-.flow-band .flow-band__film {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-}
-
-/* The three words the film is about, sitting on the three zones of the frame. */
-.flow-band__labels {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  align-items: end;
-  padding: 0 0 1.1rem;
+  color: rgba(170, 182, 198, 0.62);
+  white-space: nowrap;
   pointer-events: none;
 }
 
-.flow-band__labels span {
-  text-align: center;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: rgba(154, 168, 186, 0.75);
+/* ── Trust (components/home/TrustSection.tsx) ─────────────────────────── */
+
+/* One hairline per row, drawing from its own left edge as the row arrives.
+   scaleX is a compositor property: the rule never repaints, however many of
+   them there are. */
+.trust-rule {
+  height: 1px;
+  background: rgba(245, 247, 250, 0.12);
+  transform-origin: left center;
+  animation: trust-rule 1100ms var(--ease) backwards;
 }
 
-.flow-band__labels span:last-child {
-  color: rgba(147, 176, 255, 0.9);
+@keyframes trust-rule {
+  from {
+    transform: scaleX(0);
+  }
 }
 
-/* A film that is a stage's subject rather than its wallpaper gets its strength
-   from the `opacity` prop — the component writes --atmosphere-opacity inline,
-   and an inline custom property beats a stylesheet rule. */
-
-/* The idea section's ground: structure without a second copy of the film. */
-.idea-ground {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background:
-    radial-gradient(ellipse 70% 60% at 15% 0%, rgba(63, 111, 255, 0.07), transparent 60%),
-    radial-gradient(ellipse 50% 50% at 90% 100%, rgba(63, 111, 255, 0.05), transparent 60%);
+@media (prefers-reduced-motion: reduce) {
+  .trust-rule {
+    animation: none !important;
+  }
 }
