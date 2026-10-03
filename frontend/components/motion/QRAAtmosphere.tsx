@@ -43,14 +43,19 @@ export type AtmosphereVariant =
  * financial/data environments — no people as the subject, no AI iconography.
  */
 const IMAGES: Record<AtmosphereVariant, string> = {
-  hero: "/images/qra-hero.webp",
-  problem: "/images/qra-information-overload.webp",
-  idea: "/images/qra-clarity.webp",
-  product: "/images/qra-clarity.webp",
-  investor: "/motion/investors-mesh.webp",
-  trust: "/images/qra-trust.webp",
-  about: "/images/qra-about.webp",
-  waitlist: "/images/qra-clarity.webp",
+  // Generated backdrops, made for the position each one sits in: a contour field
+  // for the hero, a crowd of overlapping panels for the problem, lines settling
+  // into rows for the idea, and one horizon for trust. They are processed to the
+  // site's own register — desaturated, darkened, vignetted — so they read as
+  // depth rather than as pictures.
+  hero: "/images/ai-hero.webp",
+  problem: "/images/ai-problem.webp",
+  idea: "/images/ai-idea.webp",
+  product: "/images/ai-product.webp",
+  investor: "/images/ai-investor.webp",
+  trust: "/images/ai-trust.webp",
+  about: "/images/ai-about.webp",
+  waitlist: "/motion/waitlist-poster.webp",
 };
 
 /**
@@ -67,16 +72,6 @@ const LOOPS: Partial<Record<AtmosphereVariant, { webm: string; mp4: string; post
     webm: "/motion/waitlist.webm",
     mp4: "/motion/waitlist.mp4",
     poster: "/motion/waitlist-poster.webp",
-  },
-  problem: {
-    webm: "/motion/problem-flood.webm",
-    mp4: "/motion/problem-flood.mp4",
-    poster: "/motion/problem-flood-poster.webp",
-  },
-  idea: {
-    webm: "/motion/idea-flow.webm",
-    mp4: "/motion/idea-flow.mp4",
-    poster: "/motion/idea-flow-poster.webp",
   },
 };
 
@@ -218,14 +213,14 @@ export function QRAAtmosphere({
 
 /** Calibrated so the environment is felt rather than seen. */
 const DEFAULT_OPACITY: Record<AtmosphereVariant, number> = {
-  hero: 0.34,
-  problem: 0.42,
-  idea: 0.3,
-  product: 0.14,
-  investor: 0.34,
-  trust: 0.16,
-  about: 0.24,
-  waitlist: 0.3,
+  hero: 0.62,
+  problem: 0.58,
+  idea: 0.55,
+  product: 0.2,
+  investor: 0.4,
+  trust: 0.42,
+  about: 0.34,
+  waitlist: 0.34,
 };
 
 

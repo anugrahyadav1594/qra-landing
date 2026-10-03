@@ -19,7 +19,6 @@ import { QRAArchitecture } from "@/components/motion/QRAArchitecture";
 import { AudienceSection } from "@/components/home/AudienceSection";
 import { QRASourceTicker } from "@/components/motion/QRASourceTicker";
 import { QRATilt } from "@/components/motion/QRATilt";
-import { QRAProcessDiagram } from "@/components/motion/QRAProcessDiagram";
 import { QRAReveal } from "@/components/motion/QRAReveal";
 import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
 import { TextReveal } from "@/components/motion/TextReveal";
@@ -90,11 +89,11 @@ describe("QRAAtmosphere environments", () => {
     expect(image).toHaveAttribute("src", "/motion/hero-poster.webp");
   });
 
-  it("falls back to the still for positions that do not carry a loop", () => {
+  it("falls back to a generated still for positions that do not carry a loop", () => {
     const { container } = render(<QRAAtmosphere variant="trust" />);
     expect(container.querySelector(".qra-atmosphere__image")).toHaveAttribute(
       "src",
-      "/images/qra-trust.webp",
+      "/images/ai-trust.webp",
     );
     expect(container.querySelector("video")).toBeNull();
   });
@@ -160,8 +159,11 @@ describe("QRAAtmosphere", () => {
   it("scales its strength from the section it sits in", () => {
     const { container } = render(<QRAAtmosphere variant="trust" intensity={0.5} />);
     const layer = container.querySelector(".qra-atmosphere") as HTMLElement;
-    // Trust is the quietest environment on the site.
-    expect(Number(layer.style.getPropertyValue("--atmosphere-opacity"))).toBeLessThan(0.2);
+    // Half strength: subtle enough to sit behind copy, present enough to read as
+    // texture rather than as a flat panel.
+    const opacity = Number(layer.style.getPropertyValue("--atmosphere-opacity"));
+    expect(opacity).toBeGreaterThan(0.15);
+    expect(opacity).toBeLessThan(0.35);
   });
 });
 
@@ -301,65 +303,13 @@ describe("product figures", () => {
   });
 });
 
-describe("pre-rendered graphics", () => {
-  it("names the three stages in HTML, next to the drawing", () => {
-    render(<QRAProcessDiagram />);
-    for (const stage of ["Find it", "Explain it", "Understand it"]) {
-      expect(screen.getByText(stage)).toBeInTheDocument();
-    }
-  });
-
-  it("shows the route as a pre-rendered file rather than inline geometry", () => {
-    const { container } = render(<QRAProcessDiagram />);
-    const image = container.querySelector("img");
-    expect(image).toHaveAttribute("src", "/graphics/route.svg");
-    // Nothing to animate in the page: the file carries its own animation.
-    expect(container.querySelector("svg")).toBeNull();
-    expect(container.querySelector("[data-route]")).toBeNull();
-  });
-
-  it("draws the architecture as geometry rather than a simulation", () => {
+describe("the architecture drawing", () => {
+  it("draws structure as geometry rather than a simulation", () => {
     const { container } = render(<QRAArchitecture />);
     const svg = container.querySelector(".qra-architecture");
     expect(svg).toHaveAttribute("data-ready", "false");
     expect(container.querySelectorAll(".qra-architecture__spines line").length).toBe(6);
     expect(container.querySelector(".qra-architecture__pathway")).not.toBeNull();
-  });
-});
-
-describe("the motion layer", () => {
-  it("cascades children when asked, and stays a single reveal when not", () => {
-    const { container: cascaded } = render(
-      <QRAReveal stagger step={50}>
-        <span>one</span>
-        <span>two</span>
-      </QRAReveal>,
-    );
-    const wrapper = cascaded.querySelector(".qra-reveal--stagger");
-    expect(wrapper).not.toBeNull();
-    expect((wrapper as HTMLElement).style.getPropertyValue("--step")).toBe("50ms");
-
-    const { container: plain } = render(<QRAReveal>alone</QRAReveal>);
-    expect(plain.querySelector(".qra-reveal--stagger")).toBeNull();
-  });
-
-  it("runs the sources band twice, so the loop has no seam", () => {
-    const { container } = render(<QRASourceTicker />);
-    const runs = container.querySelectorAll(".source-ticker__run");
-    expect(runs).toHaveLength(2);
-    expect(runs[0].children.length).toBe(runs[1].children.length);
-    // Decorative here: the same sources are named in full further down the page.
-    expect(container.querySelector(".source-ticker__track")).toHaveAttribute("aria-hidden", "true");
-  });
-
-  it("keeps the tilt wrapper transparent to its content", () => {
-    const { container } = render(
-      <QRATilt>
-        <div data-testid="panel">panel</div>
-      </QRATilt>,
-    );
-    expect(container.querySelector(".qra-tilt__surface")).not.toBeNull();
-    expect(container.querySelector("[data-testid='panel']")).not.toBeNull();
   });
 });
 

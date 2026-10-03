@@ -57,7 +57,7 @@ def render_loop(
     zoom: float = 0.05,
     pan: int = 26,
     brightness: float = 0.62,
-    saturation: float = 0.5,
+    saturation: float = 1.0,
 ) -> None:
     """One seamless loop from one still."""
     frames = int(seconds * FPS)
@@ -83,12 +83,14 @@ def render_loop(
     )
 
     treatment = (
-        # Desaturate and darken: this is a backdrop, never a picture. The
-        # mapping is centred so the named parameters read as "how dark"
-        # (0.72 = neutral), and the vignette pulls the edges down further.
-        f"eq=brightness={brightness - 0.72:.2f}:saturation={saturation}:contrast=1.02,"
-        # A gentle vignette pulls the eye to the centre of the composition.
-        "vignette=angle=PI/4:mode=forward,"
+        # A gentle tone pass only. The source is already a processed backdrop —
+        # darkened, desaturated and vignetted when it was written to public/images
+        # — so treating it again here is what turns a subtle image into a black
+        # rectangle. `brightness` is a small lift or trim around neutral.
+        f"eq=brightness={brightness - 1.0:.2f}:saturation={saturation}:contrast=1.03,"
+        # No vignette here: the sources are written with their own edge falloff,
+        # and a second one on top of it is what turned a subtle backdrop into a
+        # black rectangle.
         # Debanding for cheap panels is handled by the poster's grain and the
         # wash above the video — not by per-frame noise, which would defeat
         # temporal compression and multiply the encode time.
@@ -189,9 +191,9 @@ ASSETS: dict[str, dict] = {
     # The hero's information space: streaks resolving into ordered lines.
     # Brightness is baked, not applied in CSS: a filter over a playing video
     # is a per-frame GPU pass, and the value is a constant anyway.
-    "hero": dict(source="qra-hero.webp", seconds=4.0, zoom=0.05, pan=22, brightness=0.62),
+    "hero": dict(source="ai-hero.webp", seconds=4.0, zoom=0.05, pan=22, brightness=1.08),
     # The final CTA: light converging on one line, barely moving.
-    "waitlist": dict(source="qra-clarity.webp", seconds=4.0, zoom=0.04, pan=18, brightness=0.7),
+    "waitlist": dict(source="qra-clarity.webp", seconds=4.0, zoom=0.04, pan=18, brightness=1.0),
 }
 
 

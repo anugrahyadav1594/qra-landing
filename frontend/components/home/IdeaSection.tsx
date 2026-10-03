@@ -1,4 +1,3 @@
-import { QRAProcessDiagram } from "@/components/motion/QRAProcessDiagram";
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
 import { QRAReveal } from "@/components/motion/QRAReveal";
@@ -7,22 +6,24 @@ import { Button, Section, SectionLabel } from "@/components/ui";
 import { IDEA } from "@/lib/content";
 
 /**
- * The idea. The three moves are one continuous diagram rather than three cards,
- * so the section argues for a process instead of listing features.
+ * THE IDEA — less searching, more understanding.
+ *
+ * The section used to hold a framed SVG diagram in the middle: a route, three
+ * stations, a travelling packet. It was removed rather than repaired — the
+ * drawing competed with the three written steps directly beneath it, and said
+ * the same thing less clearly.
+ *
+ * What is left is the sequence itself: three numbered moves, set as an editorial
+ * three-column spread, over a generated backdrop held at low opacity. The
+ * argument is the order of the steps, so the section is ordered.
  */
 export function IdeaSection() {
   return (
     <Section id="how-it-works" labelledBy="idea-heading" className="relative overflow-hidden">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-line to-transparent"
-      />
-
       <QRASectionTransition label="Organized" />
 
-      {/* No section-level film here: the band below shows it properly, and the
-          same film twice would be two decoders for one picture. */}
-      <div aria-hidden="true" className="idea-ground" />
+      {/* The environment: a dark generated backdrop. */}
+      <QRAAtmosphere variant="idea" />
 
       <div className="relative z-10">
         <QRAReveal>
@@ -47,23 +48,28 @@ export function IdeaSection() {
           </div>
         </QRAReveal>
 
-        {/* A window onto the film, at full width: information arriving without
-            order on the left, leaving in rows on the right. */}
-        <QRAReveal delay={100} variant="scale" className="mt-14">
-          <div className="flow-band">
-            <QRAAtmosphere variant="idea" opacity={0.95} className="flow-band__film" />
-            <div aria-hidden="true" className="flow-band__labels">
-              <span>Scattered</span>
-              <span>Aligned</span>
-              <span>Structured</span>
-            </div>
-          </div>
-        </QRAReveal>
-
-        <QRAProcessDiagram />
+        {/* The three moves. Each one gets its own column, its own number and a
+            hairline that draws when it arrives — the sequence carried entirely by
+            the layout, not by a drawing of it. */}
+        <div className="mt-16 grid gap-10 sm:grid-cols-3 sm:gap-8 lg:gap-12">
+          {IDEA.steps.map((step, index) => (
+            <QRAReveal key={step.n} delay={120 + index * 110} className="flex flex-col">
+              <div className="flex items-baseline gap-3">
+                <span className="font-mono text-xs tracking-[0.16em] text-brand-400">
+                  {step.n}
+                </span>
+                <span aria-hidden="true" className="idea-rule" />
+              </div>
+              <p className="mt-5 font-display text-2xl font-semibold tracking-tight text-paper sm:text-[1.75rem]">
+                {step.title}
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-paper-dim">{step.body}</p>
+            </QRAReveal>
+          ))}
+        </div>
 
         <QRAReveal delay={80}>
-          <div className="mt-14 flex flex-col gap-6 border-t border-line pt-8 sm:flex-row sm:items-center sm:justify-between">
+          <div className="mt-16 flex flex-col gap-6 border-t border-line pt-8 sm:flex-row sm:items-center sm:justify-between">
             <p className="font-display text-xl font-semibold tracking-tight text-paper sm:text-2xl">
               {IDEA.closing}
             </p>

@@ -337,205 +337,6 @@ body {
 }
 
 
-/* ── The problem stage (components/home/ProblemSection.tsx) ─────────── */
-
-/* A full-bleed stage holding a pre-rendered film, the seven sources, and the two
-   statements that alternate over them. Nothing in here is scroll-linked: the
-   film plays on the compositor and the statements crossfade on the compositor,
-   and the readable layer never moves at all. */
-.problem-stage {
-  position: relative;
-  display: grid;
-  place-items: center;
-  height: 440px;
-  overflow: hidden;
-  border-radius: 0.9rem;
-  border: 1px solid rgba(63, 111, 255, 0.16);
-  isolation: isolate;
-}
-
-@media (min-width: 640px) {
-  .problem-stage {
-    height: 500px;
-  }
-}
-
-@media (min-width: 1024px) {
-  .problem-stage {
-    height: 580px;
-  }
-}
-
-.problem-stage__flood {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-}
-
-.problem-stage__flood .qra-atmosphere {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-}
-
-.problem-stage__veil {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background:
-    radial-gradient(ellipse 54% 46% at 50% 50%, rgba(7, 10, 15, 0.9), rgba(7, 10, 15, 0.34) 72%),
-    linear-gradient(180deg, rgba(7, 10, 15, 0.94), rgba(7, 10, 15, 0.4) 32% 68%, rgba(7, 10, 15, 0.96));
-  pointer-events: none;
-}
-
-/* The sources, arranged so the seven of them are all readable at once. */
-.problem-stage__row {
-  position: relative;
-  z-index: 3;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.5rem;
-  max-width: 44rem;
-  padding: 0 1.5rem;
-}
-
-.problem-chip {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  padding: 0.55rem 0.8rem;
-  border: 1px solid rgba(245, 247, 250, 0.16);
-  border-radius: 0.4rem;
-  background-color: rgba(13, 19, 29, 0.97);
-}
-
-.problem-chip__n {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.1em;
-  color: rgba(111, 148, 255, 0.85);
-}
-
-.problem-chip__label {
-  font-size: 0.78rem;
-  line-height: 1.3;
-  color: rgba(206, 214, 226, 0.92);
-  white-space: nowrap;
-}
-
-/* The two statements alternate. They cannot both be true of the same pile, which
-   is the section's argument, so the stage says one and then the other. Opacity
-   only, on separate elements, so this is pure compositing — and both are in the
-   accessibility tree, because neither is ever display:none. */
-@keyframes statement-a {
-  0%, 42% { opacity: 1; }
-  50%, 92% { opacity: 0; }
-  100% { opacity: 1; }
-}
-
-@keyframes statement-b {
-  0%, 42% { opacity: 0; }
-  50%, 92% { opacity: 1; }
-  100% { opacity: 0; }
-}
-
-.problem-stage__statement {
-  position: absolute;
-  z-index: 4;
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  padding: 0 1.5rem;
-  text-align: center;
-  font-family: var(--font-display), var(--font-sans), sans-serif;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  font-size: clamp(1.5rem, 4.2vw, 2.6rem);
-  line-height: 1.1;
-  pointer-events: none;
-  animation-duration: 11s;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-}
-
-.problem-stage__statement--alarm {
-  top: 19%;
-  color: rgba(245, 247, 250, 0.96);
-  text-shadow: 0 12px 40px rgba(0, 0, 0, 0.92);
-  animation-name: statement-a;
-}
-
-.problem-stage__statement--clarity {
-  bottom: 16%;
-  color: #93b0ff;
-  text-shadow: 0 12px 40px rgba(0, 0, 0, 0.92);
-  animation-name: statement-b;
-}
-
-/* Where it resolves: a slow pulse on the one element that is the conclusion. */
-@keyframes node-breathe {
-  0%, 100% { opacity: 0.86; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.03); }
-}
-
-.problem-stage__node {
-  position: absolute;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.6rem;
-  animation: node-breathe 6.5s ease-in-out infinite;
-}
-
-.problem-stage__node-mark {
-  padding: 0.5rem 1rem;
-  border: 1px solid rgba(63, 111, 255, 0.45);
-  border-radius: 0.45rem;
-  background: rgba(63, 111, 255, 0.12);
-  box-shadow: 0 0 60px -20px rgba(63, 111, 255, 0.9);
-  font-family: var(--font-display), var(--font-sans), sans-serif;
-  font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  color: rgba(245, 247, 250, 0.98);
-}
-
-.problem-stage__node-rule {
-  width: 1px;
-  height: 1.5rem;
-  background: linear-gradient(180deg, rgba(63, 111, 255, 0.6), transparent);
-}
-
-.problem-stage__node-word {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.62rem;
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: rgba(111, 148, 255, 0.9);
-}
-
-/* Reduced motion: both statements present, nothing pulsing, nothing moving. */
-@media (prefers-reduced-motion: reduce) {
-  .problem-stage__statement {
-    animation: none !important;
-    opacity: 1 !important;
-  }
-
-  .problem-stage__statement--alarm {
-    top: 14%;
-  }
-
-  .problem-stage__statement--clarity {
-    bottom: 12%;
-  }
-
-  .problem-stage__node {
-    animation: none !important;
-  }
-}
-
 /* ── Tilt (components/motion/QRATilt.tsx) ───────────────────────────── */
 
 /* The hero's panel leaning toward the pointer. Transforms only, on two
@@ -1087,62 +888,93 @@ html[data-intro="skip"] .qra-loader {
   }
 }
 
-/* ── Cursor (desktop only, see components/Cursor.tsx) ──────────────── */
+/* ── Pointer accent (components/motion/Cursor.tsx) ────────────────────── */
 
+/* The system cursor is never hidden — this sits behind it as a locator, so
+   "where am I pointing" is answered by the arrow and "what can I click" by the
+   ring. Both colours are always present: a light inner ring and core, a dark
+   outer edge, so it reads on light backgrounds and dark ones without ever
+   changing colour. */
 .qra-cursor {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 90;
-  width: 10px;
-  height: 10px;
-  margin: -5px 0 0 -5px;
+  z-index: 95;
+  width: 26px;
+  height: 26px;
   border-radius: 999px;
-  background: rgba(245, 247, 250, 0.9);
   pointer-events: none;
   opacity: 0;
+  /* Two shadows rather than a border: an outer dark edge for contrast on light
+     backgrounds, an inner light edge for contrast on dark ones. */
+  box-shadow:
+    0 0 0 1.5px rgba(8, 11, 16, 0.55),
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.92),
+    0 2px 10px rgba(0, 0, 0, 0.35);
   transition:
-    opacity 0.25s ease-out,
-    width 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-    height 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-    margin 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-    background-color 0.25s ease-out,
-    border-color 0.25s ease-out;
+    opacity 200ms ease-out,
+    width 200ms var(--ease),
+    height 200ms var(--ease),
+    box-shadow 200ms ease-out,
+    background-color 200ms ease-out;
+  will-change: transform;
+}
+
+.qra-cursor__core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 0 0 1px rgba(8, 11, 16, 0.5);
+  transition: transform 200ms var(--ease), opacity 200ms ease-out;
 }
 
 .qra-cursor[data-visible="true"] {
   opacity: 1;
 }
 
-/* Over anything interactive it opens into a ring. */
-.qra-cursor[data-mode="ring"] {
-  width: 30px;
-  height: 30px;
-  margin: -15px 0 0 -15px;
-  background: transparent;
-  border: 1px solid rgba(63, 111, 255, 0.85);
+.qra-cursor[data-visible="false"] {
+  /* Nothing to point at: get out of the way. */
+  transition-duration: 120ms;
 }
 
-/* Hidden only once the replacement is mounted and moving. */
-html[data-cursor="custom"],
-html[data-cursor="custom"] * {
-  cursor: none;
+/* Over anything interactive it opens and takes the brand colour — the ring is
+   the "this is clickable" signal, and the core stays put so the aim point never
+   moves. */
+.qra-cursor[data-mode="ring"],
+.qra-cursor[data-mode="focus"] {
+  width: 40px;
+  height: 40px;
+  background-color: rgba(63, 111, 255, 0.16);
+  box-shadow:
+    0 0 0 1.5px rgba(8, 11, 16, 0.5),
+    inset 0 0 0 1.5px rgba(147, 176, 255, 0.95),
+    0 0 20px rgba(63, 111, 255, 0.35);
 }
 
-/* Text entry keeps a real caret cursor: typing needs it. */
-html[data-cursor="custom"] input,
-html[data-cursor="custom"] textarea,
-html[data-cursor="custom"] select,
-html[data-cursor="custom"] [contenteditable="true"] {
-  cursor: auto;
+.qra-cursor[data-mode="ring"] .qra-cursor__core,
+.qra-cursor[data-mode="focus"] .qra-cursor__core {
+  transform: scale(0.6);
 }
 
 .qra-cursor[data-mode="focus"] {
-  width: 44px;
-  height: 44px;
-  margin: -22px 0 0 -22px;
-  background: transparent;
-  border: 1px solid rgba(63, 111, 255, 0.5);
+  width: 52px;
+  height: 52px;
+}
+
+.qra-cursor[data-pressed="true"] {
+  width: 22px;
+  height: 22px;
+}
+
+.qra-cursor[data-mode="ring"][data-pressed="true"],
+.qra-cursor[data-mode="focus"][data-pressed="true"] {
+  width: 32px;
+  height: 32px;
 }
 
 /* ── Source drawer (product transparency) ──────────────────────────── */
@@ -1519,73 +1351,27 @@ html[data-cursor="custom"] [contenteditable="true"] {
   }
 }
 
-/* ── The route (components/motion/QRAProcessDiagram.tsx) ─────────────── */
+/* ── The idea's three moves (components/home/IdeaSection.tsx) ─────────── */
 
-/* The diagram is a pre-rendered SVG file shown as an image: it brings its own
-   geometry and its own animation. This is only the ground it sits on. */
-.route-frame {
-  position: relative;
-  padding: clamp(1.25rem, 3vw, 2.25rem) clamp(0.75rem, 2vw, 1.5rem);
-  border: 1px solid rgba(245, 247, 250, 0.07);
-  border-radius: 1rem;
-  background:
-    radial-gradient(ellipse 80% 120% at 20% 0%, rgba(63, 111, 255, 0.07), transparent 62%),
-    linear-gradient(180deg, rgba(13, 19, 29, 0.85), rgba(9, 13, 20, 0.6));
-  overflow: hidden;
-}
-
-.route-frame::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(245, 247, 250, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(245, 247, 250, 0.03) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(ellipse 70% 100% at 50% 50%, black, transparent 78%);
-  -webkit-mask-image: radial-gradient(ellipse 70% 100% at 50% 50%, black, transparent 78%);
-  pointer-events: none;
-}
-
-.route-frame > img {
-  position: relative;
-  z-index: 1;
-}
-
-/* The captions under the three stations. */
-.route-caption {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(245, 247, 250, 0.08);
-}
-
-.route-caption__n {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.65rem;
-  letter-spacing: 0.16em;
-  color: rgba(111, 148, 255, 0.9);
-}
-
-.route-caption__rule {
+/* A hairline per step, drawing from its own left edge as the step arrives. */
+.idea-rule {
   flex: 1;
   height: 1px;
   background: linear-gradient(90deg, rgba(63, 111, 255, 0.5), transparent);
+  transform-origin: left center;
+  animation: idea-rule 900ms var(--ease) backwards;
 }
 
-.route-caption__title {
-  font-family: var(--font-display), var(--font-sans), sans-serif;
-  font-size: 1.05rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: rgba(245, 247, 250, 0.96);
+@keyframes idea-rule {
+  from {
+    transform: scaleX(0);
+  }
 }
 
-.route-caption__body {
-  font-size: 0.84rem;
-  line-height: 1.6;
-  color: rgba(154, 168, 186, 0.9);
+@media (prefers-reduced-motion: reduce) {
+  .idea-rule {
+    animation: none !important;
+  }
 }
 
 /* ── Architecture drawing (components/motion/QRAArchitecture.tsx) ───── */

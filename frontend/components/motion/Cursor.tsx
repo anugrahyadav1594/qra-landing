@@ -1,30 +1,43 @@
 "use client";
 
 /**
- * A very small custom cursor: a dot that opens into a ring over anything
- * interactive, and into a wider ring inside the product interface.
+ * THE POINTER ACCENT.
  *
- * Deliberately unobtrusive — 10px, no trail, no distortion, no magnetic pull.
- * It is only mounted on a fine-pointer, non-reduced-motion device, and the
- * native cursor is only hidden once the replacement is actually running, so a
- * failure here can never leave someone without a pointer.
+ * Two problems with what was here before, both of them the reason it was hard to
+ * use:
+ *
+ *   1. it replaced the pointer. `cursor: none` on every element means the thing
+ *      that tells you where you are pointing is gone, and a lagging circle is a
+ *      worse map of a screen than an arrow. The system cursor is now always
+ *      visible and always exactly where the pointer is.
+ *   2. it was a white dot at 90% opacity. On anything light that is invisible,
+ *      and on dark it reads as a speck of dust rather than as a pointer.
+ *
+ * What this draws instead is an accent *behind* the system cursor: a ring with a
+ * solid centre, white on the inside and dark on the outside, so it reads on a
+ * light background and a dark one without changing colour. It settles onto
+ * interactive elements by opening and tinting, which is a second, calmer signal
+ * that something is clickable.
+ *
+ * It is mounted only on a fine-pointer device with motion enabled, it only ever
+ * writes a transform (no layout, no repaint), and if it fails to load the browser
+ * draws its own cursor exactly as it always would.
  */
 
 import { useEffect, useRef } from "react";
 
 import { isTouchDevice, prefersReducedMotion } from "@/lib/motion";
 
-const INTERACTIVE_SELECTOR = "a, button, [role='tab'], label, summary, [data-cursor='ring']";
-const TEXT_SELECTOR = "input, textarea, select, [contenteditable='true']";
+const INTERACTIVE_SELECTOR = "a, button, [role='tab'], [role='button'], label, summary, [data-cursor='ring']";
 const FOCUS_SELECTOR = "[data-cursor='focus']";
 
 export function Cursor() {
-  const dotRef = useRef<HTMLDivElement>(null);
+  const ringRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (prefersReducedMotion() || isTouchDevice()) return;
-    const dot = dotRef.current;
-    if (!dot) return;
+    const ring = ringRef.current;
+    if (!ring) return;
 
     let x = window.innerWidth / 2;
     let y = window.innerHeight / 2;
@@ -35,11 +48,13 @@ export function Cursor() {
 
     const render = () => {
       frame = 0;
-      // Ease so the ring feels attached rather than pinned to the pointer.
-      x += (targetX - x) * 0.28;
-      y += (targetY - y) * 0.28;
-      dot.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-      if (Math.abs(targetX - x) > 0.2 || Math.abs(targetY - y) > 0.2) {
+      // A short, tight easing: enough to feel attached to the pointer without
+      // ever being behind it. The old value (0.28) left the ring visibly
+      // trailing, which is what made it hard to aim with.
+      x += (targetX - x) * 0.55;
+      y += (targetY - y) * 0.55;
+      ring.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) translate(-50%, -50%)`;
+      if (Math.abs(targetX - x) > 0.15 || Math.abs(targetY - y) > 0.15) {
         frame = window.requestAnimationFrame(render);
       }
     };
@@ -53,10 +68,11 @@ export function Cursor() {
       targetY = event.clientY;
       if (!visible) {
         visible = true;
-        dot.dataset.visible = "true";
+        // Snap rather than ease on the first frame, so it never flies in.
+        x = targetX;
+        y = targetY;
+        ring.dataset.visible = "true";
       }
-      // mode is derived from the element under the pointer, not from hover
-      // listeners on every link.
       const element = event.target as Element | null;
       if (!element || typeof element.closest !== "function") return;
       const mode = element.closest(FOCUS_SELECTOR)
@@ -64,33 +80,40 @@ export function Cursor() {
         : element.closest(INTERACTIVE_SELECTOR)
           ? "ring"
           : "dot";
-      if (dot.dataset.mode !== mode) dot.dataset.mode = mode;
+      if (ring.dataset.mode !== mode) ring.dataset.mode = mode;
       schedule();
     };
 
     const onLeave = () => {
       visible = false;
-      dot.dataset.visible = "false";
+      ring.dataset.visible = "false";
+    };
+
+    // A press is acknowledged: the ring tightens.
+    const onDown = () => {
+      ring.dataset.pressed = "true";
+    };
+    const onUp = () => {
+      ring.dataset.pressed = "false";
     };
 
     window.addEventListener("pointermove", onMove, { passive: true });
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("pointerup", onUp);
     document.addEventListener("pointerleave", onLeave);
-    document.documentElement.dataset.cursor = "custom";
 
     return () => {
       window.removeEventListener("pointermove", onMove);
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("pointerup", onUp);
       document.removeEventListener("pointerleave", onLeave);
-      delete document.documentElement.dataset.cursor;
       if (frame) window.cancelAnimationFrame(frame);
     };
   }, []);
 
-  return <div ref={dotRef} className="qra-cursor" aria-hidden="true" data-visible="false" data-mode="dot" />;
+  return (
+    <div ref={ringRef} className="qra-cursor" aria-hidden="true" data-visible="false" data-mode="dot">
+      <span className="qra-cursor__core" />
+    </div>
+  );
 }
-
-/** True when the custom cursor will actually run — used to hide the native one. */
-export function cursorIsActive(): boolean {
-  return !prefersReducedMotion() && !isTouchDevice();
-}
-
-export { TEXT_SELECTOR };

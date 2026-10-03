@@ -2,26 +2,23 @@
 
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
+import { QRAReveal } from "@/components/motion/QRAReveal";
 import { Section, SectionLabel, SectionStatement } from "@/components/ui";
 import { PROBLEM } from "@/lib/content";
 
 /**
- * THE PROBLEM — information arriving from everywhere.
+ * THE PROBLEM — too much information, not enough clarity.
  *
- * There is no scroll-driven animation in this section, and that is the point.
- * It used to be a pinned stage with a scrubbed timeline that moved seven chips
- * around, repainted their borders and backgrounds, and scaled a playing video —
- * every one of which is a paint or a re-composite on every scroll frame.
+ * This section is copy and one quiet list. It used to carry a full-width stage:
+ * a film of drifting documents behind seven chips, two statements alternating
+ * over them and a node underneath. It never worked — at any width the overlays
+ * fought the copy, and the film read as noise rather than as depth — so it is
+ * gone rather than adjusted.
  *
- * Instead:
- *
- *   · the film (pre-rendered, seamless) plays on the compositor, continuously;
- *   · the seven sources sit in a readable composition, always;
- *   · the two statements alternate on a slow CSS crossfade — the argument,
- *     stated as motion, with no scroll relationship at all.
- *
- * Everything that moves is opacity, which the compositor handles on its own
- * thread. Nothing here can stutter, because nothing here is doing work.
+ * What is left is the argument itself, stated once, and the seven sources as an
+ * editorial list: numbered, ruled, and readable at a glance. The atmosphere
+ * behind it is an AI-generated backdrop held at low opacity, which is the only
+ * moving part and the only thing that does not have to be read.
  */
 export function ProblemSection() {
   return (
@@ -33,52 +30,59 @@ export function ProblemSection() {
     >
       <QRASectionTransition label="Fragmented" />
 
-      {/* The heading states the argument before the stage shows it. */}
-      <div className="relative z-10 grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-end lg:gap-16">
-        <div>
-          <SectionLabel tone="brand">{PROBLEM.label}</SectionLabel>
-          <SectionStatement id="problem-heading" lines={PROBLEM.statement} as="h2" className="mt-5" />
-        </div>
-        <p className="max-w-md text-base leading-relaxed text-paper-dim lg:justify-self-end">
-          {PROBLEM.note}
-        </p>
-      </div>
+      {/* The environment: a dark generated backdrop, felt rather than seen. */}
+      <QRAAtmosphere variant="problem" />
 
-      {/* ── The stage ───────────────────────────────────────────────────── */}
-      <div className="problem-stage mt-14 lg:mt-16">
-        {/* The film: information arriving from everywhere, pre-rendered. */}
-        <div className="problem-stage__flood">
-          <QRAAtmosphere variant="problem" opacity={1} />
-        </div>
-
-        {/* A veil, so the readable layer always wins against the film. */}
-        <div aria-hidden="true" className="problem-stage__veil" />
-
-        {/* The sources, as themselves — the same seven the copy names. */}
-        <div className="problem-stage__row">
-          {PROBLEM.fragments.map((fragment, index) => (
-            <div key={fragment.label} className="problem-chip">
-              <span className="problem-chip__n">{String(index + 1).padStart(2, "0")}</span>
-              <span className="problem-chip__label">{fragment.label}</span>
+      <div className="relative z-10">
+        <QRAReveal>
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <SectionLabel tone="brand">{PROBLEM.label}</SectionLabel>
+              <SectionStatement
+                id="problem-heading"
+                lines={PROBLEM.statement}
+                as="h2"
+                className="mt-5"
+              />
             </div>
-          ))}
+            <p className="max-w-sm text-sm leading-relaxed text-paper-mute lg:text-right">
+              {PROBLEM.note}
+            </p>
+          </div>
+        </QRAReveal>
+
+        {/* The sources, as themselves. A hairline each, a number, a name — no
+            cards, no motion, nothing competing with the sentence above. */}
+        <div className="mt-14 lg:mt-16">
+          <QRAReveal variant="line" className="border-t border-line" />
+          <ol className="grid sm:grid-cols-2 sm:gap-x-14">
+            {PROBLEM.fragments.map((fragment, index) => (
+              <QRAReveal
+                as="li"
+                key={fragment.label}
+                delay={60 + index * 50}
+                className="flex items-baseline gap-5 border-b border-line-faint py-5"
+              >
+                <span className="font-mono text-xs text-brand-400">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
+                <span className="font-display text-base font-medium tracking-tight text-paper sm:text-lg">
+                  {fragment.label}
+                </span>
+              </QRAReveal>
+            ))}
+          </ol>
         </div>
 
-        {/* The two statements, alternating. They cannot both be true of the same
-            pile, which is exactly the section's argument — so the stage says one,
-            then the other, forever, at a pace you can read. */}
-        <p className="problem-stage__statement problem-stage__statement--alarm">
-          {PROBLEM.overload}
-        </p>
-        <p className="problem-stage__statement problem-stage__statement--clarity">
-          {PROBLEM.clarity}
-        </p>
-
-        {/* Where it resolves. */}
-        <div className="problem-stage__node">
-          <span className="problem-stage__node-mark">QRA</span>
-          <span className="problem-stage__node-rule" aria-hidden="true" />
-          <span className="problem-stage__node-word">Understand</span>
+        {/* The two statements, one after the other. Read in order, they are the
+            whole argument; there is no need to animate them. */}
+        <div className="mt-12 flex flex-col gap-3 sm:flex-row sm:items-baseline sm:gap-6">
+          <p className="font-display text-xl font-semibold tracking-tight text-paper sm:text-2xl">
+            {PROBLEM.overload}
+          </p>
+          <p className="font-display text-xl font-semibold tracking-tight text-brand-300 sm:text-2xl">
+            {PROBLEM.clarity}
+          </p>
         </div>
       </div>
     </Section>
