@@ -84,9 +84,12 @@ def render_loop(
 
     treatment = (
         # A gentle tone pass only. The source is already a processed backdrop —
-        # darkened, desaturated and vignetted when it was written to public/images
-        # — so treating it again here is what turns a subtle image into a black
-        # rectangle. `brightness` is a small lift or trim around neutral.
+        # duotoned, exposed and vignetted by scripts/process-backdrops.py — so
+        # treating it again here is what turns a subtle image into a black
+        # rectangle. `brightness` is a small lift or trim around neutral, and it
+        # is very sensitive: the processed backdrops sit so close to black that
+        # +0.1 of `eq` brightness lifts the mean from 12 to 43. Solve for it
+        # with a measurement, never by eye.
         f"eq=brightness={brightness - 1.0:.2f}:saturation={saturation}:contrast=1.03,"
         # No vignette here: the sources are written with their own edge falloff,
         # and a second one on top of it is what turned a subtle backdrop into a
@@ -191,9 +194,14 @@ ASSETS: dict[str, dict] = {
     # The hero's information space: streaks resolving into ordered lines.
     # Brightness is baked, not applied in CSS: a filter over a playing video
     # is a per-frame GPU pass, and the value is a constant anyway.
-    "hero": dict(source="ai-hero.webp", seconds=4.0, zoom=0.05, pan=22, brightness=1.08),
+    "hero": dict(source="ai-hero.webp", seconds=4.0, zoom=0.06, pan=26, brightness=1.02),
+    # Both levels are solved, not chosen: `eq` brightness is sensitive enough
+    # here that +0.1 takes the mean from 12 to 43, and 8-bit webp quantises the
+    # result in ~2-level steps, so these sit at the nearest value to the stills'
+    # own mean of 17. See the note in the treatment chain below.
+
     # The final CTA: light converging on one line, barely moving.
-    "waitlist": dict(source="qra-clarity.webp", seconds=4.0, zoom=0.04, pan=18, brightness=1.0),
+    "waitlist": dict(source="ai-waitlist.webp", seconds=4.0, zoom=0.04, pan=18, brightness=1.02),
 }
 
 

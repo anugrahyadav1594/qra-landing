@@ -47,36 +47,7 @@ INVESTOR_ROUTES = [
     ("busy", "M 20 150 L 86 150 C 200 150 360 132 474 150 C 560 164 620 96 668 74"),
 ]
 
-# The process route: the same coordinates the inline diagram used.
-ROUTE_VIEWBOX = (900, 210)
-ROUTE_THREAD = (
-    "M -20 100 C 70 100 90 92 150 92 S 250 100 300 100 "
-    "C 380 100 400 108 450 108 S 550 100 600 100 "
-    "C 680 100 700 86 750 86 S 850 100 920 100"
-)
-ROUTE_STATIONS = [
-    {"key": "find", "x": 150, "y": 92, "stem_to": 34, "above": True},
-    {"key": "explain", "x": 450, "y": 108, "stem_to": 168, "above": False},
-    {"key": "understand", "x": 750, "y": 86, "stem_to": 34, "above": True},
-]
-# Where the packet is at each moment of its journey, in viewBox units.
-ROUTE_PACKET = [(150, 92), (300, 100), (450, 108), (600, 100), (750, 86)]
-
-
-def packet_keyframes(points):
-    """The packet's journey, keyframed in viewBox units — a transform inside an
-    SVG cannot use percentages, so the path is sampled into stops."""
-    start_x, start_y = points[0]
-    total = len(points) - 1
-    stops = []
-    for index, (x, y) in enumerate(points):
-        stops.append(
-            f"    {round(index / total * 100, 1)}% {{ transform: translate({x - start_x}px, {y - start_y}px); }}"
-        )
-    return "  @keyframes ride {\n" + "\n".join(stops) + "\n  }"
-
-
-def header(width, height, packet_keys=""):
+def header(width, height):
     return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="{width}" height="{height}" fill="none" role="img">
 <style>
   /* Drawn once, when the image starts. An SVG loaded as an image animates in
@@ -89,12 +60,7 @@ def header(width, height, packet_keys=""):
   @keyframes draw {{
     to {{ stroke-dashoffset: 0; }}
   }}
-  /* The packet rides the route, for as long as the image is on screen. */
-  .packet {{
-    animation: ride 5200ms cubic-bezier(0.35, 0, 0.65, 1) infinite;
-  }}
-{packet_keys}
-  /* A slow halo, so the packet has a pulse rather than a hard edge. */
+  /* A slow halo, so a node has a pulse rather than a hard edge. */
   .halo {{
     animation: pulse 2600ms ease-in-out infinite;
     transform-origin: center;
@@ -105,56 +71,11 @@ def header(width, height, packet_keys=""):
     50%      {{ opacity: 0.75; transform: scale(1.25); }}
   }}
   @media (prefers-reduced-motion: reduce) {{
-    .draw, .packet, .halo {{ animation: none; }}
+    .draw, .halo {{ animation: none; }}
     .draw {{ stroke-dashoffset: 0; }}
   }}
 </style>
 """
-
-
-def build_route():
-    """The idea section's diagram: a plan, a drawn route, three stations."""
-    width, height = ROUTE_VIEWBOX
-    svg = [header(width, height, packet_keyframes(ROUTE_PACKET))]
-    svg.append(f'<path d="{ROUTE_THREAD}" pathLength="1" stroke="rgba(245,247,250,0.09)" stroke-width="1"/>')
-    svg.append(f'<path class="draw" d="{ROUTE_THREAD}" pathLength="1" stroke="{BRAND_LIGHT}" stroke-opacity="0.7" stroke-width="1.5" stroke-linecap="round"/>')
-
-    # The packet: one object, travelling. Percentages are not available to a
-    # transform inside an SVG, so it is keyframed in viewBox units.
-    start_x, start_y = ROUTE_PACKET[0]
-    svg.append(
-        f'<g class="packet" transform="translate({start_x} {start_y})">'
-        f'<circle class="halo" r="9" fill="{BRAND}" fill-opacity="0.28"/>'
-        f'<circle r="3.4" fill="{BRAND_LIGHT}"/>'
-        f"</g>"
-    )
-    for station in ROUTE_STATIONS:
-        x, y = station["x"], station["y"]
-        stem_y = station["stem_to"]
-        svg.append(f'<circle cx="{x}" cy="{y}" r="13" stroke="{BRAND_LIGHT}" stroke-opacity="0.28" stroke-width="1"/>')
-        svg.append(f'<circle cx="{x}" cy="{y}" r="3.4" fill="{BRAND}"/>')
-        svg.append(
-            f'<line x1="{x}" y1="{y + (13 if not station["above"] else -13)}" '
-            f'x2="{x}" y2="{stem_y}" stroke="rgba(245,247,250,0.13)" stroke-width="1"/>'
-        )
-
-    # 01 — sources converging on the first station.
-    for x, y in [(64, 26), (96, 44), (58, 58), (104, 20), (80, 66)]:
-        svg.append(f'<circle cx="{x}" cy="{y}" r="1.9" fill="rgba(170,182,198,0.75)"/>')
-        svg.append(f'<line x1="{x}" y1="{y}" x2="150" y2="92" stroke="rgba(245,247,250,0.08)" stroke-width="1"/>')
-
-    # 02 — plain language, as ruled lines.
-    for index, (x, y, w, h) in enumerate([(378, 126, 144, 7), (378, 144, 106, 5), (378, 158, 128, 5)]):
-        opacity = 0.4 if index == 0 else 0.22
-        svg.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="1.5" fill="{PAPER}" fill-opacity="{opacity}"/>')
-
-    # 03 — a hierarchy settling.
-    for index, (x, y, w, h) in enumerate([(688, 22, 148, 6), (688, 38, 104, 4), (712, 54, 124, 4), (728, 68, 88, 4)]):
-        opacity = 0.4 if index == 0 else 0.22
-        svg.append(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="1.5" fill="{PAPER}" fill-opacity="{opacity}"/>')
-
-    svg.append("</svg>")
-    return "".join(svg)
 
 
 def build_structure():
@@ -192,7 +113,6 @@ def main():
     written = []
 
     targets = {
-        "route.svg": build_route(),
         "investors-structure.svg": build_structure(),
     }
     for name, path in INVESTOR_ROUTES:

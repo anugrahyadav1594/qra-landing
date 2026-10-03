@@ -43,11 +43,13 @@ export type AtmosphereVariant =
  * financial/data environments — no people as the subject, no AI iconography.
  */
 const IMAGES: Record<AtmosphereVariant, string> = {
-  // Generated backdrops, made for the position each one sits in: a contour field
-  // for the hero, a crowd of overlapping panels for the problem, lines settling
-  // into rows for the idea, and one horizon for trust. They are processed to the
-  // site's own register — desaturated, darkened, vignetted — so they read as
-  // depth rather than as pictures.
+  // Generated backdrops, one made for the position each one sits in: refracted
+  // light for the hero, stacked glass for the problem, threads settling into
+  // rows for the idea, a single pane for the product, three ribbons converging
+  // for the investors, one horizon for trust, columns of light for the about
+  // page. All eight are run through scripts/process-backdrops.py, which duotones
+  // them onto the site's ink, sets a measured exposure and vignettes the edges,
+  // so they read as depth rather than as pictures.
   hero: "/images/ai-hero.webp",
   problem: "/images/ai-problem.webp",
   idea: "/images/ai-idea.webp",
@@ -178,7 +180,7 @@ export function QRAAtmosphere({
                 tabIndex={-1}
               >
                 {/* MP4 first, on the numbers rather than on convention: these
-                    loops are encoded by scripts/render-graphics.py and
+                    loops are encoded by scripts/render-motion.py and
                     scripts/render-motion.py, and H.264 comes out several times
                     smaller than VP9 in realtime mode (the only mode that fits in
                     this build environment) while being hardware-decoded

@@ -1185,10 +1185,11 @@ html[data-intro="skip"] .qra-loader {
 /* ── Atmosphere (components/motion/QRAAtmosphere.tsx) ──────────────── */
 
 /* The environment layer behind a section. It is always subordinate: the images
-   arrive already desaturated, darkened and vignetted (see the export notes in
-   public/images), the wash dissolves their edges into the section, and the layer
-   itself sits at 42–62% — high enough that the backdrop is visible as texture,
-   low enough that it never competes with the copy on top of it. */
+   arrive already duotoned onto the site's own ink, exposed to a measured mean,
+   and vignetted (scripts/process-backdrops.py), the wash dissolves their edges
+   into the section, and the layer itself sits at 42–62% — high enough that the
+   backdrop is visible as texture, low enough that it never competes with the
+   copy on top of it. */
 .qra-atmosphere {
   position: absolute;
   inset: 0;
@@ -1216,9 +1217,9 @@ html[data-intro="skip"] .qra-loader {
   object-fit: cover;
   object-position: center;
   /* A final trim only. The sources are written to this register already
-     (desaturated, darkened, vignetted) when they are exported to public/images,
-     so darkening them again here — as this rule used to — is what flattened
-     the whole layer to black. */
+     (duotoned, exposed, vignetted) by scripts/process-backdrops.py, so darkening
+     them again here — as this rule used to — is what flattened the whole layer
+     to black. */
   filter: saturate(0.82) contrast(0.97) brightness(0.92);
 }
 
