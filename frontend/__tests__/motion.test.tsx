@@ -5,6 +5,8 @@
 
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
@@ -12,7 +14,9 @@ import {
   INTRO_ATTRIBUTE,
   INTRO_BOOTSTRAP,
   INTRO_HERO_DELAY,
+  INTRO_TIMING,
 } from "@/components/motion/QRALoader";
+import { Cursor, toneFor, type CursorTone } from "@/components/motion/Cursor";
 import { ProductPreview } from "@/components/ProductPreview";
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { QRAArchitecture } from "@/components/motion/QRAArchitecture";
@@ -25,6 +29,33 @@ import { TextReveal } from "@/components/motion/TextReveal";
 import { LOADER } from "@/lib/content";
 
 const root = () => document.documentElement;
+
+/* Resolved rather than assumed: the suite is normally run from `frontend`, but
+   the repo root has a Makefile that could plausibly be pointed here too. */
+const GLOBAL_CSS = ["app/globals.css", "frontend/app/globals.css"]
+  .map((candidate) => path.resolve(process.cwd(), candidate))
+  .find((candidate) => existsSync(candidate));
+
+/**
+ * The layer classes the stylesheet switches off on the reduced path.
+ *
+ * Read from the shipped CSS rather than restated here, so the assertion is
+ * about what the site actually does.
+ */
+function reducedMotionHiddenLayers(): Set<string> {
+  const css = readFileSync(GLOBAL_CSS ?? "", "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const hidden = new Set<string>();
+  // `replace` rather than `matchAll`: the suite is compiled at a target where
+  // the string iterator is not iterable, and this reads the same either way.
+  css.replace(/([^{}]+)\{([^{}]*)\}/g, (rule, selector: string, body: string) => {
+    if (selector.includes('[data-mode="reduce"]') && /display:\s*none/.test(body)) {
+      const names = selector.match(/\.qra-loader__[\w-]+/g) ?? [];
+      for (const name of names) hidden.add(name.slice(1));
+    }
+    return rule;
+  });
+  return hidden;
+}
 
 beforeEach(() => {
   sessionStorage.clear();
@@ -71,13 +102,203 @@ describe("Loader", () => {
     render(<QRALoader />);
     expect(root().getAttribute(INTRO_ATTRIBUTE)).toBe("play");
 
-    // The hard ceiling is 3.8s; the sequence timer fires well before it.
+    // The sequence timer fires at the end of the opening, well inside the hard
+    // ceiling that exists only for a throttled tab.
     await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 2600));
+      await new Promise((resolve) => setTimeout(resolve, INTRO_TIMING.full + 120));
     });
     expect(sessionStorage.getItem("qra-loader-seen")).toBe("1");
     expect(root().getAttribute(INTRO_ATTRIBUTE)).toBeNull();
-  }, 6000);
+  }, 9000);
+
+  it("stages the whole opening: light, structure, wordmark, then the parting", () => {
+    root().setAttribute(INTRO_ATTRIBUTE, "play");
+    const { container } = render(<QRALoader />);
+
+    // The seam that splits, the bloom the mark comes out of, the sky behind it.
+    expect(container.querySelectorAll(".qra-loader__beam")).toHaveLength(2);
+    expect(container.querySelector(".qra-loader__bloom")).not.toBeNull();
+    expect(container.querySelectorAll(".qra-loader__mote").length).toBeGreaterThan(10);
+
+    // The structure: a shockwave, both rings, the turning dial, its graduations,
+    // the axes, and a reading wherever the guides cross them.
+    expect(container.querySelector(".qra-loader__shock")).not.toBeNull();
+    expect(container.querySelectorAll(".qra-loader__ring")).toHaveLength(2);
+    expect(container.querySelector(".qra-loader__dial")).not.toBeNull();
+    expect(container.querySelectorAll(".qra-loader__tick").length).toBe(12);
+    expect(container.querySelectorAll(".qra-loader__axis")).toHaveLength(2);
+    expect(container.querySelectorAll(".qra-loader__point").length).toBe(8);
+
+    // The mark is uncovered by an iris and crossed by one pass of light, and it
+    // leaves for the navbar rather than dissolving.
+    expect(container.querySelector(".qra-loader__logo-frame")).not.toBeNull();
+    expect(container.querySelector(".qra-loader__sheen")).not.toBeNull();
+    expect(container.querySelector(".qra-loader__handoff")).not.toBeNull();
+
+    // The name is written through a bar of light, ruled, and supported by the
+    // line the company is built on.
+    expect(container.querySelector(".qra-loader__sweep")).not.toBeNull();
+    expect(container.querySelector(".qra-loader__rule")).not.toBeNull();
+
+    // And the ending is an opening: two halves, left and right.
+    const curtains = container.querySelectorAll(".qra-loader__curtain");
+    expect(curtains).toHaveLength(2);
+  });
+
+  it("hides every layer of the full sequence on the reduced path", () => {
+    root().setAttribute(INTRO_ATTRIBUTE, "reduce");
+    const { container } = render(<QRALoader />);
+
+    // The layers are still in the markup — the reduced path is a stylesheet
+    // decision, not a different tree. So the thing worth proving is that the
+    // stylesheet accounts for all of them: every layer this component renders
+    // is either part of the mark or switched off. A layer added later and not
+    // added there would animate for someone who asked for no motion.
+    const hidden = reducedMotionHiddenLayers();
+    const isHidden = (element: Element) => {
+      for (let node: Element | null = element; node; node = node.parentElement) {
+        for (const name of Array.from(node.classList)) {
+          // A modifier is switched off with its base class; a descendant is
+          // switched off with its ancestor.
+          if (hidden.has(name) || hidden.has(name.split("--")[0])) return true;
+        }
+      }
+      return false;
+    };
+
+    const survivors = new Set(
+      Array.from(container.querySelectorAll("[class*='qra-loader__']"))
+        .filter((element) => !isHidden(element))
+        .flatMap((element) => Array.from(element.classList))
+        .map((name) => name.split("--")[0]),
+    );
+
+    expect(survivors).toEqual(
+      // The stage is the wrapper the mark sits in, so it cannot be hidden too.
+      new Set([
+        "qra-loader__stage",
+        "qra-loader__mark",
+        "qra-loader__handoff",
+        "qra-loader__logo-frame",
+        "qra-loader__logo",
+      ]),
+    );
+  });
+
+  it("has the hero already rising when the screen starts to part", () => {
+    // The ending reveals the hero, so the hero has to be mid-entrance across
+    // the whole parting: started before the curtains move, and not finished
+    // before they do. `.rise` is 900ms (var(--dur-cinematic)).
+    const curtains = INTRO_TIMING.full * 0.82;
+    const rise = 900;
+    expect(INTRO_HERO_DELAY).toBeLessThan(curtains);
+    expect(INTRO_HERO_DELAY).toBeGreaterThan(curtains - rise);
+  });
+
+  it("never leaves the overlay up past its own hard ceiling", () => {
+    expect(INTRO_TIMING.timeout).toBeGreaterThan(INTRO_TIMING.full);
+  });
+});
+
+describe("Cursor", () => {
+  beforeEach(() => {
+    root().removeAttribute("data-cursor");
+  });
+
+  afterEach(() => {
+    root().removeAttribute("data-cursor");
+  });
+
+  it("renders the two parts the pointer is made of", () => {
+    const { container } = render(<Cursor />);
+    const layer = container.querySelector(".qra-cursor") as HTMLElement;
+    expect(layer).not.toBeNull();
+    // Decorative by definition: it must never be announced or clicked.
+    expect(layer).toHaveAttribute("aria-hidden", "true");
+    expect(layer.querySelector(".qra-cursor__core")).not.toBeNull();
+    expect(layer.querySelector(".qra-cursor__ring")).not.toBeNull();
+  });
+
+  it("does not take the arrow away when motion is reduced", () => {
+    const original = window.matchMedia;
+    window.matchMedia = ((query: string) => ({
+      matches: query.includes("reduce"),
+      media: query,
+      onchange: null,
+      addListener() {},
+      removeListener() {},
+      addEventListener() {},
+      removeEventListener() {},
+      dispatchEvent: () => false,
+    })) as unknown as typeof window.matchMedia;
+    try {
+      render(<Cursor />);
+      // `cursor: none` hangs off this attribute, so with no attribute the
+      // browser still draws its own arrow.
+      expect(root().hasAttribute("data-cursor")).toBe(false);
+    } finally {
+      window.matchMedia = original;
+    }
+  });
+
+  it("takes over the pointer, and gives it back when it unmounts", () => {
+    const { unmount } = render(<Cursor />);
+    // The site has one pointer from here, and `cursor: none` is what says so.
+    expect(root().getAttribute("data-cursor")).toBe("custom");
+    unmount();
+    // And the arrow comes back. Without this the site would be left with no
+    // pointer at all on any route that unmounts the layout.
+    expect(root().hasAttribute("data-cursor")).toBe(false);
+  });
+
+  describe("tone", () => {
+    const surface = (css: string, attrs: Record<string, string> = {}) => {
+      const element = document.createElement("div");
+      for (const [name, value] of Object.entries(attrs)) element.setAttribute(name, value);
+      element.setAttribute("style", css);
+      document.body.appendChild(element);
+      return element;
+    };
+
+    afterEach(() => {
+      document.body.innerHTML = "";
+    });
+
+    it("inverts against the surface it is over", () => {
+      const cache = new WeakMap<Element, CursorTone>();
+      // This site is ink, so the default pointer is paper...
+      expect(toneFor(surface("background-color: rgb(7, 10, 15)"), cache)).toBe("light");
+      // ...and over a white panel the same pointer draws in ink.
+      expect(toneFor(surface("background-color: rgb(255, 255, 255)"), cache)).toBe("dark");
+      // Mid-grey sits on the dark side of the cut, which is where an uncertain
+      // surface belongs: a light pointer survives it, a dark one does not.
+      expect(toneFor(surface("background-color: rgb(120, 120, 120)"), cache)).toBe("light");
+    });
+
+    it("takes an explicit tone where a colour cannot describe the surface", () => {
+      const cache = new WeakMap<Element, CursorTone>();
+      // An image, a gradient or a video has no readable background colour, so
+      // the surface names itself — and the pointer takes the opposite.
+      expect(toneFor(surface("", { "data-cursor-tone": "light" }), cache)).toBe("dark");
+      expect(toneFor(surface("", { "data-cursor-tone": "dark" }), cache)).toBe("light");
+    });
+
+    it("reads the surface through a transparent child", () => {
+      const cache = new WeakMap<Element, CursorTone>();
+      const parent = surface("background-color: rgb(255, 255, 255)");
+      const child = document.createElement("span");
+      parent.appendChild(child);
+      // Most of what the pointer sits on has no background of its own; the
+      // answer has to come from the surface behind it.
+      expect(toneFor(child, cache)).toBe("dark");
+    });
+
+    it("falls back to a light pointer when there is nothing to read", () => {
+      const cache = new WeakMap<Element, CursorTone>();
+      expect(toneFor(null, cache)).toBe("light");
+      expect(toneFor(surface("background-color: rgba(255, 255, 255, 0.2)"), cache)).toBe("light");
+    });
+  });
 });
 
 describe("QRAAtmosphere environments", () => {
@@ -276,6 +497,20 @@ describe("intro bootstrap (runs before first paint)", () => {
     root().removeAttribute(INTRO_ATTRIBUTE);
     withReducedMotion(run);
     expect(root().getAttribute(INTRO_ATTRIBUTE)).toBe("reduce");
+  });
+
+  it("replays on demand, even in a session that has already seen it", () => {
+    // The opening is gated to one play per session, so anyone refining it needs
+    // a way to see it again. Still never ahead of reduced motion.
+    sessionStorage.setItem("qra-loader-seen", "1");
+    root().removeAttribute(INTRO_ATTRIBUTE);
+    window.history.replaceState({}, "", "/?intro");
+    try {
+      run();
+      expect(root().getAttribute(INTRO_ATTRIBUTE)).toBe("play");
+    } finally {
+      window.history.replaceState({}, "", "/");
+    }
   });
 });
 

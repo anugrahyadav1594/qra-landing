@@ -499,16 +499,26 @@ body {
    takes it away. `data-intro` is written before first paint, so a returning
    visitor never sees it at all.
 
-   Timeline (2350ms total): 0.30s logo · 0.80s ring and axes · 1.20s points and
-   wordmark · 1.60s the structure expands and the logo hands off to the navbar. */
+   It is staged as one continuous move rather than as a set of fades: a seam of
+   light appears at the exact centre and splits in two, the mark comes out of
+   the bloom between them, the coordinate system builds itself around the mark,
+   the name is written through a bar of light, and the screen parts down the
+   middle onto a hero that is already standing there.
+
+   Every delay below is a fraction of `--loader-dur`, so the whole opening can
+   be retimed from INTRO_TIMING in the component without touching a keyframe.
+
+   Layer order, which is what makes the ending read as an opening:
+     ::before (field) · sky · beams · bloom · structure · name · readout
+     · curtains · mark · ::after (flare).
+   The mark sits above the curtains on purpose, so it is still in flight to the
+   navbar while the screen is parting behind it. */
 html[data-intro="skip"] .qra-loader {
   display: none;
 }
 
 .qra-loader {
-  /* The whole sequence is timed from this one value: every delay below is a
-     fraction of it, so the opening can be retimed without touching a keyframe. */
-  --loader-dur: 1900ms;
+  --loader-dur: 2600ms;
   position: fixed;
   inset: 0;
   z-index: 100;
@@ -517,9 +527,13 @@ html[data-intro="skip"] .qra-loader {
   background: #05080d;
   color: #f5f7fa;
   overflow: hidden;
-  /* CSS-only hard ceiling: whatever happens next, this clears the screen. One
-     beat past the sequence, because a guard that fires late is a blank screen. */
-  animation: loader-guard 0s linear calc(var(--loader-dur) + 700ms) forwards;
+  /* Two clocks on the root. The veil steps the background out on the same frame
+     the curtains step in — same colour, so the swap is invisible — and the
+     guard is the hard ceiling. A guard that fires late is a blank screen, so it
+     lands well past the end of the sequence. */
+  animation:
+    loader-veil 1ms steps(1, end) calc(var(--loader-dur) * 0.82) both,
+    loader-guard 0s linear calc(var(--loader-dur) + 700ms) forwards;
 }
 
 @keyframes loader-guard {
@@ -527,6 +541,14 @@ html[data-intro="skip"] .qra-loader {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
+  }
+}
+
+/* Without this the root would still be an opaque sheet after the curtains had
+   gone, and the "parting" would be nothing but a fade. */
+@keyframes loader-veil {
+  to {
+    background-color: transparent;
   }
 }
 
@@ -544,9 +566,14 @@ html[data-intro="skip"] .qra-loader {
   position: absolute;
   inset: -12%;
   background:
-    radial-gradient(ellipse 60% 48% at 50% 46%, rgba(63, 111, 255, 0.13), transparent 72%),
-    radial-gradient(ellipse 120% 70% at 50% 118%, rgba(13, 19, 29, 0.9), transparent 70%);
-  animation: loader-field 26s ease-in-out infinite;
+    radial-gradient(ellipse 60% 48% at 50% 46%, rgba(63, 111, 255, 0.16), transparent 72%),
+    radial-gradient(ellipse 120% 70% at 50% 118%, rgba(13, 19, 29, 0.9), transparent 70%),
+    radial-gradient(ellipse 34% 26% at 50% 44%, rgba(157, 180, 255, 0.1), transparent 70%);
+  /* Transform on one clock, opacity on the other: no property is animated
+     twice, which is what keeps the two animations from fighting. */
+  animation:
+    loader-field 26s ease-in-out infinite,
+    loader-layer-out 280ms ease calc(var(--loader-dur) * 0.7) both;
 }
 
 @keyframes loader-field {
@@ -559,6 +586,178 @@ html[data-intro="skip"] .qra-loader {
   }
 }
 
+@keyframes loader-layer-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* ── The sky: motes, so the field has depth before anything happens ── */
+
+.qra-loader__sky {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  animation: loader-layer-out 240ms ease calc(var(--loader-dur) * 0.7) both;
+}
+
+.qra-loader__mote {
+  position: absolute;
+  width: var(--size, 1px);
+  height: var(--size, 1px);
+  border-radius: 999px;
+  background: rgba(157, 180, 255, 0.6);
+  opacity: 0;
+  /* Transform and opacity only, so 34 of these cost the main thread nothing. */
+  animation-name: loader-mote;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes loader-mote {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    opacity: 0.85;
+    transform: translate3d(0, -9px, 0);
+  }
+}
+
+/* A low-tier device gets a thinner sky: same composition, fewer layers. */
+.qra-loader[data-tier="low"] .qra-loader__mote:nth-child(n + 18) {
+  display: none;
+}
+
+/* ── The seam of light the opening comes out of ────────────────────── */
+
+/* One hairline appears at the exact centre, holds for a beat, then splits in
+   two. This is the first thing on screen, and it is what makes the sequence
+   read as an event rather than as a wait. */
+.qra-loader__horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 0;
+  z-index: 2;
+  animation: loader-layer-out 200ms ease calc(var(--loader-dur) * 0.46) both;
+}
+
+.qra-loader__beam {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 100%;
+  height: 1px;
+  transform: translate3d(-50%, 0, 0) scaleX(0);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(111, 148, 255, 0.15) 18%,
+    rgba(245, 247, 250, 0.95) 50%,
+    rgba(111, 148, 255, 0.15) 82%,
+    transparent 100%
+  );
+  box-shadow: 0 0 18px rgba(111, 148, 255, 0.55);
+}
+
+/* The entrance grows the seam out from the centre. */
+@keyframes loader-beam-in {
+  from {
+    transform: translate3d(-50%, 0, 0) scaleX(0);
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(-50%, 0, 0) scaleX(1);
+    opacity: 1;
+  }
+}
+
+/* The split takes the seam apart. `forwards` rather than `both`: a backwards
+   fill here would hold the finished, full-width seam over the entrance that is
+   still growing it. */
+.qra-loader__beam--up {
+  animation:
+    loader-beam-in calc(var(--loader-dur) * 0.2) var(--ease) both,
+    loader-beam-split-up 620ms var(--ease-in) calc(var(--loader-dur) * 0.22) forwards;
+}
+
+.qra-loader__beam--down {
+  animation:
+    loader-beam-in calc(var(--loader-dur) * 0.2) var(--ease) both,
+    loader-beam-split-down 620ms var(--ease-in) calc(var(--loader-dur) * 0.22) forwards;
+}
+
+@keyframes loader-beam-split-up {
+  from {
+    transform: translate3d(-50%, 0, 0) scaleX(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(-50%, -38vh, 0) scaleX(1.15);
+    opacity: 0;
+  }
+}
+
+@keyframes loader-beam-split-down {
+  from {
+    transform: translate3d(-50%, 0, 0) scaleX(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(-50%, 38vh, 0) scaleX(1.15);
+    opacity: 0;
+  }
+}
+
+/* The bloom the mark resolves out of. One animation, not two: a separate
+   fade-out would take the opacity property away from the bloom's own curve. */
+.qra-loader__bloom {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 46vmin;
+  height: 46vmin;
+  margin: -23vmin 0 0 -23vmin;
+  z-index: 2;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.5) 0%,
+    rgba(111, 148, 255, 0.28) 38%,
+    transparent 70%
+  );
+  opacity: 0;
+  filter: blur(6px);
+  animation: loader-bloom calc(var(--loader-dur) * 0.68) var(--ease)
+    calc(var(--loader-dur) * 0.08) both;
+}
+
+@keyframes loader-bloom {
+  0% {
+    opacity: 0;
+    transform: scale(0.25);
+  }
+  22% {
+    opacity: 1;
+    transform: scale(0.7);
+  }
+  58% {
+    opacity: 0.22;
+    transform: scale(1.3);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
 /* ── The structure around the logo ─────────────────────────────────── */
 
 .qra-loader__structure {
@@ -566,7 +765,8 @@ html[data-intro="skip"] .qra-loader {
   inset: 0;
   display: grid;
   place-items: center;
-  animation: loader-expand 620ms var(--ease-in) calc(var(--loader-dur) * 0.68) both;
+  z-index: 2;
+  animation: loader-expand 380ms var(--ease-in) calc(var(--loader-dur) * 0.66) both;
 }
 
 @keyframes loader-expand {
@@ -575,7 +775,7 @@ html[data-intro="skip"] .qra-loader {
     opacity: 1;
   }
   to {
-    transform: scale(1.6);
+    transform: scale(1.7);
     opacity: 0;
   }
 }
@@ -585,9 +785,35 @@ html[data-intro="skip"] .qra-loader {
   height: min(132vmin, 1040px);
 }
 
+/* The shockwave: one ring leaving the centre, gone before the axes land. */
+.qra-loader__shock {
+  fill: none;
+  stroke: rgba(157, 180, 255, 0.55);
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: loader-shock 900ms var(--ease) calc(var(--loader-dur) * 0.06) both;
+}
+
+@keyframes loader-shock {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(3.6);
+    stroke-width: 0.4;
+  }
+}
+
 .qra-loader__ring {
   fill: none;
-  stroke: rgba(245, 247, 250, 0.24);
+  stroke: rgba(245, 247, 250, 0.26);
   stroke-width: 1;
   transform-box: fill-box;
   transform-origin: center;
@@ -598,7 +824,7 @@ html[data-intro="skip"] .qra-loader {
 }
 
 .qra-loader__ring--outer {
-  stroke: rgba(111, 148, 255, 0.16);
+  stroke: rgba(111, 148, 255, 0.18);
   stroke-dasharray: 4 var(--circ);
 }
 
@@ -617,13 +843,58 @@ html[data-intro="skip"] .qra-loader {
   }
 }
 
+/* The instrument dial: dashed, and turning for as long as the sequence runs.
+   The fade touches opacity and the spin touches transform, so the two can run
+   at once without either one overwriting the other. */
+.qra-loader__dial {
+  fill: none;
+  stroke: rgba(157, 180, 255, 0.34);
+  stroke-width: 1;
+  stroke-dasharray: 2 16;
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation:
+    loader-dial-in 600ms var(--ease) calc(var(--loader-dur) * 0.3) both,
+    loader-spin 9s linear calc(var(--loader-dur) * 0.3) infinite;
+}
+
+@keyframes loader-dial-in {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes loader-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Graduations on the dial, arriving around it one after another. */
+.qra-loader__tick {
+  stroke: rgba(245, 247, 250, 0.3);
+  stroke-width: 1;
+  opacity: 0;
+  animation: loader-tick 460ms var(--ease) both;
+}
+
+@keyframes loader-tick {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.85;
+  }
+}
+
 .qra-loader__axis,
 .qra-loader__guide {
   stroke: rgba(245, 247, 250, 0.2);
   stroke-width: 1;
   transform-box: fill-box;
   transform-origin: center;
-  animation: loader-draw 1550ms var(--ease) calc(var(--loader-dur) * 0.26) both;
+  animation: loader-draw 1200ms var(--ease) calc(var(--loader-dur) * 0.3) both;
 }
 
 .qra-loader__guide {
@@ -663,28 +934,58 @@ html[data-intro="skip"] .qra-loader {
   }
 }
 
-.qra-loader__axis--h {
-  animation-name: loader-draw-x;
-}
-
+.qra-loader__axis--h,
 .qra-loader__guide--h {
   animation-name: loader-draw-x;
 }
 
+/* The reading that sweeps the field and leaves the points behind it. */
+.qra-loader__scan {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: min(132vmin, 1040px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(157, 180, 255, 0.85), transparent);
+  box-shadow: 0 0 24px rgba(111, 148, 255, 0.5);
+  opacity: 0;
+  animation: loader-scan calc(var(--loader-dur) * 0.26) linear calc(var(--loader-dur) * 0.42) both;
+}
+
+@keyframes loader-scan {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, 4vh, 0);
+  }
+  12%,
+  88% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-50%, 96vh, 0);
+  }
+}
+
 .qra-loader__point {
-  fill: rgba(111, 148, 255, 0.9);
+  fill: rgba(111, 148, 255, 0.95);
   transform-box: fill-box;
   transform-origin: center;
   opacity: 0;
   animation: loader-point 560ms var(--ease) both;
 }
 
+/* A short overshoot: a reading that lands, not a dot that appears. */
 @keyframes loader-point {
-  from {
+  0% {
     opacity: 0;
     transform: scale(0.4);
   }
-  to {
+  55% {
+    opacity: 1;
+    transform: scale(1.5);
+  }
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -692,20 +993,24 @@ html[data-intro="skip"] .qra-loader {
 
 /* ── The logo, and its handoff to the navbar ───────────────────────── */
 
+/* Above the curtains on purpose: the mark is still travelling to the navbar
+   while the screen parts behind it, which is what connects the two. */
 .qra-loader__mark {
   position: relative;
-  z-index: 1;
+  z-index: 7;
+  display: grid;
+  place-items: center;
   animation: loader-mark-in var(--loader-dur) var(--ease) both;
 }
 
 @keyframes loader-mark-in {
   0%,
-  9% {
+  10% {
     opacity: 0;
-    transform: translateY(10px) scale(0.92);
-    filter: blur(8px);
+    transform: translateY(14px) scale(0.86);
+    filter: blur(10px);
   }
-  30% {
+  34% {
     opacity: 1;
     transform: translateY(0) scale(1);
     filter: blur(0);
@@ -717,11 +1022,39 @@ html[data-intro="skip"] .qra-loader {
   }
 }
 
+/* A halo behind the mark, so it reads as lit rather than as pasted on. */
+.qra-loader__halo {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(63, 111, 255, 0.3) 0%, transparent 66%);
+  animation: loader-halo calc(var(--loader-dur) * 0.68) var(--ease)
+    calc(var(--loader-dur) * 0.14) both;
+}
+
+@keyframes loader-halo {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  18%,
+  74% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.14);
+  }
+}
+
 /* The logo does not fade away into nothing: it leaves for the navbar, taking
    the composition with it. The navbar's own mark fades in on the same beat. */
 .qra-loader__handoff {
+  position: relative;
   display: block;
-  animation: loader-mark-out 600ms var(--ease-in) calc(var(--loader-dur) * 0.7) both;
+  animation: loader-mark-out 520ms var(--ease-in) calc(var(--loader-dur) * 0.72) both;
 }
 
 @keyframes loader-mark-out {
@@ -735,7 +1068,46 @@ html[data-intro="skip"] .qra-loader {
   }
 }
 
+/* The iris: the mark is uncovered by an opening circle, not by a fade. One
+   small element, animated once, for 620ms — cheap enough to be worth it. */
+.qra-loader__logo-frame {
+  position: relative;
+  display: block;
+  clip-path: circle(0% at 50% 50%);
+  animation: loader-iris 620ms var(--ease) calc(var(--loader-dur) * 0.1) both;
+}
+
+@keyframes loader-iris {
+  from {
+    clip-path: circle(0% at 50% 50%);
+  }
+  to {
+    clip-path: circle(78% at 50% 50%);
+  }
+}
+
+/* One pass of light across the mark, just after it resolves. The frame's own
+   clip-path clips this as well, so the sheen never escapes the logo. */
+.qra-loader__sheen {
+  position: absolute;
+  inset: -30% -70%;
+  background: linear-gradient(100deg, transparent 42%, rgba(255, 255, 255, 0.5) 50%, transparent 58%);
+  transform: translate3d(-60%, 0, 0);
+  mix-blend-mode: screen;
+  animation: loader-sheen 760ms var(--ease) calc(var(--loader-dur) * 0.34) both;
+}
+
+@keyframes loader-sheen {
+  from {
+    transform: translate3d(-60%, 0, 0);
+  }
+  to {
+    transform: translate3d(60%, 0, 0);
+  }
+}
+
 .qra-loader__logo {
+  position: relative;
   height: 44px;
   width: auto;
   object-fit: contain;
@@ -754,24 +1126,26 @@ html[data-intro="skip"] .qra-loader {
   gap: 12px;
   padding: 0 24px;
   text-align: center;
+  z-index: 3;
   transform: translateY(76px);
+  /* Gone before the curtains arrive, so nothing is left floating over the
+     hero on the other side. */
   animation: loader-name var(--loader-dur) var(--ease) both;
 }
 
 @keyframes loader-name {
   0%,
-  100% {
+  76% {
     opacity: 1;
   }
-  92% {
-    opacity: 1;
-  }
+  82%,
   100% {
     opacity: 0;
   }
 }
 
 .qra-loader__name-text {
+  position: relative;
   display: flex;
   font-family: var(--font-display, inherit);
   font-size: 1.05rem;
@@ -790,11 +1164,55 @@ html[data-intro="skip"] .qra-loader {
 @keyframes loader-char {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
+    filter: blur(4px);
   }
   to {
     opacity: 1;
     transform: none;
+    filter: blur(0);
+  }
+}
+
+/* A bar of light travels across the name as the letters resolve, so the
+   wordmark is written rather than merely appearing. Taken out of the flex
+   flow, so it never affects the letters it passes over. */
+.qra-loader__sweep {
+  position: absolute;
+  inset: -0.4em -0.2em;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent 34%, rgba(255, 255, 255, 0.85) 50%, transparent 66%);
+  transform: translate3d(-110%, 0, 0);
+  mix-blend-mode: screen;
+  animation: loader-sweep 700ms var(--ease) calc(var(--loader-dur) * 0.44) both;
+}
+
+@keyframes loader-sweep {
+  from {
+    transform: translate3d(-110%, 0, 0);
+  }
+  to {
+    transform: translate3d(110%, 0, 0);
+  }
+}
+
+/* The rule under the name, drawn from the middle out. */
+.qra-loader__rule {
+  height: 1px;
+  width: min(240px, 62vw);
+  background: linear-gradient(90deg, transparent, rgba(157, 180, 255, 0.75), transparent);
+  transform: scaleX(0);
+  animation: loader-rule 480ms var(--ease) calc(var(--loader-dur) * 0.6) both;
+}
+
+@keyframes loader-rule {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
   }
 }
 
@@ -804,22 +1222,175 @@ html[data-intro="skip"] .qra-loader {
   text-transform: uppercase;
   color: rgba(154, 168, 186, 0.9);
   opacity: 0;
-  animation: loader-char 600ms var(--ease) calc(var(--loader-dur) * 0.66) both;
+  animation: loader-char 420ms var(--ease) calc(var(--loader-dur) * 0.64) both;
+}
+
+/* ── The readout along the bottom edge ─────────────────────────────── */
+
+.qra-loader__readout {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(28px, 6vh);
+  display: flex;
+  justify-content: center;
+  gap: clamp(16px, 4vw, 44px);
+  z-index: 3;
+  font-size: 0.6rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: rgba(111, 125, 145, 0.95);
+  animation: loader-layer-out 200ms ease calc(var(--loader-dur) * 0.72) both;
+}
+
+.qra-loader__readout-word {
+  opacity: 0;
+  animation: loader-char 520ms var(--ease) both;
+}
+
+/* ── The parting: the screen opens down the middle ─────────────────── */
+
+/* Invisible until the swap: the root's background goes transparent and these
+   take its place on the same frame, in the same colour. What the visitor sees
+   is a screen that opens, not one that fades. */
+.qra-loader__curtain {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50.5%;
+  z-index: 6;
+  background: #05080d;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.qra-loader__curtain--left {
+  left: 0;
+  animation: loader-curtain-left 430ms var(--ease-in) calc(var(--loader-dur) * 0.82) forwards;
+}
+
+.qra-loader__curtain--right {
+  right: 0;
+  animation: loader-curtain-right 430ms var(--ease-in) calc(var(--loader-dur) * 0.82) forwards;
+}
+
+/* The bright edge the two halves meet at: it flares as they separate. */
+.qra-loader__curtain::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(245, 247, 250, 0.95);
+  box-shadow: 0 0 26px 6px rgba(111, 148, 255, 0.6);
+  opacity: 0;
+  animation: loader-seam 430ms ease-out calc(var(--loader-dur) * 0.82) forwards;
+}
+
+.qra-loader__curtain--left::after {
+  right: 0;
+}
+
+.qra-loader__curtain--right::after {
+  left: 0;
+}
+
+@keyframes loader-seam {
+  0% {
+    opacity: 0.35;
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes loader-curtain-left {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(-101%, 0, 0);
+  }
+}
+
+@keyframes loader-curtain-right {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(101%, 0, 0);
+  }
+}
+
+/* The flare down the centre at the moment the seam lets go. On the root rather
+   than the stage, so it lands above the curtains it is lighting. */
+.qra-loader::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 34vw;
+  z-index: 8;
+  transform: translate3d(-50%, 0, 0);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  opacity: 0;
+  pointer-events: none;
+  animation: loader-flare 460ms ease-out calc(var(--loader-dur) * 0.82) both;
+}
+
+@keyframes loader-flare {
+  0% {
+    opacity: 0;
+    transform: translate3d(-50%, 0, 0) scaleX(0.1);
+  }
+  40% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-50%, 0, 0) scaleX(1.4);
+  }
 }
 
 /* ── Reduced path: the mark, a quiet fade, nothing else ────────────── */
 
+/* The reduced path keeps the guard. Overriding `animation` here would
+   otherwise drop it, and a reduce-mode overlay that only JavaScript can clear
+   is exactly the trap the guard exists to prevent. */
 .qra-loader[data-mode="reduce"] {
-  animation: loader-fade 520ms ease-out both;
+  animation:
+    loader-fade 520ms ease-out both,
+    loader-guard 0s linear 1300ms forwards;
 }
 
+.qra-loader[data-mode="reduce"] .qra-loader__sky,
+.qra-loader[data-mode="reduce"] .qra-loader__horizon,
+.qra-loader[data-mode="reduce"] .qra-loader__bloom,
 .qra-loader[data-mode="reduce"] .qra-loader__structure,
-.qra-loader[data-mode="reduce"] .qra-loader__name {
+.qra-loader[data-mode="reduce"] .qra-loader__name,
+.qra-loader[data-mode="reduce"] .qra-loader__readout,
+.qra-loader[data-mode="reduce"] .qra-loader__curtain,
+.qra-loader[data-mode="reduce"] .qra-loader__halo,
+.qra-loader[data-mode="reduce"] .qra-loader__sheen,
+.qra-loader[data-mode="reduce"] .qra-loader__rule {
   display: none;
 }
 
 .qra-loader[data-mode="reduce"] .qra-loader__mark {
   animation: loader-mark-simple 520ms ease-out both;
+}
+
+.qra-loader[data-mode="reduce"] .qra-loader__logo-frame {
+  clip-path: none;
+  animation: none;
 }
 
 @keyframes loader-fade {
@@ -888,93 +1459,178 @@ html[data-intro="skip"] .qra-loader {
   }
 }
 
-/* ── Pointer accent (components/motion/Cursor.tsx) ────────────────────── */
+/* ── The pointer (components/motion/Cursor.tsx) ─────────────────────── */
 
-/* The system cursor is never hidden — this sits behind it as a locator, so
-   "where am I pointing" is answered by the arrow and "what can I click" by the
-   ring. Both colours are always present: a light inner ring and core, a dark
-   outer edge, so it reads on light backgrounds and dark ones without ever
-   changing colour. */
+/* The browser's arrow is off while this runs, so this is not an accent behind
+   the pointer — it is the pointer. Two parts, because they have different
+   jobs: the core is written straight from the pointer event and is therefore
+   always exactly where you are pointing, and the ring eases after it and
+   carries the feedback.
+
+   `data-cursor="custom"` is written by the component once it knows it can
+   draw, and removed again when it unmounts. That ordering is the whole safety
+   argument for `cursor: none`: a page where the script never ran, a device
+   with no fine pointer, or a visitor who prefers reduced motion never gets the
+   attribute at all, and keeps the arrow it came with. */
+html[data-cursor="custom"],
+html[data-cursor="custom"] * {
+  cursor: none !important;
+}
+
+/* A zero-sized anchor at the viewport origin. The children are placed by
+   transform alone, so moving the pointer never touches layout, and centring is
+   the transform's job too — which is why nothing here carries a negative
+   margin to correct for its own size. */
 .qra-cursor {
   position: fixed;
   top: 0;
   left: 0;
+  width: 0;
+  height: 0;
   z-index: 95;
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
   pointer-events: none;
+}
+
+.qra-cursor__core,
+.qra-cursor__ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 999px;
   opacity: 0;
-  /* Two shadows rather than a border: an outer dark edge for contrast on light
-     backgrounds, an inner light edge for contrast on dark ones. */
-  box-shadow:
-    0 0 0 1.5px rgba(8, 11, 16, 0.55),
-    inset 0 0 0 1.5px rgba(255, 255, 255, 0.92),
-    0 2px 10px rgba(0, 0, 0, 0.35);
   transition:
-    opacity 200ms ease-out,
+    opacity 180ms ease-out,
     width 200ms var(--ease),
     height 200ms var(--ease),
-    box-shadow 200ms ease-out,
-    background-color 200ms ease-out;
+    border-color 160ms ease-out,
+    background-color 160ms ease-out,
+    box-shadow 160ms ease-out;
   will-change: transform;
 }
 
+/* The core: a dot with a hard edge in the opposite tone, so it stays findable
+   even on a surface the tone reader could not classify. */
 .qra-cursor__core {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 4px;
-  height: 4px;
-  margin: -2px 0 0 -2px;
-  border-radius: 999px;
-  background: #ffffff;
-  box-shadow: 0 0 0 1px rgba(8, 11, 16, 0.5);
-  transition: transform 200ms var(--ease), opacity 200ms ease-out;
+  width: 6px;
+  height: 6px;
+  background: #f5f7fa;
+  box-shadow:
+    0 0 0 1.5px rgba(8, 11, 16, 0.72),
+    0 1px 6px rgba(0, 0, 0, 0.5);
 }
 
-.qra-cursor[data-visible="true"] {
+/* The ring: 24px at rest, and the "this is clickable" signal when it opens. */
+.qra-cursor__ring {
+  width: 24px;
+  height: 24px;
+  border: 1.5px solid rgba(245, 247, 250, 0.5);
+  box-shadow:
+    0 0 0 1px rgba(8, 11, 16, 0.35),
+    0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+/* ── Visibility ────────────────────────────────────────────────────── */
+
+.qra-cursor[data-visible="true"] .qra-cursor__core,
+.qra-cursor[data-visible="true"] .qra-cursor__ring {
   opacity: 1;
 }
 
-.qra-cursor[data-visible="false"] {
-  /* Nothing to point at: get out of the way. */
-  transition-duration: 120ms;
+/* ── Tone: the pointer inverts against whatever is under it ────────── */
+
+/* Over a light surface the pointer draws in ink. Same shape as the default,
+   mirrored — which is what lets one design read on both. */
+.qra-cursor[data-tone="dark"] .qra-cursor__core {
+  background: #0b1017;
+  box-shadow:
+    0 0 0 1.5px rgba(255, 255, 255, 0.9),
+    0 1px 6px rgba(0, 0, 0, 0.25);
 }
 
-/* Over anything interactive it opens and takes the brand colour — the ring is
-   the "this is clickable" signal, and the core stays put so the aim point never
-   moves. */
-.qra-cursor[data-mode="ring"],
-.qra-cursor[data-mode="focus"] {
-  width: 40px;
-  height: 40px;
-  background-color: rgba(63, 111, 255, 0.16);
+.qra-cursor[data-tone="dark"] .qra-cursor__ring {
+  border-color: rgba(11, 16, 23, 0.55);
   box-shadow:
-    0 0 0 1.5px rgba(8, 11, 16, 0.5),
-    inset 0 0 0 1.5px rgba(147, 176, 255, 0.95),
-    0 0 20px rgba(63, 111, 255, 0.35);
+    0 0 0 1px rgba(255, 255, 255, 0.5),
+    0 2px 12px rgba(0, 0, 0, 0.18);
+}
+
+/* ── Modes ─────────────────────────────────────────────────────────── */
+
+/* Over anything interactive the ring opens and takes the brand colour. The
+   core only shrinks; it never moves, so the aim point is unaffected by the
+   feedback drawn around it. */
+.qra-cursor[data-mode="ring"] .qra-cursor__ring,
+.qra-cursor[data-mode="focus"] .qra-cursor__ring {
+  width: 44px;
+  height: 44px;
+  border-color: rgba(147, 176, 255, 0.95);
+  background-color: rgba(63, 111, 255, 0.14);
+  box-shadow:
+    0 0 0 1px rgba(8, 11, 16, 0.3),
+    0 0 22px rgba(63, 111, 255, 0.35);
+}
+
+/* A light surface needs the deeper end of the same accent: 400 on white is a
+   suggestion, 700 on white is a boundary. */
+.qra-cursor[data-tone="dark"][data-mode="ring"] .qra-cursor__ring,
+.qra-cursor[data-tone="dark"][data-mode="focus"] .qra-cursor__ring {
+  border-color: rgba(37, 69, 190, 0.95);
+  background-color: rgba(63, 111, 255, 0.12);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.5),
+    0 0 22px rgba(63, 111, 255, 0.28);
+}
+
+.qra-cursor[data-mode="focus"] .qra-cursor__ring {
+  width: 58px;
+  height: 58px;
 }
 
 .qra-cursor[data-mode="ring"] .qra-cursor__core,
 .qra-cursor[data-mode="focus"] .qra-cursor__core {
-  transform: scale(0.6);
+  width: 4px;
+  height: 4px;
 }
 
-.qra-cursor[data-mode="focus"] {
-  width: 52px;
-  height: 52px;
+/* Over a field the ring becomes a caret, which is the one shape that answers
+   "where will this character go". Three attributes, so it outranks the
+   visibility rule that would otherwise keep the core on screen. */
+.qra-cursor[data-visible="true"][data-mode="text"] .qra-cursor__core {
+  opacity: 0;
 }
 
-.qra-cursor[data-pressed="true"] {
-  width: 22px;
+.qra-cursor[data-mode="text"] .qra-cursor__ring {
+  width: 2px;
   height: 22px;
+  border: none;
+  border-radius: 1px;
+  background-color: #f5f7fa;
+  box-shadow: 0 0 0 1px rgba(8, 11, 16, 0.55);
 }
 
-.qra-cursor[data-mode="ring"][data-pressed="true"],
-.qra-cursor[data-mode="focus"][data-pressed="true"] {
-  width: 32px;
-  height: 32px;
+.qra-cursor[data-tone="dark"][data-mode="text"] .qra-cursor__ring {
+  background-color: #0b1017;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7);
+}
+
+/* ── Press ─────────────────────────────────────────────────────────── */
+
+/* A press tightens the ring. The caret is already two pixels wide, so it holds
+   its shape — shrinking it would only make it disappear. */
+.qra-cursor[data-pressed="true"] .qra-cursor__ring {
+  width: 18px;
+  height: 18px;
+}
+
+.qra-cursor[data-mode="ring"][data-pressed="true"] .qra-cursor__ring,
+.qra-cursor[data-mode="focus"][data-pressed="true"] .qra-cursor__ring {
+  width: 34px;
+  height: 34px;
+}
+
+.qra-cursor[data-mode="text"][data-pressed="true"] .qra-cursor__ring {
+  width: 2px;
+  height: 22px;
 }
 
 /* ── Source drawer (product transparency) ──────────────────────────── */

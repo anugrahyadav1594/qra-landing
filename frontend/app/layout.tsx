@@ -39,6 +39,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             opening sequence plays, and delays the hero by the same amount. */}
         <script dangerouslySetInnerHTML={{ __html: INTRO_BOOTSTRAP }} />
 
+        {/* The opening sequence uncovers the brand mark 260ms in, so it is
+            asked for before the overlay is even parsed. `rel="preload"` is
+            body-ok, so this is valid here — and it is here rather than in the
+            metadata API, which has no way to express it. */}
+        <link rel="preload" as="image" href="/image.png" />
+
         <QRALoader />
         <Cursor />
 

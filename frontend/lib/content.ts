@@ -14,6 +14,8 @@ export const LOADER = {
   name: "QUANTRELIC",
   tagline: "Making investing simpler for the masses.",
   announcement: "Loading Quantrelic Analytics.",
+  /** The three-word readout along the bottom edge of the opening sequence. */
+  readout: ["Find it", "Explain it", "Understand it"],
 };
 
 export const ILLUSTRATIVE_LABEL = "Illustrative example";
