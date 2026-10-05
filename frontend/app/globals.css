@@ -1980,12 +1980,12 @@ html[data-cursor="custom"] * {
 
 .qra-atmosphere[data-variant="problem"] .qra-atmosphere__image {
   object-position: 50% 44%;
-  filter: saturate(0.72) contrast(0.98) brightness(0.85) blur(0.3px);
+  filter: saturate(0.72) contrast(0.98) brightness(0.85);
 }
 
 .qra-atmosphere[data-variant="idea"] .qra-atmosphere__image {
   object-position: 24% 50%;
-  filter: saturate(0.8) brightness(0.8) blur(0.2px);
+  filter: saturate(0.8) brightness(0.8);
 }
 
 /* The threads' bright knot sits where the headline reads, so the idea wash is
@@ -2010,27 +2010,27 @@ html[data-cursor="custom"] * {
 
 .qra-atmosphere[data-variant="product"] .qra-atmosphere__image {
   object-position: 72% 42%;
-  filter: saturate(0.5) brightness(0.72) blur(0.8px);
+  filter: saturate(0.5) brightness(0.72);
 }
 
 .qra-atmosphere[data-variant="investor"] .qra-atmosphere__image {
   object-position: 74% 46%;
-  filter: saturate(0.45) brightness(0.7) blur(1px);
+  filter: saturate(0.45) brightness(0.7);
 }
 
 .qra-atmosphere[data-variant="trust"] .qra-atmosphere__image {
   object-position: 50% 55%;
-  filter: saturate(0.4) brightness(0.72) blur(1.2px);
+  filter: saturate(0.4) brightness(0.72);
 }
 
 .qra-atmosphere[data-variant="about"] .qra-atmosphere__image {
   object-position: 38% 50%;
-  filter: saturate(0.5) brightness(0.7) blur(0.8px);
+  filter: saturate(0.5) brightness(0.7);
 }
 
 .qra-atmosphere[data-variant="waitlist"] .qra-atmosphere__image {
   object-position: 50% 64%;
-  filter: saturate(0.42) brightness(0.68) blur(1.2px);
+  filter: saturate(0.42) brightness(0.68);
 }
 
 /* Tablet and phone: the environment stays, but further back — less opacity,
@@ -2055,7 +2055,7 @@ html[data-cursor="custom"] * {
   }
 
   .qra-atmosphere__image {
-    filter: saturate(0.5) brightness(0.7) blur(1.5px);
+    filter: saturate(0.5) brightness(0.7);
   }
 }
 
@@ -2417,6 +2417,67 @@ html[data-cursor="custom"] * {
   to {
     opacity: 1;
   }
+}
+
+/* A quiet bloom at each boundary, so the rule reads as a doorway between
+   sections rather than as a line drawn on one. */
+.qra-transition::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -34px;
+  height: 70px;
+  background: radial-gradient(
+    ellipse 40% 60% at 18% 50%,
+    rgba(63, 111, 255, 0.08),
+    transparent 70%
+  );
+  opacity: 0;
+  pointer-events: none;
+}
+
+[data-drawn="true"].qra-transition::before {
+  animation: transition-glow 1200ms var(--ease) 150ms both;
+}
+
+@keyframes transition-glow {
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Tonal bridges between sections ────────────────────────────────── */
+
+/* Adjacent sections change background tone (ink-950 / 900 / 850) and a flat
+   cut between two large fills reads as a hard edge in the scroll. Each tonal
+   section therefore fades in out of the page's base at its top edge and melts
+   back into it at its bottom, so the eye is carried across the boundary
+   instead of stopped by it. Static gradients: no cost once painted. */
+section[data-tone="raised"]::before,
+section[data-tone="deep"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 110px;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, #070a0f 0%, rgba(7, 10, 15, 0) 100%);
+}
+
+section[data-tone="raised"]::after,
+section[data-tone="deep"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 110px;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(0deg, #070a0f 0%, rgba(7, 10, 15, 0) 100%);
 }
 
 /* ── Navbar sequence ────────────────────────────────────────────────── */

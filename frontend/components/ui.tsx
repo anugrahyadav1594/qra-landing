@@ -37,6 +37,7 @@ export function Section({
     <section
       id={id}
       data-section={id}
+      data-tone={tone}
       aria-labelledby={labelledBy}
       className={`relative ${tones[tone]} ${className}`}
     >
