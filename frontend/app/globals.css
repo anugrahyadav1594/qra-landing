@@ -209,8 +209,14 @@ body {
   opacity: 0;
   animation: rise-in var(--dur-cinematic) var(--ease) both;
   /* The opening sequence delays the hero rather than pausing it: if any script
-     fails, --intro-delay is simply 0 and the hero still arrives. */
-  animation-delay: calc(var(--intro-delay, 0ms) + var(--d, 0ms));
+     fails, --intro-delay is simply 0 and the hero still arrives.
+
+     The stagger is scaled while the sequence plays. Left alone, the last hero
+     element would not begin until after the screen had finished opening, and
+     the parting would reveal a half-built page that then popped in. Both
+     custom properties are absent without the sequence, so the ordinary
+     entrance is untouched. */
+  animation-delay: calc(var(--intro-delay, 0ms) + var(--d, 0ms) * var(--intro-stagger, 1));
 }
 
 @keyframes rise-in {
@@ -1062,8 +1068,17 @@ html[data-intro="skip"] .qra-loader {
     transform: translate3d(0, 0, 0) scale(1);
     opacity: 1;
   }
+  /* The variables are measured from the navbar's own mark at runtime, so the
+     mark lands on it rather than near it. The fallbacks are the old
+     coordinates, which are close enough that a failed measurement degrades to
+     a slightly-off landing instead of a broken sequence. */
   to {
-    transform: translate3d(calc(-50vw + 52px), calc(-50vh + 34px), 0) scale(0.44);
+    transform: translate3d(
+        var(--handoff-x, calc(-50vw + 52px)),
+        var(--handoff-y, calc(-50vh + 34px)),
+        0
+      )
+      scale(var(--handoff-scale, 0.545));
     opacity: 0;
   }
 }
@@ -1161,16 +1176,17 @@ html[data-intro="skip"] .qra-loader {
   animation: loader-char 520ms var(--ease) both;
 }
 
+/* Opacity and transform only. This ran on ten letters plus the tagline at
+   once, and `filter` is not composited — eleven simultaneous blurs is exactly
+   the kind of cost that shows up as a stutter in the middle of a reveal. */
 @keyframes loader-char {
   from {
     opacity: 0;
     transform: translateY(8px);
-    filter: blur(4px);
   }
   to {
     opacity: 1;
     transform: none;
-    filter: blur(0);
   }
 }
 
@@ -1287,12 +1303,16 @@ html[data-intro="skip"] .qra-loader {
   animation: loader-seam 430ms ease-out calc(var(--loader-dur) * 0.82) forwards;
 }
 
+/* Both halves are 50.5% wide so they cannot leave a hairline of hero showing
+   between them, which puts their inner edges 0.5vw either side of the centre.
+   The seam is nudged back to 50vw on both, so what parts is one line and not
+   two parallel ones. */
 .qra-loader__curtain--left::after {
-  right: 0;
+  right: calc(0.5vw - 1px);
 }
 
 .qra-loader__curtain--right::after {
-  left: 0;
+  left: calc(0.5vw - 1px);
 }
 
 @keyframes loader-seam {
@@ -1487,7 +1507,13 @@ html[data-cursor="custom"] * {
   left: 0;
   width: 0;
   height: 0;
-  z-index: 95;
+  /* Unconditionally topmost, and not by a small margin. This used to be 95,
+     which is above the page and below anything that portals: Clerk's sign-in,
+     sign-up and profile cards all render into <body> on a very high z-index,
+     so over them the pointer was hidden by the modal while `cursor: none`
+     still applied inside it — no arrow and no replacement. A pointer is the
+     one thing on a page that has to outrank every other layer, so it does. */
+  z-index: 2147483000;
   pointer-events: none;
 }
 
@@ -2180,6 +2206,14 @@ html[data-cursor="custom"] * {
     opacity: 1;
     transform: none;
   }
+}
+
+/* The navbar's own mark is where the opening sequence's handoff lands, so it
+   cannot arrive on the hero's clock: that would show two logos at once while
+   the first is still in flight. It waits for the mark coming to replace it.
+   Absent the sequence, this is the hero's delay, which is the old behaviour. */
+.nav-seq[data-nav-logo] {
+  animation-delay: calc(var(--intro-mark-delay, var(--intro-delay, 0ms)) + var(--d, 0ms));
 }
 
 /* ── Reduced motion (WCAG 2.3.3): everything still, content visible ── */

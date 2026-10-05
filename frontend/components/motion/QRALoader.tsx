@@ -41,7 +41,7 @@
  *    first impression, not a toll on every page in a session.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Logo } from "@/components/Logo";
 import { LOADER } from "@/lib/content";
@@ -63,23 +63,45 @@ export const INTRO_TIMING = {
   timeout: 3400,
 } as const;
 
-/** How long the hero waits (the screen starts to part just before the end). */
-export const INTRO_HERO_DELAY = INTRO_TIMING.full - 700;
+/**
+ * When the hero starts to arrive.
+ *
+ * Not "as late as possible": the hero's own cascade is scaled by
+ * INTRO_STAGGER so that its *last* element is nearly settled by the time the
+ * screen has finished opening. Left at full stagger it would not even begin
+ * until the curtains were done, and the parting would reveal a half-built page.
+ */
+export const INTRO_HERO_DELAY = INTRO_TIMING.full - 1200;
+
+/** The hero's cascade, compressed for the length of the opening. */
+export const INTRO_STAGGER = 0.45;
+
+/**
+ * When the navbar's own mark fades in — the landing site of the handoff.
+ *
+ * On the hero's clock it would be fully visible a quarter of a second before
+ * the mark flying towards it arrives, which puts two logos on screen at once.
+ * It waits, so the arrival reads as the mark becoming the navbar's.
+ */
+export const INTRO_MARK_DELAY = INTRO_TIMING.full - 450;
 
 /** How the browser should treat this visit. */
 export type IntroMode = "play" | "skip" | "reduce";
 
 /** Read by the inline script in the layout, before first paint. */
 export const INTRO_BOOTSTRAP =
-  `(function(){try{var d=document.documentElement,n="${SEEN_KEY}",f=${INTRO_HERO_DELAY};` +
+  `(function(){try{var d=document.documentElement,n="${SEEN_KEY}",` +
+  `play=function(){d.setAttribute("${INTRO_ATTRIBUTE}","play");` +
+  `d.style.setProperty("--intro-delay","${INTRO_HERO_DELAY}ms");` +
+  `d.style.setProperty("--intro-mark-delay","${INTRO_MARK_DELAY}ms");` +
+  `d.style.setProperty("--intro-stagger","${INTRO_STAGGER}");};` +
   `if(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches){` +
   `d.setAttribute("${INTRO_ATTRIBUTE}","reduce");}` +
   // An escape hatch for anyone reviewing the sequence: the opening is gated to
   // one play per session, and a reviewer cannot review what they cannot replay.
-  `else if(location.search.indexOf("intro")>-1){` +
-  `d.setAttribute("${INTRO_ATTRIBUTE}","play");d.style.setProperty("--intro-delay",f+"ms");}` +
+  `else if(location.search.indexOf("intro")>-1){play();}` +
   `else if(sessionStorage.getItem(n)==="1"){d.setAttribute("${INTRO_ATTRIBUTE}","skip");}` +
-  `else{d.setAttribute("${INTRO_ATTRIBUTE}","play");d.style.setProperty("--intro-delay",f+"ms");}` +
+  `else{play();}` +
   `}catch(e){d.setAttribute("${INTRO_ATTRIBUTE}","skip");}})();`;
 
 /** Two rings, in the same coordinate space as the lines. */
@@ -125,9 +147,46 @@ const PARTICLES = Array.from({ length: 34 }, (_, index) => {
   };
 });
 
+/**
+ * Where an element sits once its own entrance transform has resolved.
+ *
+ * The navbar's mark has not started arriving when this runs, so it is sitting
+ * 6px below where it will end up and invisible; a plain bounding rect would
+ * measure that and the handoff would land short. The applied transform is read
+ * back off the element and taken out of the measurement, which keeps this
+ * correct if the navbar's entrance ever changes shape.
+ */
+function settledRect(element: Element): { x: number; y: number; height: number } | null {
+  const rect = element.getBoundingClientRect();
+  if (!rect.width && !rect.height) return null;
+
+  let dx = 0;
+  let dy = 0;
+  let scale = 1;
+  const transform = window.getComputedStyle(element).transform;
+  if (transform && transform !== "none" && typeof DOMMatrixReadOnly === "function") {
+    try {
+      const matrix = new DOMMatrixReadOnly(transform);
+      dx = matrix.m41;
+      dy = matrix.m42;
+      scale = matrix.a || 1;
+    } catch {
+      // An unusual transform string: measure it as it stands rather than
+      // losing the handoff entirely. The CSS fallback is still behind this.
+    }
+  }
+
+  return {
+    x: rect.left - dx + rect.width / 2,
+    y: rect.top - dy + rect.height / 2,
+    height: rect.height / scale,
+  };
+}
+
 export function QRALoader() {
   const [mode, setMode] = useState<IntroMode | null>(null);
   const [tier, setTier] = useState<"high" | "low">("high");
+  const handoffRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     // A low-tier device gets a thinner sky. Decided after mount, and expressed
@@ -138,6 +197,39 @@ export function QRALoader() {
       setTier("low");
     }
   }, []);
+
+  /* Aim the handoff at the navbar mark it is actually going to become.
+   *
+   * The distance was a hardcoded guess, and a guess is a visible teleport: the
+   * mark would arrive somewhere near the navbar and the navbar's own logo would
+   * appear a few pixels away from it. Measuring it instead is what makes the
+   * last beat of the sequence read as one object moving rather than two
+   * cross-fading.
+   *
+   * Timed to 40% of the sequence: late enough that the mark's own entrance has
+   * resolved to `transform: none` and its rect is therefore exact, and well
+   * before the handoff begins at 72%. If any of it fails, the stylesheet's
+   * fallback coordinates are still there and nothing breaks. */
+  useEffect(() => {
+    if (mode !== "play") return;
+    const handoff = handoffRef.current;
+    if (!handoff) return;
+
+    const measure = window.setTimeout(() => {
+      const destination = document.querySelector("[data-nav-logo] img");
+      if (!destination) return;
+
+      const from = settledRect(handoff);
+      const to = settledRect(destination);
+      if (!from || !to || !from.height) return;
+
+      handoff.style.setProperty("--handoff-x", `${Math.round(to.x - from.x)}px`);
+      handoff.style.setProperty("--handoff-y", `${Math.round(to.y - from.y)}px`);
+      handoff.style.setProperty("--handoff-scale", (to.height / from.height).toFixed(3));
+    }, INTRO_TIMING.full * 0.4);
+
+    return () => window.clearTimeout(measure);
+  }, [mode]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -300,7 +392,7 @@ export function QRALoader() {
             to the navbar's own position instead of vanishing. */}
         <div className="qra-loader__mark">
           <span className="qra-loader__halo" aria-hidden="true" />
-          <span className="qra-loader__handoff">
+          <span className="qra-loader__handoff" ref={handoffRef}>
             <span className="qra-loader__logo-frame">
               <Logo className="qra-loader__logo" />
               <span className="qra-loader__sheen" aria-hidden="true" />

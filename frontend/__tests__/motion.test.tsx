@@ -7,13 +7,15 @@ import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   QRALoader,
   INTRO_ATTRIBUTE,
   INTRO_BOOTSTRAP,
   INTRO_HERO_DELAY,
+  INTRO_MARK_DELAY,
+  INTRO_STAGGER,
   INTRO_TIMING,
 } from "@/components/motion/QRALoader";
 import { Cursor, toneFor, type CursorTone } from "@/components/motion/Cursor";
@@ -36,6 +38,9 @@ const GLOBAL_CSS = ["app/globals.css", "frontend/app/globals.css"]
   .map((candidate) => path.resolve(process.cwd(), candidate))
   .find((candidate) => existsSync(candidate));
 
+/** The shipped stylesheet, as text. */
+const stylesheet = () => readFileSync(GLOBAL_CSS ?? "", "utf8");
+
 /**
  * The layer classes the stylesheet switches off on the reduced path.
  *
@@ -43,7 +48,7 @@ const GLOBAL_CSS = ["app/globals.css", "frontend/app/globals.css"]
  * about what the site actually does.
  */
 function reducedMotionHiddenLayers(): Set<string> {
-  const css = readFileSync(GLOBAL_CSS ?? "", "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const css = stylesheet().replace(/\/\*[\s\S]*?\*\//g, "");
   const hidden = new Set<string>();
   // `replace` rather than `matchAll`: the suite is compiled at a target where
   // the string iterator is not iterable, and this reads the same either way.
@@ -198,6 +203,76 @@ describe("Loader", () => {
   it("never leaves the overlay up past its own hard ceiling", () => {
     expect(INTRO_TIMING.timeout).toBeGreaterThan(INTRO_TIMING.full);
   });
+
+  it("aims the handoff at the navbar mark it is going to become", () => {
+    // jsdom has no layout, so give both ends of the flight a box: the navbar's
+    // logo up and to the left, the loader's mark in the middle of the screen.
+    const nav = document.createElement("a");
+    nav.setAttribute("data-nav-logo", "");
+    const navLogo = document.createElement("img");
+    nav.appendChild(navLogo);
+    document.body.appendChild(nav);
+
+    const boxes = new Map<Element, { left: number; top: number; w: number; h: number }>();
+    const spy = vi
+      .spyOn(Element.prototype, "getBoundingClientRect")
+      .mockImplementation(function (this: Element) {
+        const box = boxes.get(this) ?? { left: 0, top: 0, w: 0, h: 0 };
+        return {
+          left: box.left,
+          top: box.top,
+          width: box.w,
+          height: box.h,
+          right: box.left + box.w,
+          bottom: box.top + box.h,
+          x: box.left,
+          y: box.top,
+          toJSON: () => ({}),
+        } as DOMRect;
+      });
+
+    vi.useFakeTimers();
+    try {
+      root().setAttribute(INTRO_ATTRIBUTE, "play");
+      const { container } = render(<QRALoader />);
+      const handoff = container.querySelector(".qra-loader__handoff") as HTMLElement;
+
+      boxes.set(navLogo, { left: 24, top: 20, w: 88, h: 24 });
+      boxes.set(handoff, { left: 678, top: 378, w: 44, h: 44 });
+
+      // Measured at 40% of the sequence, before the flight begins at 72%.
+      act(() => {
+        vi.advanceTimersByTime(INTRO_TIMING.full * 0.4 + 10);
+      });
+
+      // Centre of the navbar logo (68, 32) minus centre of the mark (700, 400),
+      // and the navbar's 24px against the loader's 44px.
+      expect(handoff.style.getPropertyValue("--handoff-x")).toBe("-632px");
+      expect(handoff.style.getPropertyValue("--handoff-y")).toBe("-368px");
+      expect(handoff.style.getPropertyValue("--handoff-scale")).toBe("0.545");
+    } finally {
+      vi.useRealTimers();
+      spy.mockRestore();
+      nav.remove();
+    }
+  });
+
+  it("leaves the handoff to the stylesheet when there is nothing to measure", () => {
+    vi.useFakeTimers();
+    try {
+      root().setAttribute(INTRO_ATTRIBUTE, "play");
+      const { container } = render(<QRALoader />);
+      act(() => {
+        vi.advanceTimersByTime(INTRO_TIMING.full * 0.4 + 10);
+      });
+      // No navbar mark on this page: no variables written, and the fallback
+      // coordinates in the keyframe still land the mark somewhere sane.
+      const handoff = container.querySelector(".qra-loader__handoff") as HTMLElement;
+      expect(handoff.style.getPropertyValue("--handoff-x")).toBe("");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
 
 describe("Cursor", () => {
@@ -207,6 +282,28 @@ describe("Cursor", () => {
 
   afterEach(() => {
     root().removeAttribute("data-cursor");
+  });
+
+  it("outranks every other layer, including the opening sequence", () => {
+    // The bug this guards: the pointer sat at z-index 95, above the page and
+    // below anything that portals into <body>. Over Clerk's sign-in, sign-up
+    // and profile cards it was hidden by the modal while `cursor: none` still
+    // applied inside it, which left those screens with no pointer at all.
+    const css = stylesheet();
+    const zIndexOf = (selector: string) => {
+      // Matched at the start of a line, so a descendant selector that mentions
+      // the same class cannot be mistaken for the rule itself.
+      const at = css.search(new RegExp(`^${selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`, "m"));
+      expect(at).toBeGreaterThan(-1);
+      const block = css.slice(at, css.indexOf("}", at));
+      return Number(/z-index:\s*(\d+)/.exec(block)?.[1]);
+    };
+
+    const cursor = zIndexOf(".qra-cursor {");
+    expect(cursor).toBeGreaterThan(zIndexOf(".qra-loader {"));
+    // High enough that a library's own modal z-index cannot win by being
+    // merely large.
+    expect(cursor).toBeGreaterThan(100000);
   });
 
   it("renders the two parts the pointer is made of", () => {
@@ -483,6 +580,24 @@ describe("intro bootstrap (runs before first paint)", () => {
     expect(root().getAttribute(INTRO_ATTRIBUTE)).toBe("play");
     // The hero waits for the sequence rather than being paused by it.
     expect(root().style.getPropertyValue("--intro-delay")).toBe(`${INTRO_HERO_DELAY}ms`);
+  });
+
+  it("sets the page's three clocks so nothing arrives twice", () => {
+    sessionStorage.clear();
+    root().removeAttribute(INTRO_ATTRIBUTE);
+    run();
+
+    // The hero's cascade is compressed, or its last element would still be
+    // invisible when the screen had finished opening.
+    expect(root().style.getPropertyValue("--intro-stagger")).toBe(`${INTRO_STAGGER}`);
+    expect(INTRO_STAGGER).toBeLessThan(1);
+
+    // The navbar mark waits for the mark flying towards it. On the hero's clock
+    // it would be fully visible before that mark arrived: two logos at once.
+    expect(root().style.getPropertyValue("--intro-mark-delay")).toBe(`${INTRO_MARK_DELAY}ms`);
+    expect(INTRO_MARK_DELAY).toBeGreaterThan(INTRO_HERO_DELAY);
+    // ...and it is in place by the time the flight ends.
+    expect(INTRO_MARK_DELAY).toBeLessThanOrEqual(INTRO_TIMING.full);
   });
 
   it("skips on a later visit in the same session", () => {

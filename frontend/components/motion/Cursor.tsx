@@ -97,34 +97,68 @@ function elementUnder(x: number, y: number): Element | null {
  * chain on every pointer event, which is the kind of cost that turns a smooth
  * cursor into a stuttering one.
  */
-export function toneFor(element: Element | null, cache: WeakMap<Element, CursorTone>): CursorTone {
-  if (!element) return "light";
+export function toneFor(
+  source: Element | Element[] | null,
+  cache: WeakMap<Element, CursorTone>,
+): CursorTone {
+  // A composed path already is the whole chain; a lone element has to be
+  // walked, which is what reaches the surface behind a transparent child.
+  const chain = Array.isArray(source) ? source : source ? ancestorsOf(source) : [];
+  const key = chain[0];
+  if (!key) return "light";
 
-  const cached = cache.get(element);
+  const cached = cache.get(key);
   if (cached) return cached;
 
-  let node: Element | null = element;
-  while (node) {
+  let tone: CursorTone = "light";
+  for (const node of chain) {
     const forced = node.getAttribute?.("data-cursor-tone");
     if (forced === "light" || forced === "dark") {
       // The attribute names the surface; the pointer takes the opposite.
-      const tone: CursorTone = forced === "light" ? "dark" : "light";
-      cache.set(element, tone);
-      return tone;
+      tone = forced === "light" ? "dark" : "light";
+      break;
     }
 
     const background = parseColor(window.getComputedStyle(node).backgroundColor);
     if (background && background.a >= 0.55) {
-      const tone: CursorTone = luminance(background) > 0.42 ? "dark" : "light";
-      cache.set(element, tone);
-      return tone;
+      tone = luminance(background) > 0.42 ? "dark" : "light";
+      break;
     }
-
-    node = node.parentElement;
   }
 
-  cache.set(element, "light");
-  return "light";
+  cache.set(key, tone);
+  return tone;
+}
+
+/** An element and everything above it. */
+function ancestorsOf(element: Element): Element[] {
+  const chain: Element[] = [];
+  for (let node: Element | null = element; node; node = node.parentElement) {
+    chain.push(node);
+  }
+  return chain;
+}
+
+/**
+ * The full chain of nodes a pointer event passed through, innermost first.
+ *
+ * `event.target` alone is not enough. A component that portals into <body> —
+ * Clerk's `mode="modal"` sign-in and the UserButton profile card both do — puts
+ * its surface somewhere else in the tree, and a component that renders through
+ * a shadow root has its event *retargeted* to the host, so walking `target`'s
+ * parents steps straight over the surface you are actually pointing at and
+ * lands on the dark page behind it. `composedPath` is the same chain in the
+ * ordinary case and the real chain in both of those.
+ */
+function eventPath(event: PointerEvent): Element[] {
+  const path = typeof event.composedPath === "function" ? event.composedPath() : null;
+  const nodes = path && path.length ? path : [event.target];
+  const elements: Element[] = [];
+  for (const node of Array.from(nodes)) {
+    // Node, not Element: text nodes and the document itself are on this chain.
+    if (node && (node as Element).nodeType === 1) elements.push(node as Element);
+  }
+  return elements;
 }
 
 export function Cursor() {
@@ -150,16 +184,16 @@ export function Cursor() {
     let frame = 0;
     let visible = false;
     let lastSurface: Element | null = null;
+    let lastPath: Element[] = [];
     let toneQueued = false;
     let toneFrame = 0;
 
     const setTone = () => {
       toneQueued = false;
       // Normally the last pointer event already told us what is underneath. A
-      // hit test is only needed before the first move, and after a scroll,
-      // because scrolling moves the surface under a pointer that has not.
-      const surface = lastSurface ?? elementUnder(targetX, targetY);
-      const tone = toneFor(surface, tones);
+      // hit test is only needed before the first move, and after the tree
+      // changes under a pointer that has not moved.
+      const tone = toneFor(lastPath.length ? lastPath : elementUnder(targetX, targetY), tones);
       if (layer.dataset.tone !== tone) layer.dataset.tone = tone;
     };
 
@@ -204,23 +238,30 @@ export function Cursor() {
         layer.dataset.visible = "true";
       }
 
-      const element = event.target as Element | null;
-      if (element && typeof element.closest === "function") {
-        const mode = element.closest(TEXT_SELECTOR)
-          ? "text"
-          : element.closest(FOCUS_SELECTOR)
-            ? "focus"
-            : element.closest(INTERACTIVE_SELECTOR)
-              ? "ring"
-              : "dot";
-        if (layer.dataset.mode !== mode) layer.dataset.mode = mode;
-      }
+      // This layer never catches a pointer, so the event's path *is* the stack
+      // of surfaces under the pointer: both the mode and the tone come from it,
+      // with no hit test, and the tone is only re-read when that stack changes.
+      const path = eventPath(event);
+      const surface = path[0] ?? null;
 
-      // This layer never catches a pointer, so the event's target *is* the
-      // surface under the pointer: the tone can be re-read without a hit test,
-      // and only when that surface has actually changed.
-      if (element && element !== lastSurface) {
-        lastSurface = element;
+      const matchesAny = (selector: string) => {
+        for (const node of path) {
+          if (typeof node.matches === "function" && node.matches(selector)) return true;
+        }
+        return false;
+      };
+      const mode = matchesAny(TEXT_SELECTOR)
+        ? "text"
+        : matchesAny(FOCUS_SELECTOR)
+          ? "focus"
+          : matchesAny(INTERACTIVE_SELECTOR)
+            ? "ring"
+            : "dot";
+      if (layer.dataset.mode !== mode) layer.dataset.mode = mode;
+
+      if (surface && surface !== lastSurface) {
+        lastSurface = surface;
+        lastPath = path;
         queueTone();
       }
 
@@ -230,8 +271,26 @@ export function Cursor() {
     // Scrolling moves the surface under a stationary pointer.
     const onScroll = () => {
       lastSurface = null;
+      lastPath = [];
       queueTone();
     };
+
+    /* A surface can also arrive under a pointer that never moves: a modal
+     * portals into <body> on top of whatever the pointer is resting on. That is
+     * exactly how the sign-in, sign-up and profile cards appear, and it is why
+     * the tone has to be re-read on a tree change and not only on a move —
+     * otherwise the pointer keeps the tone of the page behind the modal. */
+    const onTreeChange = () => {
+      if (!visible) return;
+      lastSurface = null;
+      lastPath = [];
+      queueTone();
+    };
+    const observer =
+      typeof MutationObserver === "function"
+        ? new MutationObserver(onTreeChange)
+        : null;
+    observer?.observe(document.body, { childList: true, subtree: true });
 
     const onHide = () => {
       visible = false;
@@ -277,6 +336,7 @@ export function Cursor() {
       document.removeEventListener("pointerleave", onHide);
       document.removeEventListener("dragstart", onHide);
       motion?.removeEventListener?.("change", onMotionChange);
+      observer?.disconnect();
       if (frame) window.cancelAnimationFrame(frame);
       if (toneFrame) window.cancelAnimationFrame(toneFrame);
       // The arrow comes back. This is the line that makes `cursor: none` safe.
