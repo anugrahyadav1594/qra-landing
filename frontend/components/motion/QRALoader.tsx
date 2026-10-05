@@ -90,7 +90,7 @@ export type IntroMode = "play" | "skip" | "reduce";
 
 /** Read by the inline script in the layout, before first paint. */
 export const INTRO_BOOTSTRAP =
-  `(function(){try{var d=document.documentElement,n="${SEEN_KEY}",` +
+  `(function(){try{var d=document.documentElement;d.className+=" js";var n="${SEEN_KEY}",` +
   `play=function(){d.setAttribute("${INTRO_ATTRIBUTE}","play");` +
   `d.style.setProperty("--intro-delay","${INTRO_HERO_DELAY}ms");` +
   `d.style.setProperty("--intro-mark-delay","${INTRO_MARK_DELAY}ms");` +

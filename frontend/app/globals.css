@@ -90,26 +90,44 @@ body {
 .qra-reveal {
   --reveal-y: 30px;
   --reveal-scale: 1;
-  animation: reveal-guard 1ms linear 3s backwards;
 }
 
-.qra-reveal.is-visible {
-  animation: reveal-in 900ms var(--ease) backwards;
-  /* Every reveal is a pair: the entrance, and up to 240ms of stagger. */
-  animation-delay: var(--reveal-delay, 0ms);
+/* Hidden only once JavaScript is confirmed (a `js` class is set on <html>
+   before first paint). Without JavaScript the content is simply visible — a
+   reveal decorates content, it is never the reason content is missing.
+
+   With JavaScript the element starts hidden and is revealed exactly once, by
+   the observer, with a *transition* rather than a re-running animation. The
+   old design animated `reveal-in` on `.is-visible` while a 3s guard timer also
+   revealed the element on its own; anything below the fold was already visible
+   by the time it was scrolled to, so the entrance replayed over settled text.
+   A transition has nothing to replay. */
+.js .qra-reveal {
+  opacity: 0;
+  transform: translate3d(0, var(--reveal-y), 0) scale(var(--reveal-scale));
+  transition:
+    opacity 900ms var(--ease) var(--reveal-delay, 0ms),
+    transform 900ms var(--ease) var(--reveal-delay, 0ms);
 }
 
-@keyframes reveal-in {
-  from {
-    opacity: 0;
-    transform: translate3d(0, var(--reveal-y), 0) scale(var(--reveal-scale));
-  }
+.js .qra-reveal.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
 }
 
-@keyframes reveal-guard {
-  from {
-    opacity: 0;
-    transform: translate3d(0, var(--reveal-y), 0) scale(var(--reveal-scale));
+/* Safety net, not a timer that races the scroll: if an observer never fires
+   (a failed chunk, a quirk) the element is revealed anyway after 6s. While the
+   element is still hidden this holds it; the instant `is-visible` lands the
+   selector stops matching, the fallback is dropped, and the transition above
+   runs instead. */
+.js .qra-reveal:not(.is-visible):not(.qra-reveal--stagger) {
+  animation: reveal-fallback 1ms linear 6s forwards;
+}
+
+@keyframes reveal-fallback {
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
@@ -117,23 +135,23 @@ body {
 .qra-reveal--line {
   --reveal-y: 0px;
   --reveal-scale: 1;
-  animation: line-guard 1ms linear 3s backwards;
 }
 
-.qra-reveal--line.is-visible {
-  animation: line-in 900ms var(--ease) backwards;
-  animation-delay: var(--reveal-delay, 0ms);
+.js .qra-reveal--line {
+  transform: scaleX(0);
 }
 
-@keyframes line-in {
-  from {
-    transform: scaleX(0);
-  }
+.js .qra-reveal--line.is-visible {
+  transform: scaleX(1);
 }
 
-@keyframes line-guard {
-  from {
-    transform: scaleX(0);
+.js .qra-reveal--line:not(.is-visible) {
+  animation: line-fallback 1ms linear 6s forwards;
+}
+
+@keyframes line-fallback {
+  to {
+    transform: scaleX(1);
   }
 }
 
@@ -157,17 +175,33 @@ body {
 /* A container whose children arrive in reading order, one after another.
    `--step` sets the gap (70ms by default), so a band of cards behaves like a
    deal rather than a single object fading in. */
-.qra-reveal--stagger {
-  animation: none;
+/* The stagger container itself stays visible — only its children are hidden,
+   so they can arrive one after another without the container also fading. */
+.js .qra-reveal--stagger {
+  opacity: 1;
+  transform: none;
+  transition: none;
 }
 
-.qra-reveal--stagger > * {
-  animation: reveal-guard 1ms linear 3s backwards;
+.js .qra-reveal--stagger > * {
+  /* Where the child settles to. Identity by default; a child with its own
+     resting transform (the problem scatter chips) overrides this so the
+     cascade reveals it *into* that transform instead of flattening it. */
+  --reveal-to: translate3d(0, 0, 0) scale(1);
+  opacity: 0;
+  transform: translate3d(0, var(--reveal-y, 30px), 0) scale(var(--reveal-scale, 1));
+  transition:
+    opacity 820ms var(--ease) calc(var(--reveal-delay, 0ms) + var(--step, 70ms) * var(--i, 0)),
+    transform 820ms var(--ease) calc(var(--reveal-delay, 0ms) + var(--step, 70ms) * var(--i, 0));
 }
 
-.qra-reveal--stagger.is-visible > * {
-  animation: reveal-in 820ms var(--ease) backwards;
-  animation-delay: calc(var(--reveal-delay, 0ms) + var(--step, 70ms) * var(--i, 0));
+.js .qra-reveal--stagger.is-visible > * {
+  opacity: 1;
+  transform: var(--reveal-to);
+}
+
+.js .qra-reveal--stagger:not(.is-visible) > * {
+  animation: reveal-fallback 1ms linear 6s forwards;
 }
 
 .qra-reveal--stagger > :nth-child(1) {
@@ -1451,29 +1485,25 @@ html[data-intro="skip"] .qra-loader {
 
 .word-reveal__inner {
   display: inline-block;
+}
+
+/* Same rule as the block reveals: hidden only with JS, revealed once by a
+   transition, with a non-racing fallback. Without JS the words simply sit in
+   place rather than being stranded below their line. */
+.js .word-reveal__inner {
   transform: translateY(105%);
-  /* Guard: if nothing ever reveals this group, CSS does it anyway. */
-  animation: word-guard 0.8s cubic-bezier(0.16, 1, 0.3, 1) 2.8s both;
+  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1) var(--wd, 0ms);
 }
 
-.word-reveal-group.is-visible .word-reveal__inner {
-  animation: word-in 0.85s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: var(--wd, 0ms);
+.js .word-reveal-group.is-visible .word-reveal__inner {
+  transform: none;
 }
 
-@keyframes word-in {
-  from {
-    transform: translateY(105%);
-  }
-  to {
-    transform: none;
-  }
+.js .word-reveal-group:not(.is-visible) .word-reveal__inner {
+  animation: word-fallback 1ms linear 6s forwards;
 }
 
-@keyframes word-guard {
-  from {
-    transform: translateY(105%);
-  }
+@keyframes word-fallback {
   to {
     transform: none;
   }
@@ -2119,6 +2149,8 @@ html[data-cursor="custom"] * {
   background: linear-gradient(160deg, rgba(21, 30, 42, 0.55), rgba(13, 19, 29, 0.35));
   box-shadow: 0 16px 40px -22px rgba(0, 0, 0, 0.85);
   transform: translate(var(--fx, 0), var(--fy, 0)) rotate(var(--fr, 0deg));
+  /* The cascade settles each chip into its own scatter, not into a flat grid. */
+  --reveal-to: translate(var(--fx, 0), var(--fy, 0)) rotate(var(--fr, 0deg));
 }
 
 .problem-scatter__lines {
