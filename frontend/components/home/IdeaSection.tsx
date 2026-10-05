@@ -8,21 +8,21 @@ import { IDEA } from "@/lib/content";
 /**
  * THE IDEA — less searching, more understanding.
  *
- * The section used to hold a framed SVG diagram in the middle: a route, three
- * stations, a travelling packet. It was removed rather than repaired — the
- * drawing competed with the three written steps directly beneath it, and said
- * the same thing less clearly.
+ * Three numbered moves set as three columns, over the chaos-to-order threads.
+ * The sequence is carried by the layout: the columns lift in order, a hairline
+ * draws across each as it arrives, and on a wide screen a thin flow line runs
+ * behind them with a single packet travelling 01 → 03 — the same argument the
+ * steps make, felt rather than diagrammed.
  *
- * What is left is the sequence itself: three numbered moves, set as an editorial
- * three-column spread, over a generated backdrop held at low opacity. The
- * argument is the order of the steps, so the section is ordered.
+ * Each move is an elevated panel with its number ghosted behind it, so the
+ * three read as distinct stations on one route rather than as bare columns.
  */
 export function IdeaSection() {
   return (
     <Section id="how-it-works" labelledBy="idea-heading" className="relative overflow-hidden">
       <QRASectionTransition label="Organized" />
 
-      {/* The environment: a dark generated backdrop. */}
+      {/* The environment: chaos resolving into order. */}
       <QRAAtmosphere variant="idea" />
 
       <div className="relative z-10">
@@ -48,24 +48,38 @@ export function IdeaSection() {
           </div>
         </QRAReveal>
 
-        {/* The three moves. Each one gets its own column, its own number and a
-            hairline that draws when it arrives — the sequence carried entirely by
-            the layout, not by a drawing of it. */}
-        <div className="mt-16 grid gap-10 sm:grid-cols-3 sm:gap-8 lg:gap-12">
-          {IDEA.steps.map((step, index) => (
-            <QRAReveal key={step.n} delay={120 + index * 110} className="flex flex-col">
-              <div className="flex items-baseline gap-3">
-                <span className="font-mono text-xs tracking-[0.16em] text-brand-400">
-                  {step.n}
-                </span>
-                <span aria-hidden="true" className="idea-rule" />
-              </div>
-              <p className="mt-5 font-display text-2xl font-semibold tracking-tight text-paper sm:text-[1.75rem]">
-                {step.title}
-              </p>
-              <p className="mt-3 text-sm leading-relaxed text-paper-dim">{step.body}</p>
-            </QRAReveal>
-          ))}
+        {/* The three moves, as stations on one route. */}
+        <div className="relative mt-16">
+          {/* The flow behind the columns: a line and a travelling packet, wide
+              screens only, decorative. */}
+          <QRAReveal variant="fade">
+            <div className="idea-flow" aria-hidden="true">
+              <span className="idea-flow__line" />
+              <span className="idea-flow__packet" />
+            </div>
+          </QRAReveal>
+
+          <div className="grid gap-10 sm:grid-cols-3 sm:gap-8 lg:gap-12">
+            {IDEA.steps.map((step, index) => (
+              <QRAReveal key={step.n} delay={120 + index * 110} variant="clip" as="div">
+                <div className="idea-step">
+                  <span className="idea-step__num" aria-hidden="true">
+                    {step.n}
+                  </span>
+                  <div className="flex items-baseline gap-3">
+                    <span className="font-mono text-xs tracking-[0.16em] text-brand-400">
+                      {step.n}
+                    </span>
+                    <span aria-hidden="true" className="idea-rule" />
+                  </div>
+                  <p className="mt-5 font-display text-2xl font-semibold tracking-tight text-paper sm:text-[1.75rem]">
+                    {step.title}
+                  </p>
+                  <p className="mt-3 text-sm leading-relaxed text-paper-dim">{step.body}</p>
+                </div>
+              </QRAReveal>
+            ))}
+          </div>
         </div>
 
         <QRAReveal delay={80}>

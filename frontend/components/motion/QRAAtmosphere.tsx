@@ -51,8 +51,9 @@ const IMAGES: Record<AtmosphereVariant, string> = {
   // them onto the site's ink, sets a measured exposure and vignettes the edges,
   // so they read as depth rather than as pictures.
   hero: "/images/ai-hero.webp",
-  problem: "/images/ai-problem.webp",
-  idea: "/images/ai-idea.webp",
+  // The two sections that carry the argument get the richest environments.
+  problem: "/images/problem-scatter.jpg",
+  idea: "/images/idea-threads.jpg",
   product: "/images/ai-product.webp",
   investor: "/images/ai-investor.webp",
   trust: "/images/ai-trust.webp",
@@ -214,15 +215,18 @@ export function QRAAtmosphere({
 }
 
 /** Calibrated so the environment is felt rather than seen. */
+/* Lifted from the previous 20–58% band. The old values read as flat panels;
+   these let the environment register as an image without crossing the content.
+   The wash still pulls every edge into the page's background. */
 const DEFAULT_OPACITY: Record<AtmosphereVariant, number> = {
   hero: 0.62,
-  problem: 0.58,
-  idea: 0.55,
-  product: 0.2,
-  investor: 0.4,
-  trust: 0.42,
-  about: 0.34,
-  waitlist: 0.34,
+  problem: 0.66,
+  idea: 0.6,
+  product: 0.3,
+  investor: 0.48,
+  trust: 0.5,
+  about: 0.38,
+  waitlist: 0.36,
 };
 
 
