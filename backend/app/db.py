@@ -64,8 +64,16 @@ def seed_if_empty(engine: Engine) -> None:
     from .utils import now_utc, uuid7
 
     with Session(engine) as session:
-        if session.query(Product).count() > 0:
-            return
+        from sqlalchemy import select
+
+        # Guarantee the canonical QRA product on EVERY startup, not only on a
+        # fresh database. The waitlist looks the product up by slug, so a
+        # database missing it rejects every signup with "select a valid
+        # product" — which is exactly what happens if the file is reset under a
+        # running server. Demo updates/postings still seed only once.
+        ensure_product = session.execute(
+            select(Product).where(Product.slug == "qra")
+        ).scalar_one_or_none() is None
 
         products = [
             Product(
@@ -98,7 +106,9 @@ def seed_if_empty(engine: Engine) -> None:
                 accepts_waitlist=True, created_at=now_utc(), updated_at=now_utc(),
             ),
         ]
-        session.add_all(products)
+        if ensure_product:
+            session.add_all(products)
+            session.commit()
 
         updates = [
             Update(id=uuid7(), slug="waitlist-open",
@@ -134,7 +144,8 @@ def seed_if_empty(engine: Engine) -> None:
                    ),
                    published_at=now_utc(), created_at=now_utc()),
         ]
-        session.add_all(updates)
+        if session.query(Update).count() == 0:
+            session.add_all(updates)
 
         postings = [
             JobPosting(
@@ -203,5 +214,6 @@ def seed_if_empty(engine: Engine) -> None:
                 created_at=now_utc(),
             ),
         ]
-        session.add_all(postings)
+        if session.query(JobPosting).count() == 0:
+            session.add_all(postings)
         session.commit()
