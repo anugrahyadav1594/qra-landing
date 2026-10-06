@@ -150,7 +150,7 @@ export function WaitlistForm({ compact = false }: { compact?: boolean }) {
 
       <div>
         <label htmlFor="waitlist-interest" className={labelClass}>
-          What would you like to understand better?{" "}
+          How do you currently learn about markets?{" "}
           <span className="font-normal text-paper-mute">(optional)</span>
         </label>
         <select

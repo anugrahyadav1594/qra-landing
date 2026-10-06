@@ -420,9 +420,9 @@ body {
   opacity: 1;
 }
 
-/* ── Sources band (components/motion/QRASourceTicker.tsx) ───────────── */
+/* ── Curriculum band (components/motion/QRASkillTicker.tsx) ─────────── */
 
-.source-ticker {
+.skill-ticker {
   position: relative;
   z-index: 10;
   display: flex;
@@ -434,7 +434,7 @@ body {
   background: linear-gradient(90deg, rgba(7, 10, 15, 0) 0%, rgba(13, 19, 29, 0.5) 50%, rgba(7, 10, 15, 0) 100%);
 }
 
-.source-ticker__label {
+.skill-ticker__label {
   flex: none;
   padding-left: max(1.25rem, calc((100vw - 1200px) / 2));
   font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
@@ -446,7 +446,7 @@ body {
   white-space: nowrap;
 }
 
-.source-ticker__viewport {
+.skill-ticker__viewport {
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
@@ -456,22 +456,22 @@ body {
   -webkit-mask-image: linear-gradient(90deg, transparent, black 4%, black 96%, transparent);
 }
 
-.source-ticker__track {
+.skill-ticker__track {
   display: flex;
   width: max-content;
   animation: ticker-scroll 52s linear infinite;
 }
 
-.source-ticker[data-paused="true"] .source-ticker__track {
+.skill-ticker[data-paused="true"] .skill-ticker__track {
   animation-play-state: paused;
 }
 
-.source-ticker__run {
+.skill-ticker__run {
   display: flex;
   align-items: center;
 }
 
-.source-ticker__item {
+.skill-ticker__item {
   display: inline-flex;
   align-items: center;
   margin-right: 2rem;
@@ -482,7 +482,7 @@ body {
   white-space: nowrap;
 }
 
-.source-ticker__dot {
+.skill-ticker__dot {
   width: 3px;
   height: 3px;
   margin-left: 2rem;
@@ -2092,22 +2092,22 @@ html[data-cursor="custom"] * {
 /* ── The idea's three moves (components/home/IdeaSection.tsx) ─────────── */
 
 /* A hairline per step, drawing from its own left edge as the step arrives. */
-.idea-rule {
+.loop-rule {
   flex: 1;
   height: 1px;
   background: linear-gradient(90deg, rgba(63, 111, 255, 0.5), transparent);
   transform-origin: left center;
-  animation: idea-rule 900ms var(--ease) backwards;
+  animation: loop-rule 900ms var(--ease) backwards;
 }
 
-@keyframes idea-rule {
+@keyframes loop-rule {
   from {
     transform: scaleX(0);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .idea-rule {
+  .loop-rule {
     animation: none !important;
   }
 }
@@ -2197,7 +2197,7 @@ html[data-cursor="custom"] * {
 
 /* Each move is an elevated panel with its number ghosted behind it, so the
    three read as distinct stations rather than as bare columns. */
-.idea-step {
+.loop-step {
   position: relative;
   height: 100%;
   padding: 1.5rem 1.4rem 1.6rem;
@@ -2211,14 +2211,14 @@ html[data-cursor="custom"] * {
     box-shadow var(--dur-standard) ease-out;
 }
 
-.idea-step:hover {
+.loop-step:hover {
   transform: translateY(-4px);
   border-color: rgba(63, 111, 255, 0.32);
   box-shadow: 0 22px 48px -26px rgba(0, 0, 0, 0.7);
 }
 
 /* The station number, ghosted, behind the copy. */
-.idea-step__num {
+.loop-step__num {
   position: absolute;
   top: 0.6rem;
   right: 0.9rem;
@@ -2232,7 +2232,7 @@ html[data-cursor="custom"] * {
   transition: color var(--dur-standard) ease-out, -webkit-text-stroke-color var(--dur-standard) ease-out;
 }
 
-.idea-step:hover .idea-step__num {
+.loop-step:hover .loop-step__num {
   color: rgba(63, 111, 255, 0.07);
   -webkit-text-stroke-color: rgba(111, 148, 255, 0.3);
 }
@@ -2240,7 +2240,7 @@ html[data-cursor="custom"] * {
 /* The route behind the three panels: one line, one packet, wide screens only.
    The packet is the same argument as the steps — information moving from found
    to understood — felt rather than diagrammed. */
-.idea-flow {
+.loop-flow {
   position: absolute;
   left: 2%;
   right: 2%;
@@ -2252,12 +2252,12 @@ html[data-cursor="custom"] * {
 }
 
 @media (min-width: 640px) {
-  .idea-flow {
+  .loop-flow {
     display: block;
   }
 }
 
-.idea-flow__line {
+.loop-flow__line {
   position: absolute;
   inset: 0;
   background: linear-gradient(90deg, transparent, rgba(111, 148, 255, 0.26) 12%, rgba(111, 148, 255, 0.26) 88%, transparent);
@@ -2265,7 +2265,7 @@ html[data-cursor="custom"] * {
   transform: scaleX(0);
 }
 
-.idea-flow__packet {
+.loop-flow__packet {
   position: absolute;
   top: -2px;
   left: 0;
@@ -2279,21 +2279,21 @@ html[data-cursor="custom"] * {
 
 /* The line draws once when its own reveal fires, and the packet keeps a slow,
    quiet run along it — far too dim to compete with the copy. */
-.qra-reveal.is-visible .idea-flow__line {
-  animation: idea-flow-line 1400ms var(--ease) 300ms both;
+.qra-reveal.is-visible .loop-flow__line {
+  animation: loop-flow-line 1400ms var(--ease) 300ms both;
 }
 
-.idea-flow__packet {
-  animation: idea-flow-packet 7s linear 1600ms infinite;
+.loop-flow__packet {
+  animation: loop-flow-packet 7s linear 1600ms infinite;
 }
 
-@keyframes idea-flow-line {
+@keyframes loop-flow-line {
   to {
     transform: scaleX(1);
   }
 }
 
-@keyframes idea-flow-packet {
+@keyframes loop-flow-packet {
   0% {
     left: 0;
     opacity: 0;
@@ -2311,10 +2311,10 @@ html[data-cursor="custom"] * {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .idea-flow__packet {
+  .loop-flow__packet {
     display: none;
   }
-  .idea-flow__line {
+  .loop-flow__line {
     transform: scaleX(1);
     animation: none !important;
   }
@@ -2627,14 +2627,8 @@ section[data-tone="deep"]::after {
     opacity: 1 !important;
   }
 
-  /* The three routes are simply drawn, and the chosen one still reads. */
-  .qra-paths__layer--route {
-    transition: none !important;
-    opacity: 1 !important;
-  }
-
   /* Nothing travels, nothing loops, nothing leans. */
-  .source-ticker__track {
+  .skill-ticker__track {
     animation: none !important;
   }
 
@@ -2679,48 +2673,6 @@ section[data-tone="deep"]::after {
     linear-gradient(180deg, rgba(13, 19, 29, 0.8), rgba(9, 13, 20, 0.55));
 }
 
-/* Four pre-rendered layers, stacked on the same canvas: the structure and one
-   image per route. Choosing a route changes one attribute, and the browser
-   crossfades — there is nothing to recompute and nothing to repaint. */
-.qra-paths {
-  position: relative;
-  aspect-ratio: 760 / 260;
-}
-
-.qra-paths__layer {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.qra-paths__layer--structure {
-  opacity: 0.9;
-}
-
-.qra-paths__layer--route {
-  opacity: 0.16;
-  transition: opacity 420ms var(--ease);
-}
-
-.qra-paths__layer--route[data-active="true"] {
-  opacity: 1;
-}
-
-/* The node names: HTML, positioned over the geometry as percentages of the same
-   canvas the SVGs use. */
-.qra-paths__label {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(170, 182, 198, 0.62);
-  white-space: nowrap;
-  pointer-events: none;
-}
-
 /* ── Trust (components/home/TrustSection.tsx) ─────────────────────────── */
 
 /* One hairline per row, drawing from its own left edge as the row arrives.
@@ -2743,4 +2695,657 @@ section[data-tone="deep"]::after {
   .trust-rule {
     animation: none !important;
   }
+}
+
+/* ── The product previews ──────────────────────────────────────────── */
+
+/* Every interface on this page is built from the same four moves: a hairline
+   border, an ink surface, cobalt for the one thing that matters, and mono for
+   anything numeric. Nothing here is a gaming skin — the game is in the state
+   (locked, in progress, scored), not in the decoration. */
+
+/* ── Candlestick chart ─────────────────────────────────────────────── */
+
+.candle-chart {
+  position: relative;
+  border-radius: 8px;
+  border: 1px solid rgba(245, 247, 250, 0.07);
+  background:
+    linear-gradient(180deg, rgba(17, 25, 37, 0.55), rgba(7, 10, 15, 0.5)),
+    repeating-linear-gradient(
+      90deg,
+      rgba(245, 247, 250, 0.022) 0 1px,
+      transparent 1px 14px
+    );
+  padding: 10px 12px 22px;
+  overflow: hidden;
+}
+
+/* Bars arrive in session order, so the chart reads as a replay filling in. */
+.candle {
+  opacity: 0;
+  animation: candle-in var(--dur-standard) var(--ease) both;
+}
+
+@keyframes candle-in {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+
+/* The replay head: where the session is paused, and the decision is asked. */
+.replay-head {
+  animation: replay-pulse 2.6s ease-in-out 1.4s infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@keyframes replay-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.candle-chart__now,
+.candle-chart__hidden {
+  position: absolute;
+  bottom: 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.candle-chart__now {
+  transform: translateX(-50%);
+  color: #9db4ff;
+}
+
+.candle-chart__hidden {
+  right: 12px;
+  color: rgba(245, 247, 250, 0.34);
+}
+
+/* ── Arena chrome ──────────────────────────────────────────────────── */
+
+.arena-panel .panel-float {
+  box-shadow: 0 40px 90px -50px rgba(0, 0, 0, 0.9);
+}
+
+.arena-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border: 1px solid rgba(63, 111, 255, 0.28);
+  border-radius: 999px;
+  padding: 0.28rem 0.6rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #9db4ff;
+}
+
+.arena-badge__dot {
+  height: 5px;
+  width: 5px;
+  border-radius: 999px;
+  background: #3f6fff;
+  animation: replay-pulse 2.2s ease-in-out infinite;
+}
+
+/* The session clock. The fill is where the replay has reached. */
+.arena-timeline {
+  position: relative;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(245, 247, 250, 0.09);
+  overflow: visible;
+}
+
+.arena-timeline__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(63, 111, 255, 0.55), #3f6fff);
+  transform-origin: left center;
+  animation: timeline-fill 1200ms var(--ease) 420ms both;
+}
+
+@keyframes timeline-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.arena-timeline__head {
+  position: absolute;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  border-radius: 999px;
+  background: #0d131d;
+  border: 1.5px solid #6f94ff;
+  transform: translateY(-50%);
+}
+
+/* Indicator chips. */
+.arena-chip {
+  border: 1px solid rgba(245, 247, 250, 0.14);
+  border-radius: 6px;
+  padding: 0.24rem 0.55rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(245, 247, 250, 0.62);
+}
+
+/* The three decisions. Deliberately equal in weight until one is chosen — the
+   product never hints at an answer. */
+.arena-decision {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(245, 247, 250, 0.14);
+  border-radius: 8px;
+  padding: 0.7rem 0.5rem;
+  font-family: var(--font-display, inherit);
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(245, 247, 250, 0.72);
+  transition:
+    border-color var(--dur-micro) ease-out,
+    color var(--dur-micro) ease-out,
+    background-color var(--dur-micro) ease-out;
+}
+
+.arena-decision--chosen {
+  border-color: rgba(63, 111, 255, 0.7);
+  background: rgba(63, 111, 255, 0.14);
+  color: #f5f7fa;
+  box-shadow: inset 0 0 0 1px rgba(63, 111, 255, 0.16);
+}
+
+/* Risk the player set, as a segmented meter. */
+.arena-risk__block {
+  height: 6px;
+  flex: 1;
+  border-radius: 2px;
+  background: rgba(245, 247, 250, 0.1);
+}
+
+.arena-risk__block--on {
+  background: linear-gradient(180deg, #6f94ff, #3f6fff);
+}
+
+.arena-xp {
+  flex: none;
+  border: 1px solid rgba(63, 111, 255, 0.34);
+  border-radius: 999px;
+  padding: 0.3rem 0.7rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  color: #9db4ff;
+  white-space: nowrap;
+}
+
+/* Asset selection in the arena. */
+.arena-asset {
+  border: 1px solid rgba(245, 247, 250, 0.13);
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
+  color: rgba(245, 247, 250, 0.66);
+  transition:
+    border-color var(--dur-micro) ease-out,
+    color var(--dur-micro) ease-out,
+    background-color var(--dur-micro) ease-out;
+}
+
+.arena-asset:hover {
+  border-color: rgba(63, 111, 255, 0.4);
+  color: #f5f7fa;
+}
+
+.arena-asset--on {
+  border-color: rgba(63, 111, 255, 0.7);
+  background: rgba(63, 111, 255, 0.13);
+  color: #f5f7fa;
+}
+
+/* The withheld future, labelled. */
+.arena-hidden {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #f2b84b;
+}
+
+.arena-hidden__lock {
+  font-size: 0.72rem;
+  opacity: 0.8;
+}
+
+.arena-note {
+  border-left: 1px solid rgba(245, 247, 250, 0.1);
+  padding-left: 1.25rem;
+  transition: border-color var(--dur-standard) ease-out;
+}
+
+.arena-note:hover {
+  border-left-color: rgba(63, 111, 255, 0.5);
+}
+
+/* ── Level mode ────────────────────────────────────────────────────── */
+
+/* The spine the levels hang from: one continuous route, not five cards. */
+.level-spine {
+  position: absolute;
+  left: 15px;
+  top: 12px;
+  bottom: 12px;
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(63, 111, 255, 0.45),
+    rgba(245, 247, 250, 0.1) 55%,
+    rgba(245, 247, 250, 0.06)
+  );
+}
+
+@media (max-width: 639px) {
+  .level-spine {
+    display: none;
+  }
+}
+
+.level-card {
+  position: relative;
+  display: flex;
+  width: 100%;
+  gap: 1rem;
+  text-align: left;
+  border: 1px solid rgba(245, 247, 250, 0.08);
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem 1.1rem 2.4rem;
+  background: linear-gradient(180deg, rgba(17, 25, 37, 0.6), rgba(13, 19, 29, 0.36));
+  transition:
+    border-color var(--dur-standard) ease-out,
+    background-color var(--dur-standard) ease-out,
+    transform var(--dur-standard) var(--ease);
+}
+
+@media (max-width: 639px) {
+  .level-card {
+    padding-left: 1.25rem;
+  }
+}
+
+.level-card:hover {
+  border-color: rgba(63, 111, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.level-card--active {
+  border-color: rgba(63, 111, 255, 0.55);
+  background: linear-gradient(180deg, rgba(23, 34, 54, 0.85), rgba(13, 19, 29, 0.5));
+  box-shadow: 0 20px 44px -30px rgba(0, 0, 0, 0.85);
+}
+
+/* Locked levels are legible as locked without being greyed into nothing — the
+   visitor should still be able to read what is coming. */
+.level-card--locked {
+  opacity: 0.62;
+}
+
+.level-card--locked:hover {
+  opacity: 0.85;
+  transform: none;
+}
+
+.level-card__node {
+  position: absolute;
+  left: -1.4rem;
+  top: 1.55rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 13px;
+  width: 13px;
+  border-radius: 999px;
+  background: #070a0f;
+  border: 1px solid rgba(245, 247, 250, 0.22);
+}
+
+@media (max-width: 639px) {
+  .level-card__node {
+    display: none;
+  }
+}
+
+.level-card--active .level-card__node {
+  border-color: #3f6fff;
+}
+
+.level-card__node-dot {
+  height: 5px;
+  width: 5px;
+  border-radius: 999px;
+  background: rgba(245, 247, 250, 0.3);
+}
+
+.level-card--active .level-card__node-dot {
+  background: #3f6fff;
+  box-shadow: 0 0 0 3px rgba(63, 111, 255, 0.18);
+}
+
+/* State, in one word, colour-coded but never loud. */
+.level-status {
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  padding: 0.12rem 0.5rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.level-status--complete {
+  color: #20c997;
+}
+
+.level-status--available {
+  color: #6f94ff;
+}
+
+.level-status--locked {
+  color: rgba(245, 247, 250, 0.34);
+}
+
+/* Progress pips: the smallest unit of game state on the page. */
+.level-pip {
+  height: 5px;
+  width: 5px;
+  border-radius: 999px;
+  background: rgba(245, 247, 250, 0.16);
+}
+
+.level-pip--on {
+  background: #3f6fff;
+}
+
+.level-xp {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  color: #9db4ff;
+}
+
+.level-detail {
+  overflow: hidden;
+  border: 1px solid rgba(245, 247, 250, 0.1);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(17, 25, 37, 0.8), rgba(13, 19, 29, 0.5));
+}
+
+/* The loop inside a level, as one readable line. */
+.level-flow__step {
+  display: inline-flex;
+  border: 1px solid rgba(245, 247, 250, 0.12);
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.78rem;
+  color: rgba(245, 247, 250, 0.74);
+}
+
+.level-flow__arrow {
+  color: rgba(245, 247, 250, 0.28);
+  font-size: 0.85rem;
+}
+
+/* ── Score & progress ──────────────────────────────────────────────── */
+
+.score-bar {
+  position: relative;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(245, 247, 250, 0.08);
+  overflow: hidden;
+}
+
+.score-bar--lg {
+  height: 6px;
+}
+
+.score-bar__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--score, 0%);
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(63, 111, 255, 0.6), #6f94ff);
+  transform-origin: left center;
+  animation: score-fill 1100ms var(--ease) 220ms both;
+}
+
+@keyframes score-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.score-panel {
+  overflow: hidden;
+  border: 1px solid rgba(245, 247, 250, 0.1);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(17, 25, 37, 0.78), rgba(13, 19, 29, 0.48));
+}
+
+/* ── Leaderboard ───────────────────────────────────────────────────── */
+
+.board-row {
+  transition: background-color var(--dur-micro) ease-out;
+}
+
+.board-row:hover {
+  background: rgba(63, 111, 255, 0.05);
+}
+
+/* The player's own row, pulled out of the sequence and marked. */
+.board-row--you {
+  background: rgba(63, 111, 255, 0.1);
+  box-shadow: inset 2px 0 0 #3f6fff;
+}
+
+.board-row--you:hover {
+  background: rgba(63, 111, 255, 0.14);
+}
+
+.board-gap {
+  letter-spacing: 0.4em;
+  color: rgba(245, 247, 250, 0.3);
+}
+
+/* ── Reduced motion: every preview resolves to its finished state ──── */
+
+@media (prefers-reduced-motion: reduce) {
+  .candle,
+  .arena-timeline__fill,
+  .score-bar__fill {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .replay-head,
+  .arena-badge__dot {
+    animation: none !important;
+  }
+
+  .loop-step__num {
+    font-size: 3.4rem;
+  }
+}
+
+/* ── Why QRA: two routes, and the system beneath them ──────────────── */
+
+.why-col {
+  border-radius: 14px;
+  border: 1px solid rgba(245, 247, 250, 0.08);
+  padding: 1.6rem 1.5rem 1.7rem;
+  background: linear-gradient(180deg, rgba(17, 25, 37, 0.5), rgba(13, 19, 29, 0.3));
+}
+
+/* The familiar route is deliberately quieter — it is the foil, not a rival. */
+.why-col--muted {
+  opacity: 0.78;
+}
+
+.why-col--qra {
+  border-color: rgba(63, 111, 255, 0.34);
+  background: linear-gradient(180deg, rgba(23, 34, 54, 0.72), rgba(13, 19, 29, 0.42));
+}
+
+/* Marks the one step that is the visitor's, which is the whole argument. */
+.why-col__mark {
+  margin-left: auto;
+  border: 1px solid rgba(63, 111, 255, 0.4);
+  border-radius: 999px;
+  padding: 0.1rem 0.5rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9db4ff;
+}
+
+.why-node {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 9.5rem;
+  border: 1px solid rgba(245, 247, 250, 0.11);
+  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  background: rgba(13, 19, 29, 0.5);
+  transition: border-color var(--dur-micro) ease-out;
+}
+
+.why-node:hover {
+  border-color: rgba(63, 111, 255, 0.36);
+}
+
+.why-node__label {
+  font-family: var(--font-display, inherit);
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #f5f7fa;
+}
+
+.why-node__detail {
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: rgba(245, 247, 250, 0.44);
+}
+
+.why-node__arrow {
+  align-self: center;
+  color: rgba(245, 247, 250, 0.26);
+  font-size: 0.9rem;
+}
+
+/* ── The progression (for learners) ────────────────────────────────── */
+
+/* One vertical route with an entry marker on it. The marker is the entire
+   interaction, so the geometry stays static and only classes change. */
+.progression {
+  position: relative;
+  padding-left: 1.9rem;
+}
+
+.progression::before {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 10px;
+  bottom: 10px;
+  width: 1px;
+  background: linear-gradient(180deg, rgba(63, 111, 255, 0.4), rgba(245, 247, 250, 0.1));
+}
+
+.progression__step {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 1rem 0;
+  transition: opacity var(--dur-standard) ease-out;
+}
+
+.progression__node {
+  position: absolute;
+  left: -1.9rem;
+  top: 1.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 13px;
+  width: 13px;
+  border-radius: 999px;
+  background: #070a0f;
+  border: 1px solid rgba(245, 247, 250, 0.22);
+  transition: border-color var(--dur-standard) ease-out;
+}
+
+.progression__node-dot {
+  height: 5px;
+  width: 5px;
+  border-radius: 999px;
+  background: rgba(245, 247, 250, 0.28);
+  transition:
+    background-color var(--dur-standard) ease-out,
+    box-shadow var(--dur-standard) ease-out;
+}
+
+.progression__step--entry .progression__node {
+  border-color: #3f6fff;
+}
+
+.progression__step--entry .progression__node-dot {
+  background: #3f6fff;
+  box-shadow: 0 0 0 4px rgba(63, 111, 255, 0.18);
+}
+
+/* Stages before the entry point are already covered — shown, but behind. */
+.progression__step--passed {
+  opacity: 0.42;
+}
+
+.progression__flag {
+  border: 1px solid rgba(63, 111, 255, 0.4);
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #9db4ff;
+  white-space: nowrap;
 }

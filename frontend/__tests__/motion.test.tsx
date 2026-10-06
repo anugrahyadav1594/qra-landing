@@ -3,7 +3,7 @@
  * exactly the point: none of these components may throw or trap the page when
  * their drawing surface or their observer is unavailable. */
 
-import { act, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
@@ -22,8 +22,8 @@ import { Cursor, toneFor, type CursorTone } from "@/components/motion/Cursor";
 import { ProductPreview } from "@/components/ProductPreview";
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { QRAArchitecture } from "@/components/motion/QRAArchitecture";
-import { AudienceSection } from "@/components/home/AudienceSection";
-import { QRASourceTicker } from "@/components/motion/QRASourceTicker";
+import { LearnersSection } from "@/components/home/LearnersSection";
+import { QRASkillTicker } from "@/components/motion/QRASkillTicker";
 import { QRATilt } from "@/components/motion/QRATilt";
 import { QRAReveal } from "@/components/motion/QRAReveal";
 import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
@@ -663,38 +663,31 @@ describe("the architecture drawing", () => {
   });
 });
 
-describe("the three paths", () => {
-  it("stacks one pre-rendered layer per investor over the structure", () => {
-    const { container } = render(<AudienceSection />);
-    const layers = container.querySelectorAll(".qra-paths__layer--route");
-    expect(layers).toHaveLength(3);
-    expect(Array.from(layers).map((layer) => layer.getAttribute("src"))).toEqual([
-      "/graphics/investor-beginner.svg",
-      "/graphics/investor-curious.svg",
-      "/graphics/investor-busy.svg",
-    ]);
-    expect(container.querySelector(".qra-paths__layer--structure")).toHaveAttribute(
-      "src",
-      "/graphics/investors-structure.svg",
+describe("the learner progression", () => {
+  it("draws one step per stage of the loop", () => {
+    const { container } = render(<LearnersSection />);
+    const steps = container.querySelectorAll(".progression__step");
+    expect(steps).toHaveLength(4);
+    expect(container.textContent).toContain("Learn");
+    expect(container.textContent).toContain("Improve");
+  });
+
+  it("marks exactly one entry point, and moves it with the learner", () => {
+    const { container } = render(<LearnersSection />);
+
+    expect(container.querySelectorAll(".progression__step--entry")).toHaveLength(1);
+    // A beginner starts at the first stage.
+    expect(container.querySelectorAll(".progression__step--entry")[0].textContent).toContain(
+      "Learn",
     );
-  });
 
-  it("lights exactly one route at a time, and keeps only that one described", () => {
-    const { container } = render(<AudienceSection />);
-    const active = container.querySelectorAll(".qra-paths__layer--route[data-active='true']");
-    expect(active).toHaveLength(1);
-    // Only the lit route carries a description; the others are decorative.
-    expect(active[0].getAttribute("alt")).toBeTruthy();
-    const rest = container.querySelectorAll(".qra-paths__layer--route[data-active='false']");
-    for (const layer of Array.from(rest)) {
-      expect(layer).toHaveAttribute("alt", "");
-    }
-  });
+    // The practising trader enters at the decision instead.
+    fireEvent.click(screen.getByRole("button", { name: /practising trader/i }));
+    const entry = container.querySelectorAll(".progression__step--entry");
+    expect(entry).toHaveLength(1);
+    expect(entry[0].textContent).toContain("Decide");
 
-  it("names the four nodes in HTML, not in the image", () => {
-    const { container } = render(<AudienceSection />);
-    const labels = container.querySelectorAll(".qra-paths__label");
-    expect(labels).toHaveLength(4);
-    expect(container.textContent).toContain("Plain language");
+    // Stages before the entry point are shown as already covered.
+    expect(container.querySelectorAll(".progression__step--passed")).toHaveLength(2);
   });
 });

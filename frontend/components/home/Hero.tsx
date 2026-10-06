@@ -1,4 +1,4 @@
-import { ClarityPanel } from "@/components/ClarityPanel";
+import { MarketArenaPanel } from "@/components/game/MarketArenaPanel";
 import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
 import { QRATilt } from "@/components/motion/QRATilt";
 import { TextReveal } from "@/components/motion/TextReveal";
@@ -8,13 +8,13 @@ import { HERO } from "@/lib/content";
 /**
  * Hero.
  *
- * The composition is unchanged — the statement on the left, the product
- * interface on the right — but the atmosphere is no longer a picture: it is the
- * data field itself, slowly drifting, with a second field beside the interface
- * performing the site's signature transformation once as the page settles.
+ * The composition is the site's: the statement on the left, the product on the
+ * right. What is on the right has changed, because the product has — not a
+ * fundamentals panel but a historical market replay paused at a decision, with
+ * the future withheld at the exact point the player is asked to act.
  *
- * The product interface is the focal point; everything behind it stays under
- * 10% opacity so the eye lands on the numbers.
+ * The interface is the focal point; everything behind it stays quiet so the eye
+ * lands on the chart and the question.
  */
 export function Hero() {
   return (
@@ -91,7 +91,7 @@ export function Hero() {
           {/* The interface leans toward the pointer, with a light travelling
               across it. */}
           <QRATilt>
-            <ClarityPanel />
+            <MarketArenaPanel />
           </QRATilt>
         </div>
       </div>

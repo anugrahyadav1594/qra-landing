@@ -13,14 +13,14 @@ export const SITE_SHORT_NAME = "Quantrelic";
 /** Product name only — never expanded. */
 export const PRODUCT_NAME = "QRA";
 
-export const SITE_TAGLINE = "Making investing simpler for the masses.";
+export const SITE_TAGLINE = "Learn markets by playing through them.";
 
 export const SITE_DESCRIPTION =
-  "Quantrelic Analytics is building technology that makes financial information " +
-  "easier to understand, helping everyday investors make more informed decisions " +
-  "for themselves.";
+  "QRA is a market-learning environment from Quantrelic Analytics: practise real " +
+  "market decisions on historical data, level by level, and see what happens — " +
+  "without risking real money.";
 
-export const SITE_TITLE = `${SITE_NAME} — Making Investing Simpler`;
+export const SITE_TITLE = `${SITE_NAME} — Learn Markets by Playing Through Them`;
 
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
@@ -32,8 +32,13 @@ export const HOME_SECTIONS = [
   "hero",
   "problem",
   "how-it-works",
-  "product",
-  "for-investors",
+  "level-mode",
+  "arena",
+  "score",
+  "leaderboard",
+  "research-lab",
+  "for-learners",
+  "why",
   "trust",
   "waitlist",
 ] as const;
@@ -49,15 +54,20 @@ export type NavLink = {
 
 export const NAV_LINKS: readonly NavLink[] = [
   { href: "/#how-it-works", label: "How it works", sectionId: "how-it-works" },
-  { href: "/#product", label: "Product", sectionId: "product" },
-  { href: "/#for-investors", label: "For investors", sectionId: "for-investors" },
+  { href: "/#level-mode", label: "The Experience", sectionId: "level-mode" },
+  { href: "/#for-learners", label: "For Learners", sectionId: "for-learners" },
   { href: "/#trust", label: "Trust", sectionId: "trust" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
 
+/** The one conversion action. Every CTA on the site uses this wording. */
+export const PRIMARY_CTA_LABEL = "Get early access";
+export const PRIMARY_CTA_HREF = "/waitlist";
+
 /** Secondary destinations — the mobile menu and the footer. */
 export const SECONDARY_LINKS: readonly NavLink[] = [
+  { href: "/#arena", label: "Market Arena", sectionId: "arena" },
   { href: "/research", label: "How it works, in detail" },
   { href: "/careers", label: "Careers" },
   { href: "/feedback", label: "Feedback" },
@@ -68,15 +78,16 @@ export const FOOTER_COLUMNS = [
     title: "Product",
     links: [
       { href: "/#how-it-works", label: "How it works" },
-      { href: "/product", label: "Product" },
-      { href: "/research", label: "The process" },
-      { href: "/waitlist", label: "Waitlist" },
+      { href: "/#level-mode", label: "Level mode" },
+      { href: "/#arena", label: "Market arena" },
+      { href: "/#research-lab", label: "Research lab" },
+      { href: "/waitlist", label: "Early access" },
     ],
   },
   {
     title: "Company",
     links: [
-      { href: "/#for-investors", label: "For investors" },
+      { href: "/#for-learners", label: "For learners" },
       { href: "/#trust", label: "Trust" },
       { href: "/about", label: "About" },
       { href: "/careers", label: "Careers" },
@@ -96,17 +107,17 @@ export const FOOTER_COLUMNS = [
 
 export const FOOTER_TAGLINE = SITE_TAGLINE;
 
-export const FOOTER_NOTE = "QRA explains. You decide.";
+export const FOOTER_NOTE = "QRA teaches. You decide.";
 
 /** Copy reused across pages so the positioning stays consistent. */
 export const NOT_ADVICE_NOTE =
   "Quantrelic Analytics does not provide investment advice or recommend what to buy or sell.";
 
 export const WAITLIST_INTERESTS = [
-  "I'm new to investing",
-  "Understanding financial statements",
-  "Researching a company before I invest",
-  "Keeping up with company developments",
+  "I'm new to markets",
+  "Learning to read charts",
+  "Testing decisions before risking money",
+  "I already trade and want to sharpen my process",
   "Just exploring",
 ];
 

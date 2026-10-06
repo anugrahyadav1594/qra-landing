@@ -178,7 +178,7 @@ export function Nav() {
               className="nav-seq hidden rounded-md bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white transition duration-200 ease-editorial hover:-translate-y-0.5 hover:bg-brand-600 sm:inline-flex"
               style={{ "--d": "170ms" } as React.CSSProperties}
             >
-              Join the waitlist
+              Get early access
             </Link>
 
             <button
@@ -270,7 +270,7 @@ export function Nav() {
               onClick={() => setMenuOpen(false)}
               className="flex w-full items-center justify-center rounded-md bg-brand-500 px-5 py-3.5 text-base font-semibold text-white"
             >
-              Join the waitlist
+              Get early access
             </Link>
           </div>
         </div>

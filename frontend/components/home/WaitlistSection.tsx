@@ -36,6 +36,9 @@ export function WaitlistSection() {
             ))}
           </h2>
           <p className="mt-6 text-lg leading-relaxed text-paper-dim">{EARLY_ACCESS.support}</p>
+          <p className="mt-5 border-l border-brand-500/60 pl-4 font-display text-sm font-medium tracking-tight text-paper">
+            {EARLY_ACCESS.secondary}
+          </p>
           <ul className="mt-8 space-y-3">
             {EARLY_ACCESS.points.map((point) => (
               <li key={point} className="flex gap-3 text-sm text-paper-mute">
