@@ -109,9 +109,9 @@ type ButtonProps = {
 
 const BUTTON_VARIANTS = {
   primary:
-    "bg-brand-500 text-white hover:bg-brand-600 hover:-translate-y-0.5 active:translate-y-0 shadow-[0_10px_30px_-12px_rgba(59,102,255,0.65)]",
+    "bg-brand-500 text-white shadow-[0_12px_34px_-10px_rgba(63,111,255,0.7),0_0_0_1px_rgba(120,158,255,0.35)_inset] hover:bg-brand-400 hover:-translate-y-0.5 hover:shadow-[0_18px_46px_-10px_rgba(63,111,255,0.9),0_0_26px_-2px_rgba(63,111,255,0.55)] active:translate-y-0",
   outline:
-    "border border-line-strong text-paper hover:border-brand-500/60 hover:bg-brand-500/[0.08]",
+    "border border-line-strong text-paper hover:border-brand-400/70 hover:bg-brand-500/[0.1] hover:shadow-[0_0_26px_-8px_rgba(63,111,255,0.5)]",
   ghost: "text-paper-dim hover:text-paper",
 } as const;
 

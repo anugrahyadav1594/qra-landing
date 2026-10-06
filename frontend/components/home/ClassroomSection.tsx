@@ -86,7 +86,7 @@ export function ClassroomSection() {
             <p className="max-w-xl font-display text-xl font-semibold tracking-tight text-paper sm:text-2xl">
               {CLASSROOM.closing}
             </p>
-            <Button href="#level-mode" variant="outline" className="btn-lift">
+            <Button href="/product#level-mode" variant="outline" className="btn-lift">
               {CLASSROOM.cta}
               <span aria-hidden="true" className="btn-arrow">
                 →

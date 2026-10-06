@@ -136,7 +136,7 @@ export function Nav() {
                   onClick={(event) => handleSectionNav(event, link.sectionId)}
                   aria-current={active ? (link.sectionId ? "true" : "page") : undefined}
                   className={`px-3 py-2 text-sm transition-colors duration-300 ${
-                    active ? "text-paper" : "text-paper-dim hover:text-paper"
+                    active ? "nav-link-lit text-paper" : "text-paper-dim hover:text-paper"
                   }`}
                 >
                   {link.label}
@@ -145,7 +145,7 @@ export function Nav() {
             })}
             <span
               aria-hidden="true"
-              className="nav-indicator absolute -bottom-px left-0 h-px bg-brand-500"
+              className="nav-indicator absolute -bottom-px left-0 h-[2px] rounded-full bg-brand-400"
               style={{
                 width: indicator ? `${indicator.width - 24}px` : 0,
                 transform: `translateX(${indicator ? indicator.left + 12 : 0}px)`,
@@ -175,7 +175,7 @@ export function Nav() {
 
             <Link
               href="/waitlist"
-              className="nav-seq hidden rounded-md bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white transition duration-200 ease-editorial hover:-translate-y-0.5 hover:bg-brand-600 sm:inline-flex"
+              className="nav-seq nav-cta hidden rounded-md bg-brand-500 px-4 py-2.5 text-sm font-semibold text-white transition duration-200 ease-editorial hover:-translate-y-0.5 hover:bg-brand-400 sm:inline-flex"
               style={{ "--d": "170ms" } as React.CSSProperties}
             >
               Get early access
@@ -268,7 +268,7 @@ export function Nav() {
             <Link
               href="/waitlist"
               onClick={() => setMenuOpen(false)}
-              className="flex w-full items-center justify-center rounded-md bg-brand-500 px-5 py-3.5 text-base font-semibold text-white"
+              className="nav-cta flex w-full items-center justify-center rounded-md bg-brand-500 px-5 py-3.5 text-base font-semibold text-white transition duration-200 ease-editorial hover:bg-brand-400"
             >
               Get early access
             </Link>

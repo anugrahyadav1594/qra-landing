@@ -50,12 +50,13 @@ const IMAGES: Record<AtmosphereVariant, string> = {
   // page. All eight are run through scripts/process-backdrops.py, which duotones
   // them onto the site's ink, sets a measured exposure and vignettes the edges,
   // so they read as depth rather than as pictures.
-  hero: "/images/ai-hero.webp",
-  // The two sections that carry the argument get the richest environments.
-  problem: "/images/problem-scatter.jpg",
-  idea: "/images/idea-threads.jpg",
-  product: "/images/ai-product.webp",
-  investor: "/images/ai-investor.webp",
+  hero: "/images/bg-hero-market.jpg",
+  // The environments follow the product: scattered concepts for the problem,
+  // an ascending route for the loop, and a market replay for the experience.
+  problem: "/images/bg-problem-scattered.jpg",
+  idea: "/images/bg-loop-progression.jpg",
+  product: "/images/bg-arena-replay.jpg",
+  investor: "/images/bg-arena-replay.jpg",
   trust: "/images/ai-trust.webp",
   about: "/images/ai-about.webp",
   waitlist: "/motion/waitlist-poster.webp",

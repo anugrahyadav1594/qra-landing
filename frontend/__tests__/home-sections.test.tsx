@@ -11,6 +11,7 @@ import { describe, expect, it } from "vitest";
 
 import { ArenaSection } from "@/components/home/ArenaSection";
 import { ClassroomSection } from "@/components/home/ClassroomSection";
+import { ExperienceSection } from "@/components/home/ExperienceSection";
 import { LeaderboardSection } from "@/components/home/LeaderboardSection";
 import { LevelModeSection } from "@/components/home/LevelModeSection";
 import { ProblemSection } from "@/components/home/ProblemSection";
@@ -19,6 +20,7 @@ import { WhySection } from "@/components/home/WhySection";
 import {
   ARENA_PREVIEW,
   CLASSROOM,
+  EXPERIENCE,
   LEADERBOARD,
   LEVEL_MODE,
   MARKET_ARENA,
@@ -199,6 +201,34 @@ describe("WhySection", () => {
 
     // The one step that belongs to the visitor.
     expect(screen.getByText("you")).toBeInTheDocument();
+  });
+});
+
+describe("ExperienceSection", () => {
+  it("shows the whole product once: a screen, two doors, four facts", () => {
+    const { container } = render(<ExperienceSection />);
+
+    // The generated concept screen is the centrepiece, and it is labelled as a
+    // concept rather than passed off as the real interface.
+    const screenImg = container.querySelector("img[src='/images/screen-replay.jpg']");
+    expect(screenImg).not.toBeNull();
+    expect(screenImg!.getAttribute("alt")).toMatch(/decision/i);
+
+    // Exactly two doors into the product, each linking into the product page.
+    const doors = container.querySelectorAll(".exp-mode");
+    expect(doors).toHaveLength(EXPERIENCE.modes.length);
+    for (const mode of EXPERIENCE.modes) {
+      expect(container.querySelector(`a[href="${mode.href}"]`)).not.toBeNull();
+    }
+
+    // Four facts that settle the shape of it, none denominated in money.
+    expect(container.querySelectorAll(".exp-fact")).toHaveLength(EXPERIENCE.facts.length);
+  });
+
+  it("sends the visitor to the product page for the full tour", () => {
+    render(<ExperienceSection />);
+    const cta = screen.getByRole("link", { name: new RegExp(EXPERIENCE.cta) });
+    expect(cta).toHaveAttribute("href", "/product");
   });
 });
 

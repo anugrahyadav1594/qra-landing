@@ -143,8 +143,8 @@ export function LeaderboardSection() {
                   </p>
                 ))}
                 <div className="mt-8">
-                  <Button href="#research-lab" variant="outline" className="btn-lift">
-                    Then go deeper
+                  <Button href="#waitlist" variant="outline" className="btn-lift">
+                    Join the waitlist
                     <span aria-hidden="true" className="btn-arrow">
                       →
                     </span>

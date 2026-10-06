@@ -1,14 +1,11 @@
 import type { Metadata } from "next";
 
-import { ArenaSection } from "@/components/home/ArenaSection";
 import { ClassroomSection } from "@/components/home/ClassroomSection";
+import { ExperienceSection } from "@/components/home/ExperienceSection";
 import { Hero } from "@/components/home/Hero";
 import { LearnersSection } from "@/components/home/LearnersSection";
-import { LeaderboardSection } from "@/components/home/LeaderboardSection";
-import { LevelModeSection } from "@/components/home/LevelModeSection";
 import { ProblemSection } from "@/components/home/ProblemSection";
 import { ResearchLabSection } from "@/components/home/ResearchLabSection";
-import { ScoreSection } from "@/components/home/ScoreSection";
 import { TrustSection } from "@/components/home/TrustSection";
 import { WaitlistSection } from "@/components/home/WaitlistSection";
 import { WhySection } from "@/components/home/WhySection";
@@ -43,23 +40,22 @@ const ORGANIZATION_JSONLD = {
 };
 
 /**
- * The homepage, in the order the argument has to be made.
+ * The homepage is a pitch; the product page is the tour.
+ *
+ * The landing shows the product exactly once — a single confident screen plus
+ * two doors — and spends the rest of its length on the argument and the ask:
  *
  *   hero         learn markets by playing through them
  *   problem      reading about markets is not practising them
  *   the loop     learn → practise → decide → reflect → level up
- *   level mode   one market skill at a time
- *   arena        then decide on a historical market, future hidden
- *   score        measured on the decision, not the luck
- *   leaderboard  where that leaves you
+ *   experience   the product, once — level mode + market arena, linked
  *   research lab the company behind the chart
  *   learners     three entry points, one loop
  *   why          most platforms show you the market; we let you practise it
  *   trust        clarity over hype
  *   waitlist     the only thing we are asking for
  *
- * Each section answers one question and says the important thing once. Nothing
- * here is a feature list — every part exists to make the next one legible.
+ * The level list, arena interface, scoring and leaderboard live on /product.
  */
 export default function HomePage() {
   return (
@@ -72,10 +68,7 @@ export default function HomePage() {
       <QRASkillTicker />
       <ProblemSection />
       <ClassroomSection />
-      <LevelModeSection />
-      <ArenaSection />
-      <ScoreSection />
-      <LeaderboardSection />
+      <ExperienceSection />
       <ResearchLabSection />
       <LearnersSection />
       <WhySection />

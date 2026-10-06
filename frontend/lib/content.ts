@@ -239,6 +239,40 @@ export const LEVEL_MODE = {
   flow: ["Learn", "Guided practice", "Independent challenge", "Score", "XP", "Unlock"],
 } as const;
 
+/* ── The experience: one teaser on the landing page ────────────────── */
+
+export const EXPERIENCE = {
+  label: "The experience",
+  statement: ["One product.", "Two ways to play."],
+  support:
+    "QRA turns real historical markets into places to practise. Work through the " +
+    "levels, or step straight into the arena and make the calls yourself.",
+  modes: [
+    {
+      n: "01",
+      title: "Level mode",
+      body: "One market skill at a time. Learn it, practise it, then prove it without the tutorial.",
+      href: "/product#level-mode",
+    },
+    {
+      n: "02",
+      title: "Market arena",
+      body: "A historical scenario, the future hidden, and three decisions. You take the risk you set.",
+      href: "/product#arena",
+    },
+  ],
+  facts: [
+    { value: "12", label: "levels at launch" },
+    { value: "0", label: "real money at risk" },
+    { value: "4", label: "ways a decision is scored" },
+    { value: "1", label: "weekly leaderboard" },
+  ],
+  screenLabel: "Market Arena — a session paused at a decision",
+  screenNote:
+    "Concept screen. The future is withheld at the exact point you are asked to act — the core of the product, drawn.",
+  cta: "Explore the experience",
+} as const;
+
 /* ── Market arena (free play) ──────────────────────────────────────── */
 
 export const MARKET_ARENA = {

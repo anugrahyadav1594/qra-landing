@@ -32,10 +32,7 @@ export const HOME_SECTIONS = [
   "hero",
   "problem",
   "how-it-works",
-  "level-mode",
-  "arena",
-  "score",
-  "leaderboard",
+  "experience",
   "research-lab",
   "for-learners",
   "why",
@@ -54,9 +51,10 @@ export type NavLink = {
 
 export const NAV_LINKS: readonly NavLink[] = [
   { href: "/#how-it-works", label: "How it works", sectionId: "how-it-works" },
-  { href: "/#level-mode", label: "The Experience", sectionId: "level-mode" },
+  { href: "/#experience", label: "The Experience", sectionId: "experience" },
   { href: "/#for-learners", label: "For Learners", sectionId: "for-learners" },
   { href: "/#trust", label: "Trust", sectionId: "trust" },
+  { href: "/product", label: "Product" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
@@ -67,7 +65,8 @@ export const PRIMARY_CTA_HREF = "/waitlist";
 
 /** Secondary destinations — the mobile menu and the footer. */
 export const SECONDARY_LINKS: readonly NavLink[] = [
-  { href: "/#arena", label: "Market Arena", sectionId: "arena" },
+  { href: "/product#arena", label: "Market Arena" },
+  { href: "/product#level-mode", label: "Level mode" },
   { href: "/research", label: "How it works, in detail" },
   { href: "/careers", label: "Careers" },
   { href: "/feedback", label: "Feedback" },
@@ -77,10 +76,10 @@ export const FOOTER_COLUMNS = [
   {
     title: "Product",
     links: [
-      { href: "/#how-it-works", label: "How it works" },
-      { href: "/#level-mode", label: "Level mode" },
-      { href: "/#arena", label: "Market arena" },
-      { href: "/#research-lab", label: "Research lab" },
+      { href: "/product", label: "The experience" },
+      { href: "/product#level-mode", label: "Level mode" },
+      { href: "/product#arena", label: "Market arena" },
+      { href: "/product#leaderboard", label: "Leaderboard" },
       { href: "/waitlist", label: "Early access" },
     ],
   },
