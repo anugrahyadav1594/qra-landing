@@ -5,7 +5,6 @@ import { Cursor } from "@/components/motion/Cursor";
 import { Footer } from "@/components/Footer";
 import { INTRO_BOOTSTRAP, QRALoader } from "@/components/motion/QRALoader";
 import { QRAProgressRail } from "@/components/motion/QRAProgressRail";
-import { QRARewardFeed } from "@/components/motion/QRARewardFeed";
 import { Nav } from "@/components/Nav";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from "@/lib/constants";
 import { socialMetadata } from "@/lib/seo";
@@ -49,11 +48,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <QRALoader />
         <Cursor />
-        {/* The progression HUD: a level map on the right edge, and the reward
-            feed that pays for reading. Both are decorative until earned — they
-            mount nothing on short pages, on touch, or for reduced motion. */}
+        {/* The progression HUD: a level map on the right edge. It mounts
+            nothing on short pages, on touch, or for reduced motion. */}
         <QRAProgressRail />
-        <QRARewardFeed />
 
         {/* ClerkProvider goes inside <body> — never wraps <html> (Clerk docs). */}
         <AuthProvider>

@@ -138,8 +138,10 @@ body {
  * A reveal can delay content. It can never strand it.
  */
 .qra-reveal {
-  --reveal-y: 30px;
-  --reveal-scale: 1;
+  /* 30px read as a fade with opinions. 52px reads as an arrival — still short
+     enough to settle inside the 900ms, long enough to actually see. */
+  --reveal-y: 52px;
+  --reveal-scale: 0.985;
 }
 
 /* Hidden only once JavaScript is confirmed (a `js` class is set on <html>
@@ -630,6 +632,9 @@ html[data-intro="skip"] .qra-loader {
 }
 
 .qra-loader {
+  /* Two clocks. The boot runs first and alone; the opening is shifted by it in
+     full, never compressed to make room for it. */
+  --loader-boot: 1500ms;
   --loader-dur: 2600ms;
   position: fixed;
   inset: 0;
@@ -644,8 +649,8 @@ html[data-intro="skip"] .qra-loader {
      guard is the hard ceiling. A guard that fires late is a blank screen, so it
      lands well past the end of the sequence. */
   animation:
-    loader-veil 1ms steps(1, end) calc(var(--loader-dur) * 0.82) both,
-    loader-guard 0s linear calc(var(--loader-dur) + 700ms) forwards;
+    loader-veil 1ms steps(1, end) calc(var(--loader-boot) + var(--loader-dur) * 0.82) both,
+    loader-guard 0s linear calc(var(--loader-boot) + var(--loader-dur) + 700ms) forwards;
 }
 
 @keyframes loader-guard {
@@ -685,7 +690,7 @@ html[data-intro="skip"] .qra-loader {
      twice, which is what keeps the two animations from fighting. */
   animation:
     loader-field 26s ease-in-out infinite,
-    loader-layer-out 280ms ease calc(var(--loader-dur) * 0.7) both;
+    loader-layer-out 280ms ease calc(var(--loader-boot) + var(--loader-dur) * 0.7) both;
 }
 
 @keyframes loader-field {
@@ -704,402 +709,114 @@ html[data-intro="skip"] .qra-loader {
   }
 }
 
-/* ── The sky: motes, so the field has depth before anything happens ── */
+/* ── The loading screen ──────────────────────────────────────────────
+ *
+ * The beat that runs *in front of* the opening. A word, a track that fills,
+ * and a status line with a live dot — written in the site's own vocabulary, so
+ * handing over to the opening reads as one instrument starting up rather than
+ * two unrelated screens stitched together.
+ *
+ * It leaves 380ms before the boot clock is up and the opening begins, so the
+ * two never fight for the centre of the screen. */
 
-.qra-loader__sky {
+.qra-loader__boot {
   position: absolute;
   inset: 0;
-  z-index: 1;
-  animation: loader-layer-out 240ms ease calc(var(--loader-dur) * 0.7) both;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.1rem;
+  animation: loader-boot-out 420ms var(--ease) calc(var(--loader-boot) - 380ms) both;
 }
 
-.qra-loader__mote {
+@keyframes loader-boot-out {
+  to {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0);
+  }
+}
+
+.qra-loader__boot-label {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.42em;
+  /* Offsets the trailing letter-space so the word stays optically centred. */
+  text-indent: 0.42em;
+  text-transform: uppercase;
+  color: var(--brand-300);
+  animation: loader-boot-in 600ms var(--ease) both;
+}
+
+.qra-loader__boot-track {
+  position: relative;
+  width: min(220px, 52vw);
+  height: 2px;
+  border-radius: 2px;
+  background: rgb(var(--paper-rgb) / 0.1);
+  overflow: hidden;
+}
+
+.qra-loader__boot-fill {
   position: absolute;
-  width: var(--size, 1px);
-  height: var(--size, 1px);
-  border-radius: 999px;
-  background: rgba(157, 180, 255, 0.6);
-  opacity: 0;
-  /* Transform and opacity only, so 34 of these cost the main thread nothing. */
-  animation-name: loader-mote;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
+  inset: 0;
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--brand-500), var(--brand-300));
+  box-shadow: 0 0 12px 1px rgba(63, 111, 255, 0.7);
+  animation: loader-boot-fill var(--loader-boot) cubic-bezier(0.5, 0, 0.2, 1) both;
 }
 
-@keyframes loader-mote {
+@keyframes loader-boot-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.qra-loader__boot-status {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgb(var(--paper-rgb) / 0.42);
+  animation: loader-boot-in 600ms var(--ease) 160ms both;
+}
+
+.qra-loader__boot-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--positive);
+  box-shadow: 0 0 10px 1px rgba(32, 201, 151, 0.8);
+  animation: loader-boot-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes loader-boot-pulse {
   0%,
   100% {
-    opacity: 0;
-    transform: translate3d(0, 0, 0);
+    opacity: 0.35;
+    transform: scale(0.85);
   }
   50% {
-    opacity: 0.85;
-    transform: translate3d(0, -9px, 0);
-  }
-}
-
-/* A low-tier device gets a thinner sky: same composition, fewer layers. */
-.qra-loader[data-tier="low"] .qra-loader__mote:nth-child(n + 18) {
-  display: none;
-}
-
-/* ── The seam of light the opening comes out of ────────────────────── */
-
-/* One hairline appears at the exact centre, holds for a beat, then splits in
-   two. This is the first thing on screen, and it is what makes the sequence
-   read as an event rather than as a wait. */
-.qra-loader__horizon {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  height: 0;
-  z-index: 2;
-  animation: loader-layer-out 200ms ease calc(var(--loader-dur) * 0.46) both;
-}
-
-.qra-loader__beam {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  width: 100%;
-  height: 1px;
-  transform: translate3d(-50%, 0, 0) scaleX(0);
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(111, 148, 255, 0.15) 18%,
-    rgba(245, 247, 250, 0.95) 50%,
-    rgba(111, 148, 255, 0.15) 82%,
-    transparent 100%
-  );
-  box-shadow: 0 0 18px rgba(111, 148, 255, 0.55);
-}
-
-/* The entrance grows the seam out from the centre. */
-@keyframes loader-beam-in {
-  from {
-    transform: translate3d(-50%, 0, 0) scaleX(0);
-    opacity: 0;
-  }
-  40% {
     opacity: 1;
-  }
-  to {
-    transform: translate3d(-50%, 0, 0) scaleX(1);
-    opacity: 1;
+    transform: scale(1.15);
   }
 }
 
-/* The split takes the seam apart. `forwards` rather than `both`: a backwards
-   fill here would hold the finished, full-width seam over the entrance that is
-   still growing it. */
-.qra-loader__beam--up {
-  animation:
-    loader-beam-in calc(var(--loader-dur) * 0.2) var(--ease) both,
-    loader-beam-split-up 620ms var(--ease-in) calc(var(--loader-dur) * 0.22) forwards;
-}
-
-.qra-loader__beam--down {
-  animation:
-    loader-beam-in calc(var(--loader-dur) * 0.2) var(--ease) both,
-    loader-beam-split-down 620ms var(--ease-in) calc(var(--loader-dur) * 0.22) forwards;
-}
-
-@keyframes loader-beam-split-up {
-  from {
-    transform: translate3d(-50%, 0, 0) scaleX(1);
-    opacity: 1;
-  }
-  to {
-    transform: translate3d(-50%, -38vh, 0) scaleX(1.15);
-    opacity: 0;
-  }
-}
-
-@keyframes loader-beam-split-down {
-  from {
-    transform: translate3d(-50%, 0, 0) scaleX(1);
-    opacity: 1;
-  }
-  to {
-    transform: translate3d(-50%, 38vh, 0) scaleX(1.15);
-    opacity: 0;
-  }
-}
-
-/* The bloom the mark resolves out of. One animation, not two: a separate
-   fade-out would take the opacity property away from the bloom's own curve. */
-.qra-loader__bloom {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 46vmin;
-  height: 46vmin;
-  margin: -23vmin 0 0 -23vmin;
-  z-index: 2;
-  border-radius: 999px;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.5) 0%,
-    rgba(111, 148, 255, 0.28) 38%,
-    transparent 70%
-  );
-  opacity: 0;
-  filter: blur(6px);
-  animation: loader-bloom calc(var(--loader-dur) * 0.68) var(--ease)
-    calc(var(--loader-dur) * 0.08) both;
-}
-
-@keyframes loader-bloom {
-  0% {
-    opacity: 0;
-    transform: scale(0.25);
-  }
-  22% {
-    opacity: 1;
-    transform: scale(0.7);
-  }
-  58% {
-    opacity: 0.22;
-    transform: scale(1.3);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.5);
-  }
-}
-
-/* ── The structure around the logo ─────────────────────────────────── */
-
-.qra-loader__structure {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  z-index: 2;
-  animation: loader-expand 380ms var(--ease-in) calc(var(--loader-dur) * 0.66) both;
-}
-
-@keyframes loader-expand {
-  from {
-    transform: scale(1);
-    opacity: 1;
-  }
-  to {
-    transform: scale(1.7);
-    opacity: 0;
-  }
-}
-
-.qra-loader__axes {
-  width: min(132vmin, 1040px);
-  height: min(132vmin, 1040px);
-}
-
-/* The shockwave: one ring leaving the centre, gone before the axes land. */
-.qra-loader__shock {
-  fill: none;
-  stroke: rgba(157, 180, 255, 0.55);
-  stroke-width: 1.5;
-  transform-box: fill-box;
-  transform-origin: center;
-  opacity: 0;
-  animation: loader-shock 900ms var(--ease) calc(var(--loader-dur) * 0.06) both;
-}
-
-@keyframes loader-shock {
-  0% {
-    opacity: 0;
-    transform: scale(0.2);
-  }
-  20% {
-    opacity: 0.9;
-  }
-  100% {
-    opacity: 0;
-    transform: scale(3.6);
-    stroke-width: 0.4;
-  }
-}
-
-.qra-loader__ring {
-  fill: none;
-  stroke: rgba(245, 247, 250, 0.26);
-  stroke-width: 1;
-  transform-box: fill-box;
-  transform-origin: center;
-  /* Drawn, not faded in: the ring travels once around the logo. */
-  stroke-dasharray: var(--circ);
-  stroke-dashoffset: var(--circ);
-  animation: loader-ring-draw 1250ms var(--ease) both;
-}
-
-.qra-loader__ring--outer {
-  stroke: rgba(111, 148, 255, 0.18);
-  stroke-dasharray: 4 var(--circ);
-}
-
-@keyframes loader-ring-draw {
-  0% {
-    stroke-dashoffset: var(--circ);
-    opacity: 0;
-  }
-  12% {
-    opacity: 1;
-  }
-  70%,
-  100% {
-    stroke-dashoffset: 0;
-    opacity: 1;
-  }
-}
-
-/* The instrument dial: dashed, and turning for as long as the sequence runs.
-   The fade touches opacity and the spin touches transform, so the two can run
-   at once without either one overwriting the other. */
-.qra-loader__dial {
-  fill: none;
-  stroke: rgba(157, 180, 255, 0.34);
-  stroke-width: 1;
-  stroke-dasharray: 2 16;
-  transform-box: fill-box;
-  transform-origin: center;
-  opacity: 0;
-  animation:
-    loader-dial-in 600ms var(--ease) calc(var(--loader-dur) * 0.3) both,
-    loader-spin 9s linear calc(var(--loader-dur) * 0.3) infinite;
-}
-
-@keyframes loader-dial-in {
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes loader-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Graduations on the dial, arriving around it one after another. */
-.qra-loader__tick {
-  stroke: rgba(245, 247, 250, 0.3);
-  stroke-width: 1;
-  opacity: 0;
-  animation: loader-tick 460ms var(--ease) both;
-}
-
-@keyframes loader-tick {
+@keyframes loader-boot-in {
   from {
     opacity: 0;
+    transform: translate3d(0, 8px, 0);
   }
   to {
-    opacity: 0.85;
-  }
-}
-
-.qra-loader__axis,
-.qra-loader__guide {
-  stroke: rgba(245, 247, 250, 0.2);
-  stroke-width: 1;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: loader-draw 1200ms var(--ease) calc(var(--loader-dur) * 0.3) both;
-}
-
-.qra-loader__guide {
-  stroke: rgba(245, 247, 250, 0.1);
-}
-
-.qra-loader__axis--v,
-.qra-loader__guide--v {
-  animation-name: loader-draw-y;
-}
-
-@keyframes loader-draw-x {
-  0% {
-    transform: scaleX(0.02);
-    opacity: 0;
-  }
-  16% {
     opacity: 1;
-  }
-  100% {
-    transform: scaleX(1);
-    opacity: 1;
-  }
-}
-
-@keyframes loader-draw-y {
-  0% {
-    transform: scaleY(0.02);
-    opacity: 0;
-  }
-  16% {
-    opacity: 1;
-  }
-  100% {
-    transform: scaleY(1);
-    opacity: 1;
-  }
-}
-
-.qra-loader__axis--h,
-.qra-loader__guide--h {
-  animation-name: loader-draw-x;
-}
-
-/* The reading that sweeps the field and leaves the points behind it. */
-.qra-loader__scan {
-  position: absolute;
-  left: 50%;
-  top: 0;
-  width: min(132vmin, 1040px);
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(157, 180, 255, 0.85), transparent);
-  box-shadow: 0 0 24px rgba(111, 148, 255, 0.5);
-  opacity: 0;
-  animation: loader-scan calc(var(--loader-dur) * 0.26) linear calc(var(--loader-dur) * 0.42) both;
-}
-
-@keyframes loader-scan {
-  0% {
-    opacity: 0;
-    transform: translate3d(-50%, 4vh, 0);
-  }
-  12%,
-  88% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translate3d(-50%, 96vh, 0);
-  }
-}
-
-.qra-loader__point {
-  fill: rgba(111, 148, 255, 0.95);
-  transform-box: fill-box;
-  transform-origin: center;
-  opacity: 0;
-  animation: loader-point 560ms var(--ease) both;
-}
-
-/* A short overshoot: a reading that lands, not a dot that appears. */
-@keyframes loader-point {
-  0% {
-    opacity: 0;
-    transform: scale(0.4);
-  }
-  55% {
-    opacity: 1;
-    transform: scale(1.5);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
+    transform: translate3d(0, 0, 0);
   }
 }
 
@@ -1141,8 +858,8 @@ html[data-intro="skip"] .qra-loader {
   height: 220px;
   border-radius: 999px;
   background: radial-gradient(circle, rgba(63, 111, 255, 0.3) 0%, transparent 66%);
-  animation: loader-halo calc(var(--loader-dur) * 0.68) var(--ease)
-    calc(var(--loader-dur) * 0.14) both;
+  animation: loader-halo calc(var(--loader-boot) + var(--loader-dur) * 0.68) var(--ease)
+    calc(var(--loader-boot) + var(--loader-dur) * 0.14) both;
 }
 
 @keyframes loader-halo {
@@ -1166,7 +883,7 @@ html[data-intro="skip"] .qra-loader {
 .qra-loader__handoff {
   position: relative;
   display: block;
-  animation: loader-mark-out 520ms var(--ease-in) calc(var(--loader-dur) * 0.72) both;
+  animation: loader-mark-out 520ms var(--ease-in) calc(var(--loader-boot) + var(--loader-dur) * 0.72) both;
 }
 
 @keyframes loader-mark-out {
@@ -1195,7 +912,7 @@ html[data-intro="skip"] .qra-loader {
   position: relative;
   display: block;
   clip-path: circle(0% at 50% 50%);
-  animation: loader-iris 620ms var(--ease) calc(var(--loader-dur) * 0.1) both;
+  animation: loader-iris 620ms var(--ease) calc(var(--loader-boot) + var(--loader-dur) * 0.1) both;
 }
 
 @keyframes loader-iris {
@@ -1204,26 +921,6 @@ html[data-intro="skip"] .qra-loader {
   }
   to {
     clip-path: circle(78% at 50% 50%);
-  }
-}
-
-/* One pass of light across the mark, just after it resolves. The frame's own
-   clip-path clips this as well, so the sheen never escapes the logo. */
-.qra-loader__sheen {
-  position: absolute;
-  inset: -30% -70%;
-  background: linear-gradient(100deg, transparent 42%, rgba(255, 255, 255, 0.5) 50%, transparent 58%);
-  transform: translate3d(-60%, 0, 0);
-  mix-blend-mode: screen;
-  animation: loader-sheen 760ms var(--ease) calc(var(--loader-dur) * 0.34) both;
-}
-
-@keyframes loader-sheen {
-  from {
-    transform: translate3d(-60%, 0, 0);
-  }
-  to {
-    transform: translate3d(60%, 0, 0);
   }
 }
 
@@ -1296,25 +993,64 @@ html[data-intro="skip"] .qra-loader {
   }
 }
 
-/* A bar of light travels across the name as the letters resolve, so the
-   wordmark is written rather than merely appearing. Taken out of the flex
-   flow, so it never affects the letters it passes over. */
-.qra-loader__sweep {
+/* THE WRITE-HEAD.
+ *
+ * The wordmark used to be uncovered by a white patch sliding over it, which
+ * read as a screen glitch rather than as anything the rest of the site does.
+ * In its place: a narrow cobalt edge that travels the word in step with the
+ * letters being written, on the site's own accent, with the letters it has
+ * passed left briefly lit. Same beat, on theme.
+ *
+ * It travels by `left` rather than by transform because the distance is the
+ * width of the word, which nothing here knows in pixels — and it is one 2px
+ * element, once, for under a second, so the layout cost is nothing. */
+.qra-loader__writehead {
   position: absolute;
-  inset: -0.4em -0.2em;
+  top: -0.12em;
+  bottom: -0.12em;
+  left: 0;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    var(--brand-300),
+    var(--brand-500),
+    transparent
+  );
+  box-shadow: 0 0 14px 2px rgba(63, 111, 255, 0.7);
+  opacity: 0;
   pointer-events: none;
-  background: linear-gradient(90deg, transparent 34%, rgba(255, 255, 255, 0.85) 50%, transparent 66%);
-  transform: translate3d(-110%, 0, 0);
-  mix-blend-mode: screen;
-  animation: loader-sweep 700ms var(--ease) calc(var(--loader-dur) * 0.44) both;
 }
 
-@keyframes loader-sweep {
-  from {
-    transform: translate3d(-110%, 0, 0);
+.qra-loader__writehead--name {
+  animation: loader-writehead 760ms var(--ease)
+    calc(var(--loader-boot) + var(--loader-dur) * 0.42) both;
+}
+
+/* The same edge crossing the mark, just after it resolves. The frame's own
+   clip-path clips it, so it never escapes the logo. */
+.qra-loader__logo-frame .qra-loader__writehead {
+  top: -30%;
+  bottom: -30%;
+  animation: loader-writehead 700ms var(--ease)
+    calc(var(--loader-boot) + var(--loader-dur) * 0.34) both;
+}
+
+@keyframes loader-writehead {
+  0% {
+    left: 0%;
+    opacity: 0;
   }
-  to {
-    transform: translate3d(110%, 0, 0);
+  12% {
+    opacity: 1;
+  }
+  88% {
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
   }
 }
 
@@ -1324,7 +1060,7 @@ html[data-intro="skip"] .qra-loader {
   width: min(240px, 62vw);
   background: linear-gradient(90deg, transparent, rgba(157, 180, 255, 0.75), transparent);
   transform: scaleX(0);
-  animation: loader-rule 480ms var(--ease) calc(var(--loader-dur) * 0.6) both;
+  animation: loader-rule 480ms var(--ease) calc(var(--loader-boot) + var(--loader-dur) * 0.6) both;
 }
 
 @keyframes loader-rule {
@@ -1344,7 +1080,7 @@ html[data-intro="skip"] .qra-loader {
   text-transform: uppercase;
   color: rgba(154, 168, 186, 0.9);
   opacity: 0;
-  animation: loader-char 420ms var(--ease) calc(var(--loader-dur) * 0.64) both;
+  animation: loader-char 420ms var(--ease) calc(var(--loader-boot) + var(--loader-dur) * 0.64) both;
 }
 
 /* ── The readout along the bottom edge ─────────────────────────────── */
@@ -1362,7 +1098,7 @@ html[data-intro="skip"] .qra-loader {
   letter-spacing: 0.26em;
   text-transform: uppercase;
   color: rgba(111, 125, 145, 0.95);
-  animation: loader-layer-out 200ms ease calc(var(--loader-dur) * 0.72) both;
+  animation: loader-layer-out 200ms ease calc(var(--loader-boot) + var(--loader-dur) * 0.72) both;
 }
 
 .qra-loader__readout-word {
@@ -1388,12 +1124,12 @@ html[data-intro="skip"] .qra-loader {
 
 .qra-loader__curtain--left {
   left: 0;
-  animation: loader-curtain-left 430ms var(--ease-in) calc(var(--loader-dur) * 0.82) forwards;
+  animation: loader-curtain-left 430ms var(--ease-in) calc(var(--loader-boot) + var(--loader-dur) * 0.82) forwards;
 }
 
 .qra-loader__curtain--right {
   right: 0;
-  animation: loader-curtain-right 430ms var(--ease-in) calc(var(--loader-dur) * 0.82) forwards;
+  animation: loader-curtain-right 430ms var(--ease-in) calc(var(--loader-boot) + var(--loader-dur) * 0.82) forwards;
 }
 
 /* The bright edge the two halves meet at: it flares as they separate. */
@@ -1406,7 +1142,7 @@ html[data-intro="skip"] .qra-loader {
   background: rgba(245, 247, 250, 0.95);
   box-shadow: 0 0 26px 6px rgba(111, 148, 255, 0.6);
   opacity: 0;
-  animation: loader-seam 430ms ease-out calc(var(--loader-dur) * 0.82) forwards;
+  animation: loader-seam 430ms ease-out calc(var(--loader-boot) + var(--loader-dur) * 0.82) forwards;
 }
 
 /* Both halves are 50.5% wide so they cannot leave a hairline of hero showing
@@ -1469,7 +1205,7 @@ html[data-intro="skip"] .qra-loader {
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
   opacity: 0;
   pointer-events: none;
-  animation: loader-flare 460ms ease-out calc(var(--loader-dur) * 0.82) both;
+  animation: loader-flare 460ms ease-out calc(var(--loader-boot) + var(--loader-dur) * 0.82) both;
 }
 
 @keyframes loader-flare {
@@ -1497,15 +1233,12 @@ html[data-intro="skip"] .qra-loader {
     loader-guard 0s linear 1300ms forwards;
 }
 
-.qra-loader[data-mode="reduce"] .qra-loader__sky,
-.qra-loader[data-mode="reduce"] .qra-loader__horizon,
-.qra-loader[data-mode="reduce"] .qra-loader__bloom,
-.qra-loader[data-mode="reduce"] .qra-loader__structure,
+.qra-loader[data-mode="reduce"] .qra-loader__boot,
 .qra-loader[data-mode="reduce"] .qra-loader__name,
 .qra-loader[data-mode="reduce"] .qra-loader__readout,
 .qra-loader[data-mode="reduce"] .qra-loader__curtain,
 .qra-loader[data-mode="reduce"] .qra-loader__halo,
-.qra-loader[data-mode="reduce"] .qra-loader__sheen,
+.qra-loader[data-mode="reduce"] .qra-loader__writehead,
 .qra-loader[data-mode="reduce"] .qra-loader__rule {
   display: none;
 }
@@ -2509,15 +2242,16 @@ body {
   position: absolute;
   top: -1px;
   left: 0;
-  width: 22%;
+  width: 30%;
   height: 3px;
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(157, 180, 255, 0.9),
-    rgba(63, 111, 255, 0.6),
+    rgba(157, 180, 255, 1),
+    rgba(63, 111, 255, 0.85),
     transparent
   );
+  box-shadow: 0 0 16px 2px rgba(63, 111, 255, 0.75);
   animation: transition-sweep 1500ms var(--ease) 760ms both;
 }
 
@@ -2533,7 +2267,7 @@ body {
     opacity: 1;
   }
   to {
-    transform: translateX(455%);
+    transform: translateX(320%);
     opacity: 0;
   }
 }
@@ -3040,6 +2774,73 @@ section[data-tone="deep"]::after {
 
 .exp-fact dd {
   font-feature-settings: "tnum" 1;
+}
+
+/* ── Game-panel corners ──────────────────────────────────────────────
+ *
+ * Two brackets, top-left and bottom-right, on the surfaces you can act on.
+ * It is the single clearest signal that a panel is an instrument rather than
+ * a printed card, and it costs nothing: pseudo-elements, no extra markup, and
+ * they grow and brighten on hover — the whole interaction in one gesture. */
+
+.exp-mode,
+.level-card,
+.score-panel {
+  position: relative;
+}
+
+.exp-mode::before,
+.exp-mode::after,
+.level-card::before,
+.level-card::after,
+.score-panel::before,
+.score-panel::after {
+  content: "";
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  border: 1px solid rgba(111, 148, 255, 0.45);
+  opacity: 0.5;
+  pointer-events: none;
+  transition:
+    width 0.45s var(--ease),
+    height 0.45s var(--ease),
+    opacity 0.45s var(--ease),
+    border-color 0.45s var(--ease);
+}
+
+.exp-mode::before,
+.level-card::before,
+.score-panel::before {
+  top: -1px;
+  left: -1px;
+  border-right: 0;
+  border-bottom: 0;
+  border-top-left-radius: 8px;
+}
+
+.exp-mode::after,
+.level-card::after,
+.score-panel::after {
+  bottom: -1px;
+  right: -1px;
+  border-left: 0;
+  border-top: 0;
+  border-bottom-right-radius: 8px;
+}
+
+.exp-mode:hover::before,
+.exp-mode:hover::after,
+.exp-mode:focus-visible::before,
+.exp-mode:focus-visible::after,
+.level-card:hover::before,
+.level-card:hover::after,
+.score-panel:hover::before,
+.score-panel:hover::after {
+  width: 22px;
+  height: 22px;
+  opacity: 1;
+  border-color: var(--brand-300);
 }
 
 /* ── Arena chrome ──────────────────────────────────────────────────── */
@@ -3791,165 +3592,9 @@ section[data-tone="deep"]::after {
   text-shadow: 0 0 14px rgba(111, 148, 255, 0.5);
 }
 
-/* ── The reward feed: the page's dopamine loop ───────────────────────
- *
- * One toast in the corner, earned by reading. Enters from below, holds,
- * leaves upward. Only transform and opacity move, so it cannot stutter on
- * the same frame the section behind it is revealing. */
-
-.qra-feed {
-  position: fixed;
-  left: 22px;
-  bottom: 22px;
-  z-index: 45;
-  pointer-events: none;
-}
-
-.qra-toast {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  max-width: min(370px, calc(100vw - 44px));
-  padding: 13px 17px;
-  border: 1px solid rgb(var(--brand-500-rgb) / 0.42);
-  border-radius: 12px;
-  background: linear-gradient(
-    150deg,
-    rgb(var(--ink-900-rgb) / 0.96),
-    rgb(var(--ink-950-rgb) / 0.97)
-  );
-  box-shadow:
-    0 24px 60px -24px rgba(0, 0, 0, 0.92),
-    0 0 34px -8px rgba(63, 111, 255, 0.5),
-    0 0 0 1px rgba(120, 158, 255, 0.12) inset;
-  backdrop-filter: blur(10px);
-  animation: toast-in 0.5s var(--ease) both;
-}
-
-.qra-toast[data-leaving="true"] {
-  animation: toast-out 0.42s var(--ease) both;
-}
-
-@keyframes toast-in {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 20px, 0) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-}
-
-@keyframes toast-out {
-  from {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translate3d(0, -10px, 0) scale(0.98);
-  }
-}
-
-.qra-toast__glyph {
-  flex: 0 0 auto;
-  font-size: 1.05rem;
-  line-height: 1;
-  color: var(--brand-300);
-  text-shadow: 0 0 14px rgba(111, 148, 255, 0.8);
-  animation: toast-breathe 2.6s var(--ease) infinite;
-}
-
-@keyframes toast-breathe {
-  0%,
-  100% {
-    opacity: 0.72;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.12);
-  }
-}
-
-.qra-toast__body {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.qra-toast__title {
-  font-family: var(--font-display);
-  font-size: 0.92rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: var(--paper);
-}
-
-.qra-toast__detail {
-  font-size: 0.72rem;
-  line-height: 1.35;
-  color: var(--paper-dim);
-}
-
-.qra-toast__total {
-  display: flex;
-  flex: 0 0 auto;
-  flex-direction: column;
-  align-items: flex-end;
-  margin-left: auto;
-  padding-left: 13px;
-  border-left: 1px solid rgb(var(--paper-rgb) / 0.1);
-}
-
-.qra-toast__totalvalue {
-  font-family: var(--font-mono);
-  font-size: 1rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  color: var(--positive);
-  text-shadow: 0 0 14px rgba(32, 201, 151, 0.45);
-}
-
-.qra-toast__totallabel {
-  font-size: 0.54rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--paper-faint);
-}
-
-/* Unlocks and streaks are the two moments that should read differently. */
-.qra-toast[data-kind="unlock"] {
-  border-color: rgba(32, 201, 151, 0.45);
-  box-shadow:
-    0 24px 60px -24px rgba(0, 0, 0, 0.92),
-    0 0 34px -8px rgba(32, 201, 151, 0.5),
-    0 0 0 1px rgba(32, 201, 151, 0.14) inset;
-}
-
-.qra-toast[data-kind="unlock"] .qra-toast__glyph {
-  color: var(--positive);
-  text-shadow: 0 0 14px rgba(32, 201, 151, 0.8);
-}
-
-.qra-toast[data-kind="streak"] {
-  border-color: rgb(var(--brand-300-rgb) / 0.5);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .qra-rail__fill {
     transition: none;
-  }
-
-  .qra-toast,
-  .qra-toast[data-leaving="true"] {
-    animation: none;
-  }
-
-  .qra-toast__glyph {
-    animation: none;
   }
 
   /* The parallax is gated in JS; these are the purely decorative passes. */

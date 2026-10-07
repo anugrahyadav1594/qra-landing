@@ -57,11 +57,23 @@ const SEEN_KEY = "qra-loader-seen";
  * before its own hard ceiling — a number it should not have to guess at.
  */
 export const INTRO_TIMING = {
+  /**
+   * The loading screen that runs *before* the opening.
+   *
+   * A separate beat, not a replacement: the field boots, reports that it is
+   * ready, and only then does the opening sequence begin. The whole sequence
+   * is shifted by this amount in the stylesheet, so nothing in it is shortened
+   * to make room.
+   */
+  boot: 1500,
   full: 2600,
   reduced: 520,
   /** Hard ceiling: whatever happens, the overlay is gone by now. */
-  timeout: 3400,
+  timeout: 5400,
 } as const;
+
+/** Boot plus opening — how long the overlay is actually up. */
+export const INTRO_TOTAL = INTRO_TIMING.boot + INTRO_TIMING.full;
 
 /**
  * When the hero starts to arrive.
@@ -71,7 +83,7 @@ export const INTRO_TIMING = {
  * screen has finished opening. Left at full stagger it would not even begin
  * until the curtains were done, and the parting would reveal a half-built page.
  */
-export const INTRO_HERO_DELAY = INTRO_TIMING.full - 1200;
+export const INTRO_HERO_DELAY = INTRO_TOTAL - 1200;
 
 /** The hero's cascade, compressed for the length of the opening. */
 export const INTRO_STAGGER = 0.45;
@@ -83,7 +95,7 @@ export const INTRO_STAGGER = 0.45;
  * the mark flying towards it arrives, which puts two logos on screen at once.
  * It waits, so the arrival reads as the mark becoming the navbar's.
  */
-export const INTRO_MARK_DELAY = INTRO_TIMING.full - 450;
+export const INTRO_MARK_DELAY = INTRO_TOTAL - 450;
 
 /** How the browser should treat this visit. */
 export type IntroMode = "play" | "skip" | "reduce";
@@ -103,49 +115,6 @@ export const INTRO_BOOTSTRAP =
   `else if(sessionStorage.getItem(n)==="1"){d.setAttribute("${INTRO_ATTRIBUTE}","skip");}` +
   `else{play();}` +
   `}catch(e){d.setAttribute("${INTRO_ATTRIBUTE}","skip");}})();`;
-
-/** Two rings, in the same coordinate space as the lines. */
-const RINGS = [
-  { radius: 132, className: "qra-loader__ring qra-loader__ring--inner", at: 0.34 },
-  { radius: 236, className: "qra-loader__ring qra-loader__ring--outer", at: 0.44 },
-];
-
-/** Guides at a quarter and three quarters of the field. */
-const GUIDES = [0.25, 0.75];
-
-/** Points settle where the guides cross the axes (plus the guide corners). */
-const POINTS: Array<[number, number]> = [
-  [0.5, 0.25],
-  [0.5, 0.75],
-  [0.25, 0.5],
-  [0.75, 0.5],
-  [0.25, 0.25],
-  [0.75, 0.25],
-  [0.25, 0.75],
-  [0.75, 0.75],
-];
-
-/** Twelve ticks on the instrument dial, like graduations on a lens. */
-const TICKS = Array.from({ length: 12 }, (_, index) => index * 30);
-
-/**
- * Ambient motes drifting in the field.
- *
- * Positions come from a fixed low-discrepancy sequence rather than from
- * `Math.random`, so the server and the client lay out exactly the same sky —
- * a random field here would be a hydration mismatch on every page load.
- */
-const PARTICLES = Array.from({ length: 34 }, (_, index) => {
-  const golden = (index * 0.6180339887498949) % 1;
-  const silver = (index * 0.7548776662466927) % 1;
-  return {
-    left: 3 + golden * 94,
-    top: 4 + silver * 92,
-    size: 1 + (index % 3),
-    delay: (index % 12) * 0.28,
-    duration: 4.2 + (index % 5) * 1.1,
-  };
-});
 
 /**
  * Where an element sits once its own entrance transform has resolved.
@@ -226,7 +195,7 @@ export function QRALoader() {
       handoff.style.setProperty("--handoff-x", `${Math.round(to.x - from.x)}px`);
       handoff.style.setProperty("--handoff-y", `${Math.round(to.y - from.y)}px`);
       handoff.style.setProperty("--handoff-scale", (to.height / from.height).toFixed(3));
-    }, INTRO_TIMING.full * 0.4);
+    }, INTRO_TIMING.boot + INTRO_TIMING.full * 0.4);
 
     return () => window.clearTimeout(measure);
   }, [mode]);
@@ -247,7 +216,7 @@ export function QRALoader() {
 
     // The overlay is removed from the DOM as soon as it has finished; the timer
     // is a hard ceiling so a throttled tab can never leave the site covered.
-    const duration = resolved === "reduce" ? INTRO_TIMING.reduced : INTRO_TIMING.full;
+    const duration = resolved === "reduce" ? INTRO_TIMING.reduced : INTRO_TOTAL;
     const finish = () => {
       try {
         sessionStorage.setItem(SEEN_KEY, "1");
@@ -281,111 +250,20 @@ export function QRALoader() {
       data-testid="qra-loader"
     >
       <div className="qra-loader__stage">
-        {/* The sky the sequence is staged against. */}
-        <div className="qra-loader__sky" aria-hidden="true">
-          {PARTICLES.map((particle, index) => (
-            <span
-              key={index}
-              className="qra-loader__mote"
-              style={{
-                left: `${particle.left.toFixed(2)}%`,
-                top: `${particle.top.toFixed(2)}%`,
-                "--size": `${particle.size}px`,
-                animationDelay: `${particle.delay.toFixed(2)}s`,
-                animationDuration: `${particle.duration.toFixed(2)}s`,
-              } as React.CSSProperties}
-            />
-          ))}
-        </div>
-
-        {/* The seam of light the whole opening comes out of. */}
-        <div className="qra-loader__horizon" aria-hidden="true">
-          <span className="qra-loader__beam qra-loader__beam--up" />
-          <span className="qra-loader__beam qra-loader__beam--down" />
-        </div>
-        <div className="qra-loader__bloom" aria-hidden="true" />
-
-        {/* The coordinate system that forms around the logo. */}
-        <div className="qra-loader__structure">
-          <svg
-            className="qra-loader__axes"
-            viewBox="0 0 1000 1000"
-            focusable="false"
-            aria-hidden="true"
-          >
-            {/* The shockwave: one expanding ring, gone before the axes land. */}
-            <circle className="qra-loader__shock" cx="500" cy="500" r="120" />
-
-            {RINGS.map((ring) => (
-              <circle
-                key={ring.radius}
-                className={ring.className}
-                cx="500"
-                cy="500"
-                r={ring.radius}
-                style={{
-                  "--circ": `${Math.round(2 * Math.PI * ring.radius)}`,
-                  animationDelay: `calc(var(--loader-dur) * ${ring.at})`,
-                } as React.CSSProperties}
-              />
-            ))}
-
-            {/* The instrument dial: dashed, and turning the whole time. */}
-            <circle className="qra-loader__dial" cx="500" cy="500" r="176" />
-
-            {TICKS.map((angle) => (
-              <line
-                key={angle}
-                className="qra-loader__tick"
-                x1="500"
-                y1="284"
-                x2="500"
-                y2="298"
-                transform={`rotate(${angle} 500 500)`}
-                style={{
-                  animationDelay: `calc(var(--loader-dur) * 0.4 + ${(angle / 360) * 260}ms)`,
-                }}
-              />
-            ))}
-
-            <line className="qra-loader__axis qra-loader__axis--h" x1="0" y1="500" x2="1000" y2="500" />
-            <line className="qra-loader__axis qra-loader__axis--v" x1="500" y1="0" x2="500" y2="1000" />
-
-            {GUIDES.map((position) => (
-              <line
-                key={`h${position}`}
-                className="qra-loader__guide qra-loader__guide--h"
-                x1="0"
-                y1={position * 1000}
-                x2="1000"
-                y2={position * 1000}
-              />
-            ))}
-            {GUIDES.map((position) => (
-              <line
-                key={`v${position}`}
-                className="qra-loader__guide qra-loader__guide--v"
-                x1={position * 1000}
-                y1="0"
-                x2={position * 1000}
-                y2="1000"
-              />
-            ))}
-
-            {POINTS.map(([x, y], index) => (
-              <circle
-                key={`${x}-${y}`}
-                className="qra-loader__point"
-                cx={x * 1000}
-                cy={y * 1000}
-                r="3.5"
-                style={{ animationDelay: `calc(var(--loader-dur) * 0.5 + ${index * 34}ms)` }}
-              />
-            ))}
-          </svg>
-
-          {/* The reading that sweeps the field and leaves the points behind. */}
-          <span className="qra-loader__scan" aria-hidden="true" />
+        {/* THE LOADING SCREEN.
+            It runs first, on its own clock, and is gone before the opening
+            begins. The sequence behind it is shifted by --loader-boot rather
+            than shortened, so this is a beat added in front of the opening
+            and never a replacement for it. */}
+        <div className="qra-loader__boot" aria-hidden="true">
+          <span className="qra-loader__boot-label">Loading</span>
+          <span className="qra-loader__boot-track">
+            <span className="qra-loader__boot-fill" />
+          </span>
+          <span className="qra-loader__boot-status">
+            <span className="qra-loader__boot-dot" />
+            Preparing the market
+          </span>
         </div>
 
         {/* The anchor. The inner span carries the departure: the mark travels
@@ -395,7 +273,7 @@ export function QRALoader() {
           <span className="qra-loader__handoff" ref={handoffRef}>
             <span className="qra-loader__logo-frame">
               <Logo className="qra-loader__logo" />
-              <span className="qra-loader__sheen" aria-hidden="true" />
+              <span className="qra-loader__writehead" aria-hidden="true" />
             </span>
           </span>
         </div>
@@ -407,12 +285,12 @@ export function QRALoader() {
               <span
                 key={`${character}-${index}`}
                 className="qra-loader__char"
-                style={{ animationDelay: `calc(var(--loader-dur) * 0.42 + ${index * 26}ms)` }}
+                style={{ animationDelay: `calc(var(--loader-boot) + var(--loader-dur) * 0.42 + ${index * 26}ms)` }}
               >
                 {character}
               </span>
             ))}
-            <span className="qra-loader__sweep" aria-hidden="true" />
+            <span className="qra-loader__writehead qra-loader__writehead--name" aria-hidden="true" />
           </p>
           <span className="qra-loader__rule" aria-hidden="true" />
           <p className="qra-loader__tagline">{LOADER.tagline}</p>
@@ -424,7 +302,7 @@ export function QRALoader() {
             <span
               key={word}
               className="qra-loader__readout-word"
-              style={{ animationDelay: `calc(var(--loader-dur) * 0.52 + ${index * 110}ms)` }}
+              style={{ animationDelay: `calc(var(--loader-boot) + var(--loader-dur) * 0.52 + ${index * 110}ms)` }}
             >
               {word}
             </span>

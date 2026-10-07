@@ -17,6 +17,7 @@ import {
   INTRO_MARK_DELAY,
   INTRO_STAGGER,
   INTRO_TIMING,
+  INTRO_TOTAL,
 } from "@/components/motion/QRALoader";
 import { Cursor, toneFor, type CursorTone } from "@/components/motion/Cursor";
 import { ProductPreview } from "@/components/ProductPreview";
@@ -110,40 +111,38 @@ describe("Loader", () => {
     // The sequence timer fires at the end of the opening, well inside the hard
     // ceiling that exists only for a throttled tab.
     await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, INTRO_TIMING.full + 120));
+      await new Promise((resolve) => setTimeout(resolve, INTRO_TOTAL + 120));
     });
     expect(sessionStorage.getItem("qra-loader-seen")).toBe("1");
     expect(root().getAttribute(INTRO_ATTRIBUTE)).toBeNull();
   }, 9000);
 
-  it("stages the whole opening: light, structure, wordmark, then the parting", () => {
+  it("stages the whole opening: boot, mark, wordmark, then the parting", () => {
     root().setAttribute(INTRO_ATTRIBUTE, "play");
     const { container } = render(<QRALoader />);
 
-    // The seam that splits, the bloom the mark comes out of, the sky behind it.
-    expect(container.querySelectorAll(".qra-loader__beam")).toHaveLength(2);
-    expect(container.querySelector(".qra-loader__bloom")).not.toBeNull();
-    expect(container.querySelectorAll(".qra-loader__mote").length).toBeGreaterThan(10);
+    // The loading screen runs in front of the opening — a label, a track that
+    // fills, and a status line. It is a beat added before the sequence, so the
+    // sequence behind it has to still be whole.
+    const boot = container.querySelector(".qra-loader__boot");
+    expect(boot).not.toBeNull();
+    expect(boot!.querySelector(".qra-loader__boot-fill")).not.toBeNull();
+    expect(boot!.querySelector(".qra-loader__boot-status")).not.toBeNull();
 
-    // The structure: a shockwave, both rings, the turning dial, its graduations,
-    // the axes, and a reading wherever the guides cross them.
-    expect(container.querySelector(".qra-loader__shock")).not.toBeNull();
-    expect(container.querySelectorAll(".qra-loader__ring")).toHaveLength(2);
-    expect(container.querySelector(".qra-loader__dial")).not.toBeNull();
-    expect(container.querySelectorAll(".qra-loader__tick").length).toBe(12);
-    expect(container.querySelectorAll(".qra-loader__axis")).toHaveLength(2);
-    expect(container.querySelectorAll(".qra-loader__point").length).toBe(8);
-
-    // The mark is uncovered by an iris and crossed by one pass of light, and it
-    // leaves for the navbar rather than dissolving.
+    // The mark is uncovered by an iris and crossed by a cobalt write-head, and
+    // it leaves for the navbar rather than dissolving.
     expect(container.querySelector(".qra-loader__logo-frame")).not.toBeNull();
-    expect(container.querySelector(".qra-loader__sheen")).not.toBeNull();
     expect(container.querySelector(".qra-loader__handoff")).not.toBeNull();
 
-    // The name is written through a bar of light, ruled, and supported by the
-    // line the company is built on.
-    expect(container.querySelector(".qra-loader__sweep")).not.toBeNull();
+    // The name is written under a travelling write-head — on the site's own
+    // accent, not the white patch it replaced — then ruled and supported.
+    expect(container.querySelector(".qra-loader__writehead--name")).not.toBeNull();
     expect(container.querySelector(".qra-loader__rule")).not.toBeNull();
+
+    // The busy instrument geometry is gone: no axes, rings, dial or sky.
+    for (const gone of ["__axes", "__ring", "__dial", "__tick", "__sky", "__mote", "__beam"]) {
+      expect(container.querySelector(`.qra-loader${gone}`)).toBeNull();
+    }
 
     // And the ending is an opening: two halves, left and right.
     const curtains = container.querySelectorAll(".qra-loader__curtain");
@@ -194,7 +193,7 @@ describe("Loader", () => {
     // The ending reveals the hero, so the hero has to be mid-entrance across
     // the whole parting: started before the curtains move, and not finished
     // before they do. `.rise` is 900ms (var(--dur-cinematic)).
-    const curtains = INTRO_TIMING.full * 0.82;
+    const curtains = INTRO_TIMING.boot + INTRO_TIMING.full * 0.82;
     const rise = 900;
     expect(INTRO_HERO_DELAY).toBeLessThan(curtains);
     expect(INTRO_HERO_DELAY).toBeGreaterThan(curtains - rise);
@@ -242,7 +241,7 @@ describe("Loader", () => {
 
       // Measured at 40% of the sequence, before the flight begins at 72%.
       act(() => {
-        vi.advanceTimersByTime(INTRO_TIMING.full * 0.4 + 10);
+        vi.advanceTimersByTime(INTRO_TIMING.boot + INTRO_TIMING.full * 0.4 + 10);
       });
 
       // Centre of the navbar logo (68, 32) minus centre of the mark (700, 400),
@@ -263,7 +262,7 @@ describe("Loader", () => {
       root().setAttribute(INTRO_ATTRIBUTE, "play");
       const { container } = render(<QRALoader />);
       act(() => {
-        vi.advanceTimersByTime(INTRO_TIMING.full * 0.4 + 10);
+        vi.advanceTimersByTime(INTRO_TIMING.boot + INTRO_TIMING.full * 0.4 + 10);
       });
       // No navbar mark on this page: no variables written, and the fallback
       // coordinates in the keyframe still land the mark somewhere sane.
@@ -597,7 +596,7 @@ describe("intro bootstrap (runs before first paint)", () => {
     expect(root().style.getPropertyValue("--intro-mark-delay")).toBe(`${INTRO_MARK_DELAY}ms`);
     expect(INTRO_MARK_DELAY).toBeGreaterThan(INTRO_HERO_DELAY);
     // ...and it is in place by the time the flight ends.
-    expect(INTRO_MARK_DELAY).toBeLessThanOrEqual(INTRO_TIMING.full);
+    expect(INTRO_MARK_DELAY).toBeLessThanOrEqual(INTRO_TOTAL);
   });
 
   it("skips on a later visit in the same session", () => {

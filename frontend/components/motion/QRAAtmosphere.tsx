@@ -107,7 +107,7 @@ export function QRAAtmosphere({
    *
    * The layer is inset by 6% on every side, which is headroom bought for
    * exactly this: as a section passes, its backdrop drifts the other way by up
-   * to 3%, so the page has depth instead of sliding past as flat panels.
+   * 4.5%, so the page has depth instead of sliding past as flat panels.
    *
    * It is deliberately the most guarded motion on the site, because a
    * full-width layer is the most expensive thing to move:
@@ -141,7 +141,7 @@ export function QRAAtmosphere({
       // 0 as the section enters from below, 1 as it leaves above.
       const t = (window.scrollY + window.innerHeight - top) / span;
       const shift = Math.max(-1, Math.min(1, (t - 0.5) * 2));
-      drift.style.setProperty("--atmosphere-y", `${(shift * 3).toFixed(3)}%`);
+      drift.style.setProperty("--atmosphere-y", `${(shift * 4.5).toFixed(3)}%`);
     };
 
     const schedule = () => {
