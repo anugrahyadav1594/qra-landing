@@ -96,11 +96,83 @@ export function QRAAtmosphere({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const driftRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playVideo, setPlayVideo] = useState(false);
   const [armed, setArmed] = useState(false);
 
   const loop = LOOPS[variant];
+
+  /* Scroll parallax on the environment.
+   *
+   * The layer is inset by 6% on every side, which is headroom bought for
+   * exactly this: as a section passes, its backdrop drifts the other way by up
+   * to 3%, so the page has depth instead of sliding past as flat panels.
+   *
+   * It is deliberately the most guarded motion on the site, because a
+   * full-width layer is the most expensive thing to move:
+   *   - skipped entirely for reduced motion and low-tier devices;
+   *   - the listener is attached only while the section is on screen, so seven
+   *     backdrops a page and a half below the fold have no listener at all;
+   *   - section bounds are cached and only re-measured on resize, so the scroll
+   *     handler reads nothing and forces no layout;
+   *   - the only write is a custom property feeding a translate3d, which stays
+   *     on the compositor. */
+  useEffect(() => {
+    if (prefersReducedMotion() || deviceTier() === "low") return;
+    const scope = ref.current;
+    const drift = driftRef.current;
+    if (!scope || !drift) return;
+
+    let frame = 0;
+    let top = 0;
+    let height = 0;
+
+    const cache = () => {
+      const rect = scope.getBoundingClientRect();
+      top = rect.top + window.scrollY;
+      height = rect.height;
+    };
+
+    const measure = () => {
+      frame = 0;
+      const span = height + window.innerHeight;
+      if (span <= 0) return;
+      // 0 as the section enters from below, 1 as it leaves above.
+      const t = (window.scrollY + window.innerHeight - top) / span;
+      const shift = Math.max(-1, Math.min(1, (t - 0.5) * 2));
+      drift.style.setProperty("--atmosphere-y", `${(shift * 3).toFixed(3)}%`);
+    };
+
+    const schedule = () => {
+      if (!frame) frame = window.requestAnimationFrame(measure);
+    };
+
+    const start = () => {
+      cache();
+      measure();
+      window.addEventListener("scroll", schedule, { passive: true });
+      window.addEventListener("resize", cache);
+    };
+    const stop = () => {
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", cache);
+      if (frame) {
+        window.cancelAnimationFrame(frame);
+        frame = 0;
+      }
+    };
+
+    const unsubscribe = observeOnScreen(scope, (onScreen) => {
+      if (onScreen) start();
+      else stop();
+    });
+
+    return () => {
+      stop();
+      unsubscribe();
+    };
+  }, []);
 
   // Playback is a privilege, not an assumption: a desktop-class device, a
   // connection that is not deliberately slow, and motion that has not been
@@ -153,7 +225,7 @@ export function QRAAtmosphere({
         } as React.CSSProperties
       }
     >
-      <div className="qra-atmosphere__drift">
+      <div ref={driftRef} className="qra-atmosphere__drift">
         {loop ? (
           <>
             {/* The poster is always present, so there is something to see

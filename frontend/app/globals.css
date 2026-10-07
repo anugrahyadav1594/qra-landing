@@ -15,6 +15,55 @@
   --dur-standard: 400ms;
   --dur-smooth: 600ms;
   --dur-cinematic: 900ms;
+
+  /* ── The palette, mirrored from tailwind.config.ts ──────────────────
+   *
+   * Tailwind generates its utilities from the config, but the hand-written
+   * rules in this file cannot reach those tokens — they need the same values
+   * as custom properties. Without these, every `rgb(var(--brand-500-rgb) / .4)`
+   * below is an invalid declaration that the browser silently drops, which
+   * means an unstyled border and no background rather than an error.
+   *
+   * The `-rgb` variants hold bare triplets so a rule can pick its own alpha
+   * with the modern `rgb(R G B / A)` syntax instead of hard-coding a fourth
+   * channel into every colour it touches. */
+
+  --ink-950: #070a0f;
+  --ink-950-rgb: 7 10 15;
+  --ink-900: #0d131d;
+  --ink-900-rgb: 13 19 29;
+  --ink-850: #111925;
+  --ink-800: #151e2a;
+  --ink-750: #1a2334;
+  --ink-700: #222c3e;
+
+  --paper: #f5f7fa;
+  --paper-rgb: 245 247 250;
+  --paper-dim: #9aa8ba;
+  --paper-mute: #8b99ab;
+  --paper-faint: #6f7d91;
+
+  --brand-300: #9db4ff;
+  --brand-300-rgb: 157 180 255;
+  --brand-400: #6f94ff;
+  --brand-500: #3f6fff;
+  --brand-500-rgb: 63 111 255;
+  --brand-600: #2f58e0;
+  --brand-700: #2545be;
+
+  --positive: #20c997;
+  --positive-rgb: 32 201 151;
+  --amber: #f2b84b;
+  --danger: #ff5b6e;
+
+  --line: rgba(245, 247, 250, 0.1);
+  --line-strong: rgba(245, 247, 250, 0.18);
+  --line-strong-rgb: 245 247 250;
+  --line-faint: rgba(245, 247, 250, 0.06);
+
+  --font-display:
+    "Space Grotesk Variable", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 html {
@@ -1937,10 +1986,11 @@ html[data-cursor="custom"] * {
 .qra-atmosphere__drift {
   position: absolute;
   /* Inset slightly, so a cover-fit image has room to breathe without the edge
-     showing. No `will-change`: nothing moves this any more, and promoting seven
-     full-width layers for no reason is exactly the sort of cost that made the
-     page stutter. */
+     showing — that headroom is what the scroll parallax spends. No
+     `will-change`: the layer is only promoted while it is actually moving, and
+     only for the section on screen. */
   inset: -6%;
+  transform: translate3d(0, var(--atmosphere-y, 0%), 0);
 }
 
 .qra-atmosphere__image,
@@ -2395,18 +2445,31 @@ html[data-cursor="custom"] * {
 
 /* ── Section transition (components/motion/QRASectionTransition.tsx) ── */
 
+/* Chapter numbering, free: every transition increments one counter, so the
+   label reads "03 · Measured" without a single prop being threaded through nine
+   sections. The reset lives on <body>, which is one per document — so the count
+   starts again on each page rather than running on from the last one. */
+body {
+  counter-reset: qra-chapter;
+}
+
 .qra-transition {
   position: relative;
   margin-bottom: 3rem;
+  counter-increment: qra-chapter;
 }
 
 .qra-transition__line {
+  position: relative;
   display: block;
   flex: 1;
   height: 1px;
   background: linear-gradient(90deg, rgba(245, 247, 250, 0.22), rgba(245, 247, 250, 0.05));
   transform: scaleX(0);
   transform-origin: left center;
+  /* The sweep that follows the draw is clipped to the rule, so it reads as light
+     travelling down the line rather than as a bar escaping it. */
+  overflow: hidden;
 }
 
 .qra-transition__node {
@@ -2430,6 +2493,49 @@ html[data-cursor="custom"] * {
   text-transform: uppercase;
   color: rgba(154, 168, 186, 0.6);
   opacity: 0;
+}
+
+/* The chapter number, in the accent, ahead of the word. */
+.qra-transition__label::before {
+  content: counter(qra-chapter, decimal-leading-zero) "  ·  ";
+  color: var(--brand-400);
+  opacity: 0.85;
+}
+
+/* Light travelling the rule once the draw has finished — the one moment the
+   connective tissue between sections does something rather than just existing. */
+[data-drawn="true"] .qra-transition__line::after {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 22%;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(157, 180, 255, 0.9),
+    rgba(63, 111, 255, 0.6),
+    transparent
+  );
+  animation: transition-sweep 1500ms var(--ease) 760ms both;
+}
+
+@keyframes transition-sweep {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  82% {
+    opacity: 1;
+  }
+  to {
+    transform: translateX(455%);
+    opacity: 0;
+  }
 }
 
 /* Drawn once, when the rule is reached. `translateX(calc(100% ...))` would be
@@ -2801,6 +2907,62 @@ section[data-tone="deep"]::after {
   box-shadow:
     0 28px 70px -32px rgba(63, 111, 255, 0.28),
     0 1px 0 rgba(245, 247, 250, 0.06) inset;
+}
+
+/* The concept screen powers on once, when it is reached — the interface
+   arriving rather than the image merely appearing. A band of light crosses it
+   while the picture resolves; both are transform and opacity only, so the one
+   moment meant to impress cannot be the one that stutters. */
+.experience-frame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  height: 34%;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    180deg,
+    transparent,
+    rgba(157, 180, 255, 0.14),
+    rgba(63, 111, 255, 0.09),
+    transparent
+  );
+}
+
+.qra-reveal.is-visible .experience-frame::after {
+  animation: screen-scan 1600ms var(--ease) 280ms both;
+}
+
+.qra-reveal.is-visible .experience-frame > img {
+  animation: screen-on 760ms var(--ease) both;
+}
+
+@keyframes screen-scan {
+  from {
+    transform: translate3d(0, -120%, 0);
+    opacity: 0;
+  }
+  14% {
+    opacity: 1;
+  }
+  78% {
+    opacity: 1;
+  }
+  to {
+    transform: translate3d(0, 320%, 0);
+    opacity: 0;
+  }
+}
+
+@keyframes screen-on {
+  from {
+    opacity: 0;
+    transform: scale(1.012);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* The two doors into the product. Quiet at rest, lit when approached. */
@@ -3456,4 +3618,356 @@ section[data-tone="deep"]::after {
   text-transform: uppercase;
   color: #9db4ff;
   white-space: nowrap;
+}
+
+/* ── The level map: a fixed progression HUD on the right edge ─────────
+ *
+ * Dots on a track, the track filling as you descend, a percentage that
+ * ticks. Labels stay out of the way until a node is active or hovered, so
+ * the instrument is a column of dots at rest and a table of contents when
+ * you ask it to be.
+ *
+ * Only the fill moves, and it moves by clip-path so the glow is never
+ * squashed by a scaleY. Nothing here is written from React. */
+
+.qra-rail {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  z-index: 30;
+  display: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+/* Wide screens only: below this the rail would sit on top of the copy. */
+@media (min-width: 1280px) {
+  .qra-rail {
+    display: flex;
+  }
+}
+
+.qra-rail__head {
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+  font-family: var(--font-mono);
+  color: var(--brand-300);
+  text-shadow: 0 0 14px rgba(63, 111, 255, 0.55);
+}
+
+.qra-rail__pct {
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.qra-rail__pctsign {
+  font-size: 0.58rem;
+  opacity: 0.6;
+}
+
+.qra-rail__map {
+  position: relative;
+}
+
+.qra-rail__track {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  right: 3px;
+  width: 1px;
+  background: rgb(var(--paper-rgb) / 0.1);
+}
+
+.qra-rail__fill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, var(--brand-500), var(--brand-300));
+  box-shadow: 0 0 10px 1px rgba(63, 111, 255, 0.65);
+  clip-path: inset(0 0 calc((1 - var(--rail-progress, 0)) * 100%) 0);
+  transition: clip-path 0.24s linear;
+}
+
+.qra-rail__nodes {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.qra-rail__node {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 8px 0;
+  text-decoration: none;
+  pointer-events: auto;
+}
+
+.qra-rail__dot {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border: 1px solid rgb(var(--paper-rgb) / 0.26);
+  border-radius: 999px;
+  background: var(--ink-900);
+  transition:
+    width 0.4s var(--ease),
+    height 0.4s var(--ease),
+    background 0.4s var(--ease),
+    border-color 0.4s var(--ease),
+    box-shadow 0.4s var(--ease);
+}
+
+.qra-rail__node[data-passed="true"] .qra-rail__dot {
+  background: rgb(var(--brand-500-rgb) / 0.5);
+  border-color: rgb(var(--brand-500-rgb) / 0.6);
+}
+
+.qra-rail__node[data-active="true"] .qra-rail__dot {
+  width: 11px;
+  height: 11px;
+  background: var(--brand-400);
+  border-color: var(--brand-300);
+  box-shadow:
+    0 0 0 4px rgba(63, 111, 255, 0.18),
+    0 0 16px 2px rgba(63, 111, 255, 0.75);
+}
+
+/* Absolutely positioned so an invisible label never becomes a click target
+   over the page content beside the rail. */
+.qra-rail__label {
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  padding: 3px 9px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 0.6rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgb(var(--paper-rgb) / 0.42);
+  opacity: 0;
+  transform: translate(6px, -50%);
+  pointer-events: none;
+  transition:
+    opacity 0.36s var(--ease),
+    transform 0.36s var(--ease),
+    color 0.36s var(--ease),
+    border-color 0.36s var(--ease);
+}
+
+.qra-rail__index {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  color: var(--brand-400);
+  opacity: 0.7;
+}
+
+.qra-rail__node:hover .qra-rail__label,
+.qra-rail__node:focus-visible .qra-rail__label,
+.qra-rail__node[data-active="true"] .qra-rail__label {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
+.qra-rail__node[data-active="true"] .qra-rail__label {
+  color: var(--paper);
+  border-color: rgb(var(--brand-500-rgb) / 0.28);
+  background: rgb(var(--brand-500-rgb) / 0.09);
+  text-shadow: 0 0 14px rgba(111, 148, 255, 0.5);
+}
+
+/* ── The reward feed: the page's dopamine loop ───────────────────────
+ *
+ * One toast in the corner, earned by reading. Enters from below, holds,
+ * leaves upward. Only transform and opacity move, so it cannot stutter on
+ * the same frame the section behind it is revealing. */
+
+.qra-feed {
+  position: fixed;
+  left: 22px;
+  bottom: 22px;
+  z-index: 45;
+  pointer-events: none;
+}
+
+.qra-toast {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: min(370px, calc(100vw - 44px));
+  padding: 13px 17px;
+  border: 1px solid rgb(var(--brand-500-rgb) / 0.42);
+  border-radius: 12px;
+  background: linear-gradient(
+    150deg,
+    rgb(var(--ink-900-rgb) / 0.96),
+    rgb(var(--ink-950-rgb) / 0.97)
+  );
+  box-shadow:
+    0 24px 60px -24px rgba(0, 0, 0, 0.92),
+    0 0 34px -8px rgba(63, 111, 255, 0.5),
+    0 0 0 1px rgba(120, 158, 255, 0.12) inset;
+  backdrop-filter: blur(10px);
+  animation: toast-in 0.5s var(--ease) both;
+}
+
+.qra-toast[data-leaving="true"] {
+  animation: toast-out 0.42s var(--ease) both;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0) scale(0.98);
+  }
+}
+
+.qra-toast__glyph {
+  flex: 0 0 auto;
+  font-size: 1.05rem;
+  line-height: 1;
+  color: var(--brand-300);
+  text-shadow: 0 0 14px rgba(111, 148, 255, 0.8);
+  animation: toast-breathe 2.6s var(--ease) infinite;
+}
+
+@keyframes toast-breathe {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
+}
+
+.qra-toast__body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.qra-toast__title {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--paper);
+}
+
+.qra-toast__detail {
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: var(--paper-dim);
+}
+
+.qra-toast__total {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: auto;
+  padding-left: 13px;
+  border-left: 1px solid rgb(var(--paper-rgb) / 0.1);
+}
+
+.qra-toast__totalvalue {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--positive);
+  text-shadow: 0 0 14px rgba(32, 201, 151, 0.45);
+}
+
+.qra-toast__totallabel {
+  font-size: 0.54rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--paper-faint);
+}
+
+/* Unlocks and streaks are the two moments that should read differently. */
+.qra-toast[data-kind="unlock"] {
+  border-color: rgba(32, 201, 151, 0.45);
+  box-shadow:
+    0 24px 60px -24px rgba(0, 0, 0, 0.92),
+    0 0 34px -8px rgba(32, 201, 151, 0.5),
+    0 0 0 1px rgba(32, 201, 151, 0.14) inset;
+}
+
+.qra-toast[data-kind="unlock"] .qra-toast__glyph {
+  color: var(--positive);
+  text-shadow: 0 0 14px rgba(32, 201, 151, 0.8);
+}
+
+.qra-toast[data-kind="streak"] {
+  border-color: rgb(var(--brand-300-rgb) / 0.5);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qra-rail__fill {
+    transition: none;
+  }
+
+  .qra-toast,
+  .qra-toast[data-leaving="true"] {
+    animation: none;
+  }
+
+  .qra-toast__glyph {
+    animation: none;
+  }
+
+  /* The parallax is gated in JS; these are the purely decorative passes. */
+  .qra-atmosphere__drift {
+    transform: none;
+  }
+
+  [data-drawn="true"] .qra-transition__line::after,
+  .qra-reveal.is-visible .experience-frame::after,
+  .qra-reveal.is-visible .experience-frame > img {
+    animation: none;
+  }
+
+  .experience-frame::after {
+    display: none;
+  }
+
+  .qra-reveal.is-visible .experience-frame > img {
+    opacity: 1;
+  }
 }

@@ -42,6 +42,24 @@ export const HOME_SECTIONS = [
 
 export type HomeSectionId = (typeof HOME_SECTIONS)[number];
 
+/**
+ * Short HUD names for the progress rail — the level map's node labels.
+ *
+ * Deliberately two or three words each: the rail is a glanceable instrument,
+ * not a table of contents, and a label that wraps is a label nobody reads.
+ */
+export const SECTION_LABELS: Record<HomeSectionId, string> = {
+  hero: "Start",
+  problem: "The gap",
+  "how-it-works": "The loop",
+  experience: "Experience",
+  "research-lab": "Research",
+  "for-learners": "Learners",
+  why: "Why QRA",
+  trust: "Trust",
+  waitlist: "Early access",
+};
+
 export type NavLink = {
   href: string;
   label: string;
