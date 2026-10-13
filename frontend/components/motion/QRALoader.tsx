@@ -3,18 +3,36 @@
 /**
  * THE QRA OPENING SEQUENCE.
  *
- * The logo is the anchor and the system builds around it — this is the site's
- * thesis performed in two seconds: something clear, then structure, then
- * information, then the product.
+ * Two seconds of arrival, built so the mark is the brightest thing on the
+ * screen and the whole frame resolves out of it. The site's thesis performed
+ * once: a clear signal, then structure, then the name, then the product.
  *
- *   0.00s  a near-black field; only the environment is alive
- *   0.25s  the logo arrives — opacity, scale, blur and a short lift, together
- *   0.60s  a ring draws around it, then coordinate lines extend from it
- *   0.90s  data points settle where the lines cross; the wordmark resolves
- *   1.30s  the structure expands outward, and the logo travels into the navbar
+ *   0.00s  black; one point of light at the centre begins to gather
+ *   0.17s  the bloom punches out — the screen is briefly lit
+ *   0.25s  the mark arrives LARGE and overscaled, then settles to its size
+ *   0.38s  a band of light sweeps across the mark: the specular beat
+ *   0.45s  shockwave rings expand outward from behind the mark
+ *   0.55s  coordinate lines extend; points light where they cross
+ *   0.95s  QUANTRELIC rises, and its tracking tightens into place
+ *   1.25s  the line the company is built on resolves beneath it
+ *   1.33s  the mark leaves for the navbar, taking the composition with it
  *   1.90s  the hero is below it, already in place
  *
- * Two rules shape the implementation:
+ * Why it is hard to look away from, in three decisions:
+ *
+ * 1. THE MARK STARTS BIGGER THAN ITS RESTING SIZE. It enters overscaled and
+ *    settles, so the eye follows a *reduction* — arrival rather than fade-in.
+ *    A logo that grows into place reads as a slide; one that contracts into
+ *    place reads as a landing.
+ * 2. THE LIGHT SWEEP. A second copy of the mark is masked to a narrow diagonal
+ *    band and animated across it, so the mark catches a specular highlight the
+ *    way a real surface would. It is the single most expensive-looking thing on
+ *    the page and it costs one mask animation.
+ * 3. THE RINGS EXPAND RATHER THAN DRAW. They read as a shockwave from the mark
+ *    instead of an outline being traced, which is what gives the two seconds a
+ *    sense of force.
+ *
+ * Three rules shape the implementation:
  *
  * 1. NOTHING MAY TRAP THE PAGE. The overlay is server-rendered (so the hero
  *    never flashes first) but it carries its own CSS-only dismissal, so a
@@ -26,6 +44,10 @@
  *    overlay accordingly — no hydration-dependent flicker. A returning visitor
  *    is skipped entirely rather than given a shorter sequence: the opening is a
  *    first impression, not a toll on every page in a session.
+ * 3. IT IS STILL ONE AND A HALF TO TWO SECONDS. Every element below is a
+ *    fraction of `--loader-dur`, so the whole sequence can be retimed from that
+ *    one value. Motion is CSS only: no frame loop, no state, nothing that can
+ *    stutter on a slow machine.
  */
 
 import { useEffect, useState } from "react";
@@ -59,10 +81,15 @@ export const INTRO_BOOTSTRAP =
   `else{d.setAttribute("${INTRO_ATTRIBUTE}","play");d.style.setProperty("--intro-delay",f+"ms");}` +
   `}catch(e){d.setAttribute("${INTRO_ATTRIBUTE}","skip");}})();`;
 
+/** The mark's resting size. It enters at `MARK_ENTRY_SCALE` and settles here. */
+const MARK_HEIGHT = 132;
+const MARK_ENTRY_SCALE = 2.3;
+
 /** Two rings, in the same coordinate space as the lines. */
 const RINGS = [
   { radius: 132, className: "qra-loader__ring qra-loader__ring--inner", at: 0.31 },
-  { radius: 236, className: "qra-loader__ring qra-loader__ring--outer", at: 0.41 },
+  { radius: 236, className: "qra-loader__ring qra-loader__ring--outer", at: 0.38 },
+  { radius: 340, className: "qra-loader__ring qra-loader__ring--outer", at: 0.45 },
 ];
 
 /** Guides at a quarter and three quarters of the field. */
@@ -132,6 +159,10 @@ export function QRALoader() {
       data-testid="qra-loader"
     >
       <div className="qra-loader__stage">
+        {/* The light the whole frame resolves out of: it punches out first and
+            then settles into the halo the mark sits in. */}
+        <div className="qra-loader__bloom" aria-hidden="true" />
+
         {/* The coordinate system that forms around the logo. */}
         <div className="qra-loader__structure">
           <svg
@@ -148,7 +179,6 @@ export function QRALoader() {
                 cy="500"
                 r={ring.radius}
                 style={{
-                  "--circ": `${Math.round(2 * Math.PI * ring.radius)}`,
                   animationDelay: `calc(var(--loader-dur) * ${ring.at})`,
                 } as React.CSSProperties}
               />
@@ -191,22 +221,39 @@ export function QRALoader() {
           </svg>
         </div>
 
-        {/* The anchor. The inner span carries the departure: the mark travels
-            to the navbar's own position instead of vanishing. */}
-        <div className="qra-loader__mark">
+        {/* The anchor. Three layers of the same mark: the body, the band of
+            light that sweeps across it, and the handoff that carries it into
+            the navbar. The inner span carries the departure, so the sweep can
+            run on its own clock without being cut short. */}
+        <div
+          className="qra-loader__mark"
+          style={{
+            "--mark-height": `${MARK_HEIGHT}px`,
+            "--mark-entry-scale": MARK_ENTRY_SCALE,
+          } as React.CSSProperties}
+        >
           <span className="qra-loader__handoff">
-            <Logo className="qra-loader__logo" />
+            <span className="qra-loader__mark-body">
+              <Logo className="qra-loader__logo" />
+              {/* The sweep: a second copy of the same image, masked to a narrow
+                  diagonal band and animated across it. */}
+              <span className="qra-loader__shine" aria-hidden="true">
+                <Logo className="qra-loader__logo qra-loader__logo--shine" />
+              </span>
+            </span>
           </span>
         </div>
 
-        {/* The name, then the line the whole company is built on. */}
+        {/* The name, then the line the whole company is built on. The tracking
+            is animated on the container rather than the letters, so the word
+            tightens into place as a single gesture. */}
         <div className="qra-loader__name">
           <p className="qra-loader__name-text" aria-hidden="true">
             {LOADER.name.split("").map((character, index) => (
               <span
                 key={`${character}-${index}`}
                 className="qra-loader__char"
-                style={{ animationDelay: `calc(var(--loader-dur) * 0.5 + ${index * 28}ms)` }}
+                style={{ animationDelay: `calc(var(--loader-dur) * 0.5 + ${index * 30}ms)` }}
               >
                 {character}
               </span>

@@ -1,43 +1,51 @@
 "use client";
 
 /**
- * THE POINTER ACCENT.
+ * THE POINTER.
  *
- * Two problems with what was here before, both of them the reason it was hard to
- * use:
+ * Replaces the system pointer on this site. It is a two-tone shape, and that is
+ * the whole design: a white disc with a dark rim, both drawn at all times.
  *
- *   1. it replaced the pointer. `cursor: none` on every element means the thing
- *      that tells you where you are pointing is gone, and a lagging circle is a
- *      worse map of a screen than an arrow. The system cursor is now always
- *      visible and always exactly where the pointer is.
- *   2. it was a white dot at 90% opacity. On anything light that is invisible,
- *      and on dark it reads as a speck of dust rather than as a pointer.
+ * On the site's near-black ink the rim disappears and you see a bright disc. On
+ * a white panel the disc disappears and you see a dark ring. So the pointer
+ * *does* change colour between dark and light areas — but as a property of its
+ * own construction rather than as a guess about what is underneath it, which is
+ * what makes it dependable. Every custom cursor that fails on light surfaces,
+ * including the previous single-colour white dot in this file, fails because it
+ * has only one colour to work with.
  *
- * What this draws instead is an accent *behind* the system cursor: a ring with a
- * solid centre, white on the inside and dark on the outside, so it reads on a
- * light background and a dark one without changing colour. It settles onto
- * interactive elements by opening and tinting, which is a second, calmer signal
- * that something is clickable.
+ * The elegant alternative is `mix-blend-mode: difference` on a white shape,
+ * which mathematically returns the inverse of the backdrop. It was built first
+ * and then dropped: it renders correctly in a plain test page, but on this site
+ * the values it produced depended on how the compositor grouped the page's
+ * layered backdrops and came out mid-grey where it should have been near-white.
+ * A pointer must not be subtle about being visible, so it does not rely on a
+ * blending mode to be legible.
  *
- * It is mounted only on a fine-pointer device with motion enabled, it only ever
- * writes a transform (no layout, no repaint), and if it fails to load the browser
- * draws its own cursor exactly as it always would.
+ * Over anything clickable it opens into a ring and takes the brand colour; the
+ * disc tightens on press. The system cursor is hidden everywhere except text
+ * entry, where the I-beam is load-bearing.
+ *
+ * Cost: one element, one transform write per frame, no layout and no paint. It
+ * mounts only on a fine-pointer device with motion enabled, and if it never
+ * mounts the browser draws its own cursor exactly as it always would.
  */
 
 import { useEffect, useRef } from "react";
 
 import { isTouchDevice, prefersReducedMotion } from "@/lib/motion";
 
-const INTERACTIVE_SELECTOR = "a, button, [role='tab'], [role='button'], label, summary, [data-cursor='ring']";
+const INTERACTIVE_SELECTOR =
+  "a, button, [role='tab'], [role='button'], label, summary, [data-cursor='ring']";
 const FOCUS_SELECTOR = "[data-cursor='focus']";
 
 export function Cursor() {
-  const ringRef = useRef<HTMLDivElement>(null);
+  const dotRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (prefersReducedMotion() || isTouchDevice()) return;
-    const ring = ringRef.current;
-    if (!ring) return;
+    const dot = dotRef.current;
+    if (!dot) return;
 
     let x = window.innerWidth / 2;
     let y = window.innerHeight / 2;
@@ -48,13 +56,13 @@ export function Cursor() {
 
     const render = () => {
       frame = 0;
-      // A short, tight easing: enough to feel attached to the pointer without
-      // ever being behind it. The old value (0.28) left the ring visibly
-      // trailing, which is what made it hard to aim with.
-      x += (targetX - x) * 0.55;
-      y += (targetY - y) * 0.55;
-      ring.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) translate(-50%, -50%)`;
-      if (Math.abs(targetX - x) > 0.15 || Math.abs(targetY - y) > 0.15) {
+      // Tight enough to feel welded to the pointer. The previous version eased
+      // at 0.28 and was visibly behind the hand, which is what made it hard to
+      // aim with; at 0.6 it is never more than a pixel out.
+      x += (targetX - x) * 0.6;
+      y += (targetY - y) * 0.6;
+      dot.style.transform = `translate3d(${x.toFixed(2)}px, ${y.toFixed(2)}px, 0) translate(-50%, -50%)`;
+      if (Math.abs(targetX - x) > 0.1 || Math.abs(targetY - y) > 0.1) {
         frame = window.requestAnimationFrame(render);
       }
     };
@@ -68,10 +76,10 @@ export function Cursor() {
       targetY = event.clientY;
       if (!visible) {
         visible = true;
-        // Snap rather than ease on the first frame, so it never flies in.
+        // Snap on the first frame rather than easing in from the middle.
         x = targetX;
         y = targetY;
-        ring.dataset.visible = "true";
+        dot.dataset.visible = "true";
       }
       const element = event.target as Element | null;
       if (!element || typeof element.closest !== "function") return;
@@ -80,40 +88,40 @@ export function Cursor() {
         : element.closest(INTERACTIVE_SELECTOR)
           ? "ring"
           : "dot";
-      if (ring.dataset.mode !== mode) ring.dataset.mode = mode;
+      if (dot.dataset.mode !== mode) dot.dataset.mode = mode;
       schedule();
     };
 
     const onLeave = () => {
       visible = false;
-      ring.dataset.visible = "false";
+      dot.dataset.visible = "false";
     };
 
-    // A press is acknowledged: the ring tightens.
+    // A press is acknowledged: the shape tightens.
     const onDown = () => {
-      ring.dataset.pressed = "true";
+      dot.dataset.pressed = "true";
     };
     const onUp = () => {
-      ring.dataset.pressed = "false";
+      dot.dataset.pressed = "false";
     };
 
     window.addEventListener("pointermove", onMove, { passive: true });
     document.addEventListener("pointerdown", onDown);
     document.addEventListener("pointerup", onUp);
     document.addEventListener("pointerleave", onLeave);
+    document.documentElement.dataset.cursor = "custom";
 
     return () => {
       window.removeEventListener("pointermove", onMove);
       document.removeEventListener("pointerdown", onDown);
       document.removeEventListener("pointerup", onUp);
       document.removeEventListener("pointerleave", onLeave);
+      delete document.documentElement.dataset.cursor;
       if (frame) window.cancelAnimationFrame(frame);
     };
   }, []);
 
   return (
-    <div ref={ringRef} className="qra-cursor" aria-hidden="true" data-visible="false" data-mode="dot">
-      <span className="qra-cursor__core" />
-    </div>
+    <div ref={dotRef} className="qra-cursor" aria-hidden="true" data-visible="false" data-mode="dot" />
   );
 }

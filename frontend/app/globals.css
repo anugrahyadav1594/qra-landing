@@ -507,7 +507,19 @@ html[data-intro="skip"] .qra-loader {
 
 .qra-loader {
   /* The whole sequence is timed from this one value: every delay below is a
-     fraction of it, so the opening can be retimed without touching a keyframe. */
+     fraction of it, so the opening can be retimed without touching a keyframe.
+     Fractions of 1900ms, in order:
+
+       0.00-0.09  the bloom punches out of black; the mark arrives overscaled
+       0.14-0.66  the sweep crosses the mark
+       0.31-0.50  the rings travel outward as shockwaves
+       0.38-0.62  the axes and guides draw; points light where they cross
+       0.32-0.83  QUANTRELIC rises and its tracking settles
+       0.50-0.74  the tagline resolves
+       0.72-0.82  a held beat: the composition is complete and still
+       0.70-1.00  the name clears, the structure expands, the mark departs
+                  for the navbar — all of it finishing inside the unmount,
+                  because a handoff cut off mid-flight reads as a glitch */
   --loader-dur: 1900ms;
   position: fixed;
   inset: 0;
@@ -549,6 +561,61 @@ html[data-intro="skip"] .qra-loader {
   animation: loader-field 26s ease-in-out infinite;
 }
 
+/* ── The bloom ─────────────────────────────────────────────────────────
+   The flash the frame resolves out of. It punches out oversized and very
+   bright, then collapses into the standing halo behind the mark — so the
+   two seconds open on a light source rather than on an empty screen. */
+.qra-loader__bloom {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  /* Local, not global. A halo wider than the frame stops being a light source
+     and becomes a whiteout — the first attempt at this covered the screen. */
+  width: min(62vw, 620px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) scale(0.3);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(214, 230, 255, 0.5) 0%,
+    rgba(150, 184, 255, 0.26) 26%,
+    rgba(63, 111, 255, 0.12) 48%,
+    rgba(63, 111, 255, 0.035) 68%,
+    transparent 80%
+  );
+  opacity: 0;
+  animation: loader-bloom var(--loader-dur) var(--ease) both;
+}
+
+@keyframes loader-bloom {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.16);
+  }
+  /* The punch: brief and tight. It is a flash of the light the mark arrives
+     out of, not a transition the whole screen performs. */
+  7% {
+    opacity: 0.85;
+    transform: translate(-50%, -50%) scale(0.5);
+  }
+  26% {
+    opacity: 0.5;
+    transform: translate(-50%, -50%) scale(0.86);
+  }
+  60% {
+    opacity: 0.34;
+    transform: translate(-50%, -50%) scale(0.96);
+  }
+  86% {
+    opacity: 0.16;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.02);
+  }
+}
+
 @keyframes loader-field {
   0%,
   100% {
@@ -566,7 +633,7 @@ html[data-intro="skip"] .qra-loader {
   inset: 0;
   display: grid;
   place-items: center;
-  animation: loader-expand 620ms var(--ease-in) calc(var(--loader-dur) * 0.68) both;
+  animation: loader-expand 560ms var(--ease-in) calc(var(--loader-dur) * 0.7) both;
 }
 
 @keyframes loader-expand {
@@ -585,35 +652,42 @@ html[data-intro="skip"] .qra-loader {
   height: min(132vmin, 1040px);
 }
 
+/* Rings arrive as shockwaves from the mark rather than being traced as
+   outlines: each one expands through the frame and fades as it goes, so the
+   two seconds read as force leaving a centre. Because the radius is part of
+   the SVG geometry, the expansion is a scale on the element itself, which
+   stays on the compositor. */
 .qra-loader__ring {
   fill: none;
-  stroke: rgba(245, 247, 250, 0.24);
-  stroke-width: 1;
+  stroke: rgba(245, 247, 250, 0.5);
+  stroke-width: 1.2;
   transform-box: fill-box;
   transform-origin: center;
-  /* Drawn, not faded in: the ring travels once around the logo. */
-  stroke-dasharray: var(--circ);
-  stroke-dashoffset: var(--circ);
-  animation: loader-ring-draw 1250ms var(--ease) both;
+  opacity: 0;
+  animation: loader-ring-wave 1500ms var(--ease-out) both;
 }
 
+/* The far rings are cooler and thinner, so the wave loses energy as it
+   travels outward. */
 .qra-loader__ring--outer {
-  stroke: rgba(111, 148, 255, 0.16);
-  stroke-dasharray: 4 var(--circ);
+  stroke: rgba(111, 148, 255, 0.34);
+  stroke-width: 1;
 }
 
-@keyframes loader-ring-draw {
+@keyframes loader-ring-wave {
   0% {
-    stroke-dashoffset: var(--circ);
+    transform: scale(0.42);
     opacity: 0;
   }
-  12% {
+  14% {
     opacity: 1;
   }
-  70%,
+  62% {
+    opacity: 0.5;
+  }
   100% {
-    stroke-dashoffset: 0;
-    opacity: 1;
+    transform: scale(2.25);
+    opacity: 0;
   }
 }
 
@@ -694,26 +768,37 @@ html[data-intro="skip"] .qra-loader {
 
 .qra-loader__mark {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  --mark-height: 132px;
+  --mark-entry-scale: 2.3;
   animation: loader-mark-in var(--loader-dur) var(--ease) both;
 }
 
+/* Arrival, not a fade-in. The mark enters at 2.3x, out of focus and lifted,
+   and contracts into place — so the dominant motion in the first half is a
+   reduction, which is what makes it read as a landing rather than a slide.
+   `--mark-entry-scale` is set from the component so the two stay in step. */
 @keyframes loader-mark-in {
   0%,
-  9% {
+  6% {
     opacity: 0;
-    transform: translateY(10px) scale(0.92);
-    filter: blur(8px);
+    transform: translateY(18px) scale(calc(var(--mark-entry-scale) * 0.86));
+    filter: blur(11px) brightness(1.5);
   }
-  30% {
+  15% {
+    opacity: 1;
+    transform: translateY(2px) scale(var(--mark-entry-scale));
+    filter: blur(4px) brightness(1.18);
+  }
+  32% {
     opacity: 1;
     transform: translateY(0) scale(1);
-    filter: blur(0);
+    filter: blur(0) brightness(1);
   }
   100% {
     opacity: 1;
     transform: none;
-    filter: blur(0);
+    filter: blur(0) brightness(1);
   }
 }
 
@@ -721,7 +806,7 @@ html[data-intro="skip"] .qra-loader {
    the composition with it. The navbar's own mark fades in on the same beat. */
 .qra-loader__handoff {
   display: block;
-  animation: loader-mark-out 600ms var(--ease-in) calc(var(--loader-dur) * 0.7) both;
+  animation: loader-mark-out 520ms var(--ease-in) calc(var(--loader-dur) * 0.72) both;
 }
 
 @keyframes loader-mark-out {
@@ -730,15 +815,83 @@ html[data-intro="skip"] .qra-loader {
     opacity: 1;
   }
   to {
-    transform: translate3d(calc(-50vw + 52px), calc(-50vh + 34px), 0) scale(0.44);
+    transform: translate3d(calc(-50vw + 52px), calc(-50vh + 34px), 0) scale(0.182);
     opacity: 0;
   }
 }
 
+/* The body of the mark: the image and its sweep, sharing one box so the sweep
+   is positioned against the mark's own geometry rather than the stage. */
+.qra-loader__mark-body {
+  position: relative;
+  display: block;
+}
+
 .qra-loader__logo {
-  height: 44px;
+  display: block;
+  height: var(--mark-height);
   width: auto;
   object-fit: contain;
+}
+
+/* ── The sweep ─────────────────────────────────────────────────────────
+   A second copy of the mark, masked to a narrow diagonal band, animated
+   across it. This is the specular beat: the mark catches a highlight the way
+   a real surface would, which is the single most expensive-looking thing here
+   and costs exactly one mask animation. It runs on its own clock so the entry
+   transform of the parent cannot clip it. */
+.qra-loader__shine {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* The band is deliberately narrow and soft-edged: a hard-edged bar reads as
+     a UI element crossing the logo, a soft one reads as light. */
+  -webkit-mask-image: linear-gradient(
+    104deg,
+    transparent 38%,
+    rgba(0, 0, 0, 0.25) 44%,
+    #000 50%,
+    rgba(0, 0, 0, 0.25) 56%,
+    transparent 62%
+  );
+  mask-image: linear-gradient(
+    104deg,
+    transparent 38%,
+    rgba(0, 0, 0, 0.25) 44%,
+    #000 50%,
+    rgba(0, 0, 0, 0.25) 56%,
+    transparent 62%
+  );
+  mask-size: 320% 100%;
+  -webkit-mask-size: 320% 100%;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  animation: loader-sweep 1150ms var(--ease) calc(var(--loader-dur) * 0.14) both;
+}
+
+@keyframes loader-sweep {
+  0% {
+    mask-position: 130% 0;
+    -webkit-mask-position: 130% 0;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  78% {
+    opacity: 1;
+  }
+  100% {
+    mask-position: -30% 0;
+    -webkit-mask-position: -30% 0;
+    opacity: 0;
+  }
+}
+
+.qra-loader__logo--shine {
+  /* The highlight itself: the same artwork, driven to near-white and stripped
+     of colour, so what crosses the mark is light rather than a second logo. */
+  filter: brightness(2.6) saturate(0.15) contrast(1.1);
 }
 
 /* ── The name ──────────────────────────────────────────────────────── */
@@ -751,21 +904,20 @@ html[data-intro="skip"] .qra-loader {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   padding: 0 24px;
   text-align: center;
-  transform: translateY(76px);
+  /* Clears the mark, which is 132px tall and centred. */
+  transform: translateY(125px);
   animation: loader-name var(--loader-dur) var(--ease) both;
 }
 
 @keyframes loader-name {
   0%,
-  100% {
+  72% {
     opacity: 1;
   }
-  92% {
-    opacity: 1;
-  }
+  82%,
   100% {
     opacity: 0;
   }
@@ -774,12 +926,32 @@ html[data-intro="skip"] .qra-loader {
 .qra-loader__name-text {
   display: flex;
   font-family: var(--font-display, inherit);
-  font-size: 1.05rem;
+  font-size: 1.22rem;
   font-weight: 600;
-  letter-spacing: 0.34em;
   color: #f5f7fa;
-  /* The letter-spacing pushes the last character off-centre; pull it back. */
+  /* The tracking settles as the letters land: it starts wide and tightens to
+     the resting value, so the word resolves rather than simply appearing. The
+     last character is pulled back so the tightened word stays optically
+     centred. */
+  letter-spacing: 0.34em;
   text-indent: 0.34em;
+  animation: loader-tracking 1000ms var(--ease) calc(var(--loader-dur) * 0.315) both;
+}
+
+@keyframes loader-tracking {
+  0% {
+    letter-spacing: 0.62em;
+    text-indent: 0.62em;
+    opacity: 0;
+  }
+  22% {
+    opacity: 1;
+  }
+  100% {
+    letter-spacing: 0.34em;
+    text-indent: 0.34em;
+    opacity: 1;
+  }
 }
 
 .qra-loader__char {
@@ -790,21 +962,23 @@ html[data-intro="skip"] .qra-loader {
 @keyframes loader-char {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(14px);
+    filter: blur(4px);
   }
   to {
     opacity: 1;
     transform: none;
+    filter: blur(0);
   }
 }
 
 .qra-loader__tagline {
-  font-size: 0.68rem;
-  letter-spacing: 0.2em;
+  font-size: 0.7rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(154, 168, 186, 0.9);
+  color: rgba(178, 192, 210, 0.95);
   opacity: 0;
-  animation: loader-char 600ms var(--ease) calc(var(--loader-dur) * 0.66) both;
+  animation: loader-char 460ms var(--ease) calc(var(--loader-dur) * 0.5) both;
 }
 
 /* ── Reduced path: the mark, a quiet fade, nothing else ────────────── */
@@ -814,7 +988,9 @@ html[data-intro="skip"] .qra-loader {
 }
 
 .qra-loader[data-mode="reduce"] .qra-loader__structure,
-.qra-loader[data-mode="reduce"] .qra-loader__name {
+.qra-loader[data-mode="reduce"] .qra-loader__name,
+.qra-loader[data-mode="reduce"] .qra-loader__shine,
+.qra-loader[data-mode="reduce"] .qra-loader__bloom {
   display: none;
 }
 
@@ -888,77 +1064,68 @@ html[data-intro="skip"] .qra-loader {
   }
 }
 
-/* ── Pointer accent (components/motion/Cursor.tsx) ────────────────────── */
+/* ── Pointer (components/motion/Cursor.tsx) ──────────────────────────── */
 
-/* The system cursor is never hidden — this sits behind it as a locator, so
-   "where am I pointing" is answered by the arrow and "what can I click" by the
-   ring. Both colours are always present: a light inner ring and core, a dark
-   outer edge, so it reads on light backgrounds and dark ones without ever
-   changing colour. */
+/* A two-tone shape, so it is legible on any surface without having to know
+   what is underneath it.
+
+   The disc is white with a dark rim. On the site's near-black ink the rim
+   disappears and a bright disc is what you see; on a white panel the disc
+   disappears and the dark rim is what you see. The pointer therefore *changes
+   colour between dark and light areas* — but as a property of its own two-tone
+   construction rather than as a guess about the background, which is what makes
+   it reliable. Every custom cursor that fails on light surfaces, including the
+   earlier white-dot version of this one, fails because it is a single colour.
+
+   An earlier attempt used `mix-blend-mode: difference` and a white shape, which
+   is the elegant version of this idea — it returns the inverse of whatever is
+   behind it. It was dropped: it renders correctly in a plain page but the values
+   it produces on this site depend on how the compositor groups the page's
+   layered backgrounds, and it reported mid-greys instead of the near-white and
+   near-black it should. A cursor must not be subtle about being visible. */
 .qra-cursor {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 95;
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  pointer-events: none;
-  opacity: 0;
-  /* Two shadows rather than a border: an outer dark edge for contrast on light
-     backgrounds, an inner light edge for contrast on dark ones. */
-  box-shadow:
-    0 0 0 1.5px rgba(8, 11, 16, 0.55),
-    inset 0 0 0 1.5px rgba(255, 255, 255, 0.92),
-    0 2px 10px rgba(0, 0, 0, 0.35);
-  transition:
-    opacity 200ms ease-out,
-    width 200ms var(--ease),
-    height 200ms var(--ease),
-    box-shadow 200ms ease-out,
-    background-color 200ms ease-out;
-  will-change: transform;
-}
-
-.qra-cursor__core {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 4px;
-  height: 4px;
-  margin: -2px 0 0 -2px;
+  z-index: 96;
+  width: 12px;
+  height: 12px;
   border-radius: 999px;
   background: #ffffff;
-  box-shadow: 0 0 0 1px rgba(8, 11, 16, 0.5);
-  transition: transform 200ms var(--ease), opacity 200ms ease-out;
+  /* Two rings, both always present: a dark rim that carries it on light
+     surfaces, and a wider soft dark halo that separates it from busy areas
+     without being visible as an edge. */
+  box-shadow:
+    0 0 0 1.5px rgba(4, 7, 12, 0.9),
+    0 0 0 3px rgba(4, 7, 12, 0.28),
+    0 2px 10px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity 180ms ease-out,
+    width 200ms var(--ease),
+    height 200ms var(--ease),
+    background-color 200ms ease-out,
+    box-shadow 200ms ease-out;
+  will-change: transform;
 }
 
 .qra-cursor[data-visible="true"] {
   opacity: 1;
 }
 
-.qra-cursor[data-visible="false"] {
-  /* Nothing to point at: get out of the way. */
-  transition-duration: 120ms;
-}
-
-/* Over anything interactive it opens and takes the brand colour — the ring is
-   the "this is clickable" signal, and the core stays put so the aim point never
-   moves. */
+/* Over anything clickable it opens into a ring. The fill steps aside so the
+   rim becomes the shape — which is the same two-tone logic read at a larger
+   size, plus the brand colour, which reads on both dark and light. */
 .qra-cursor[data-mode="ring"],
 .qra-cursor[data-mode="focus"] {
-  width: 40px;
-  height: 40px;
-  background-color: rgba(63, 111, 255, 0.16);
+  width: 38px;
+  height: 38px;
+  background: rgba(63, 111, 255, 0.14);
   box-shadow:
-    0 0 0 1.5px rgba(8, 11, 16, 0.5),
-    inset 0 0 0 1.5px rgba(147, 176, 255, 0.95),
-    0 0 20px rgba(63, 111, 255, 0.35);
-}
-
-.qra-cursor[data-mode="ring"] .qra-cursor__core,
-.qra-cursor[data-mode="focus"] .qra-cursor__core {
-  transform: scale(0.6);
+    0 0 0 2px #6f94ff,
+    0 0 0 3.5px rgba(4, 7, 12, 0.75),
+    0 0 18px rgba(63, 111, 255, 0.35);
 }
 
 .qra-cursor[data-mode="focus"] {
@@ -966,15 +1133,34 @@ html[data-intro="skip"] .qra-loader {
   height: 52px;
 }
 
+/* A press is acknowledged by tightening: contact, then release. */
 .qra-cursor[data-pressed="true"] {
-  width: 22px;
-  height: 22px;
+  width: 8px;
+  height: 8px;
 }
 
 .qra-cursor[data-mode="ring"][data-pressed="true"],
 .qra-cursor[data-mode="focus"][data-pressed="true"] {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
+}
+
+/* The system pointer stands down once the replacement is mounted and moving.
+   Set from the component, so a device that never mounts the pointer — touch,
+   or reduced motion — keeps the browser's own cursor and loses nothing. */
+html[data-cursor="custom"],
+html[data-cursor="custom"] * {
+  cursor: none;
+}
+
+/* …except text entry. An I-beam tells you the field is editable and where the
+   caret will land; a dot does not, and every custom-cursor site that removes it
+   makes its own forms harder to use. This is the one deliberate exception. */
+html[data-cursor="custom"] input,
+html[data-cursor="custom"] textarea,
+html[data-cursor="custom"] select,
+html[data-cursor="custom"] [contenteditable="true"] {
+  cursor: text;
 }
 
 /* ── Source drawer (product transparency) ──────────────────────────── */
