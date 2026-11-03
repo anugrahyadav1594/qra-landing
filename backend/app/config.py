@@ -117,6 +117,48 @@ class Settings(BaseSettings):
     referral_code_max_chars: int = 64
     name_max_chars: int = 200
 
+    # ── Tournament (MTT) ──────────────────────────────────────────────────
+    # Administrators are allow-listed by verified email; the first admin can
+    # then grant further admins from the admin console (persisted in DB).
+    tournament_admin_emails: str = ""
+    mtt_session_ttl_hours: int = 720  # 30 days
+    mtt_session_cookie_name: str = "mtt_session"
+    mtt_session_cookie_secure: bool = False  # forced True in production
+    mtt_otp_ttl_minutes: int = 10
+    mtt_otp_max_attempts: int = 5
+    mtt_otp_length: int = 6
+    mtt_otp_requests_per_email_per_hour: int = 5
+    mtt_otp_requests_per_ip_per_hour: int = 30
+    mtt_registrations_per_ip_per_hour: int = 5
+    mtt_registrations_per_email_per_day: int = 3
+    mtt_max_logo_size_mb: int = 4
+    # Dev convenience: return the one-time code in the API response so the
+    # journey can be completed without an SMTP server. NEVER honoured when
+    # ENVIRONMENT=production.
+    mtt_expose_otp_in_response: bool = False
+
+    # ── Storage (logos) ───────────────────────────────────────────────────
+    storage_backend: str = "local"  # local | s3
+    s3_bucket: str = ""
+    s3_region: str = "ap-south-1"
+    s3_endpoint_url: str = ""
+
+    # ── Optional external identity provider (Clerk) ───────────────────────
+    # Left empty → the built-in email one-time-code flow is used.
+    clerk_issuer: str = ""
+    clerk_jwks_url: str = ""
+    clerk_audience: str = ""
+
+    # ── Outbound email (registration confirmations, one-time codes) ───────
+    # Empty SMTP_HOST → emails are logged, never sent; the platform stays
+    # fully functional.
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_password: str = ""
+    smtp_from: str = "no-reply@quantrelic.in"
+    smtp_starttls: bool = True
+
     @property
     def cors_origin_list(self) -> List[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
@@ -128,6 +170,27 @@ class Settings(BaseSettings):
     @property
     def disposable_domains_extra_list(self) -> List[str]:
         return [d.strip().lower() for d in self.disposable_domains_extra.split(",") if d.strip()]
+
+    @property
+    def tournament_admin_email_list(self) -> List[str]:
+        return [e.strip().lower() for e in self.tournament_admin_emails.split(",") if e.strip()]
+
+    @property
+    def clerk_enabled(self) -> bool:
+        return bool(self.clerk_issuer and self.clerk_jwks_url)
+
+    @property
+    def smtp_enabled(self) -> bool:
+        return bool(self.smtp_host)
+
+    @property
+    def expose_otp(self) -> bool:
+        """Dev-only escape hatch; hard-disabled in production."""
+        return bool(self.mtt_expose_otp_in_response) and not self.is_production
+
+    @property
+    def session_cookie_secure(self) -> bool:
+        return True if self.is_production else bool(self.mtt_session_cookie_secure)
 
     def limits_snapshot(self) -> dict:
         """All tunable budget values, exposed by /api/v1/health/deep so the
@@ -169,6 +232,16 @@ class Settings(BaseSettings):
             "careers_apply_per_ip_per_hour": self.careers_apply_per_ip_per_hour,
             "min_submit_time_seconds": self.min_submit_time_seconds,
             "max_resume_size_mb": self.max_resume_size_mb,
+            "mtt_otp_requests_per_email_per_hour": self.mtt_otp_requests_per_email_per_hour,
+            "mtt_otp_requests_per_ip_per_hour": self.mtt_otp_requests_per_ip_per_hour,
+            "mtt_registrations_per_ip_per_hour": self.mtt_registrations_per_ip_per_hour,
+            "mtt_registrations_per_email_per_day": self.mtt_registrations_per_email_per_day,
+            "mtt_max_logo_size_mb": self.mtt_max_logo_size_mb,
+            "mtt_expose_otp_in_response": self.expose_otp,
+            "tournament_admins_configured": len(self.tournament_admin_email_list),
+            "clerk_enabled": self.clerk_enabled,
+            "smtp_enabled": self.smtp_enabled,
+            "storage_backend": self.storage_backend,
         }
 
 

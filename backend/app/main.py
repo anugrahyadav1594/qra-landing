@@ -17,6 +17,10 @@ from .errors import register_exception_handlers
 from .middleware import PlatformMiddleware
 from .rate_limit import build_backend, RateLimiter
 from .routers import careers, content, feedback, health, waitlist
+from .tournament.routers import admin as tournament_admin
+from .tournament.routers import auth as tournament_auth
+from .tournament.routers import participant as tournament_participant
+from .tournament.routers import public as tournament_public
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -63,6 +67,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(waitlist.router)
     app.include_router(feedback.router)
     app.include_router(careers.router)
+    # ── Mumbai Trading Tournament (MTT) ──────────────────────────────────
+    app.include_router(tournament_public.router)
+    app.include_router(tournament_auth.router)
+    app.include_router(tournament_participant.router)
+    app.include_router(tournament_admin.router)
 
     @app.get("/")
     def root():

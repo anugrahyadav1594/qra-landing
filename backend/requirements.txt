@@ -6,3 +6,6 @@ SQLAlchemy>=2.0,<2.1
 python-multipart>=0.0.9
 httpx>=0.27,<1.0
 redis>=5.0,<7.0
+
+# Optional: verifies Clerk session JWTs when CLERK_ISSUER/CLERK_JWKS_URL are set
+pyjwt[crypto]>=2.8,<3.0

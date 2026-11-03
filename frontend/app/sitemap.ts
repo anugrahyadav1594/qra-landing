@@ -13,6 +13,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/contact",
     "/feedback",
     "/waitlist",
+    "/tournament",
+    "/tournament/register",
+    "/tournament/rules",
+    "/tournament/faq",
+    "/tournament/leaderboard",
     "/privacy",
     "/terms",
     "/security",
@@ -20,7 +25,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return routes.map((route) => ({
     url: `${SITE_URL}${route}`,
     lastModified: now,
-    changeFrequency: "monthly" as const,
-    priority: route === "" ? 1 : 0.7,
+    changeFrequency: route.startsWith("/tournament") ? ("weekly" as const) : ("monthly" as const),
+    priority: route === "" ? 1 : route.startsWith("/tournament") ? 0.9 : 0.7,
   }));
 }

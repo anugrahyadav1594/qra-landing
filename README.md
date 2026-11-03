@@ -3,7 +3,10 @@
 The **Quantrelic Analytics** website: public marketing pages for **QRA — the
 Quantrelic Research Agent** (Quantrelic Analytics Private Limited's first
 product, an AI-powered financial research tool) — plus waitlist, feedback,
-contact and careers-application flows. Built to the specification in
+contact and careers-application flows, **and the complete platform for
+Quantrelic's Mumbai Trading Tournament (MTT)**: landing page, individual
+registration, participant dashboard, leaderboard and a protected admin
+console. Built to the specification in
 **[`ARCHITECTURE.md`](./ARCHITECTURE.md)** (the single source of technical truth
 for this platform).
 
@@ -160,8 +163,9 @@ Optional extras in `backend/.env`:
 
 ## 5. Running the tests
 
-### Backend — 54 pytest tests (API contract, rate limits, spam screens, dedupe,
-idempotency, concurrency gate, capacity caps, upload rules)
+### Backend — pytest suite (API contract, rate limits, spam screens, dedupe,
+idempotency, concurrency gate, capacity caps, upload rules, tournament
+registration/authorization/prize-reconciliation)
 
 ```bash
 cd ~/qra-landing/backend
@@ -171,8 +175,9 @@ pytest -v              # verbose
 pytest tests/test_rate_limits.py   # just the rate-limit suite
 ```
 
-### Frontend — 20 Vitest tests (zod schemas, form behaviour, 429 handling,
-XSS-safe Markdown renderer)
+### Frontend — Vitest suite (zod schemas, form behaviour, 429 handling,
+XSS-safe Markdown renderer, tournament prize maths, college picker, arena
+intro under reduced motion)
 
 ```bash
 cd ~/qra-landing/frontend
@@ -203,7 +208,233 @@ curl -s -X POST http://localhost:8000/api/v1/waitlist \
 
 ---
 
-## 6. Repository layout
+---
+
+## 6. Mumbai Trading Tournament (MTT)
+
+MTT is a trading competition for college students across Mumbai. Participants
+**register individually** and **represent an onboarded college**; college-level
+qualifying rounds are conducted before the final competition. The tournament
+lives inside this repository as a self-contained module — the corporate site,
+its pages and its API are untouched.
+
+### 6.1 Routes
+
+| Route | Purpose |
+|---|---|
+| `/tournament` | Landing page: arena hero, how it works, prize pool, colleges, sponsors, event details, FAQ, CTA |
+| `/tournament/register` | 4-step individual registration wizard |
+| `/tournament/success` | Registration confirmation ("You're in. Welcome to the arena.") |
+| `/tournament/dashboard` | Participant control centre (own registration only) |
+| `/tournament/leaderboard` | Real standings, or the pre-event state |
+| `/tournament/rules` | Rules & regulations |
+| `/tournament/faq` | Frequently asked questions |
+| `/admin/tournament` | Protected admin console |
+
+### 6.2 Confirmed vs configurable content
+
+Confirmed by the organisers (seeded into `tournament_configs`):
+
+| Fact | Value |
+|---|---|
+| Event name | Quantrelic's Mumbai Trading Tournament (MTT) |
+| Organiser | Quant Relic Analytics Private Limited |
+| Prize pool | **₹1,00,000** (₹60,000 cash + ₹40,000 goodies & merchandise) |
+| Champion / 1st runner-up / 2nd runner-up | ₹25,000 / ₹15,000 / ₹10,000 |
+| Merit prizes | 10 × ₹1,000 = ₹10,000 |
+| Participation | Individual |
+| Qualifiers | College-level qualifying rounds |
+| Location context | Mumbai |
+
+The prize pool is **validated on every save**: merit count × merit amount must
+equal the merit total, the cash prizes must sum to the cash pool, and cash +
+goodies must equal the declared total. A mismatch is rejected with
+`prize_pool_mismatch`.
+
+**Nothing unconfirmed is invented.** Dates, venue, eligibility, qualification
+criteria, quotas, round structure and participant counts stay `null` until an
+administrator fills them in; the UI renders an explicit "To be announced"
+state, and the countdown does not appear at all until a real event date is set.
+
+### 6.3 Design system
+
+- **Palette:** `#090A0D` / `#111216` / `#191A20` backgrounds, `#F47C35` primary
+  orange and `#FFAA70` secondary orange, `#F4F0E9` / `#96979E` text, hairline
+  borders at `rgba(255,255,255,0.10)`.
+- **Type:** Space Grotesk (display), Inter (interface), JetBrains Mono
+  (registration IDs, data readouts) — all self-hosted via `@fontsource`.
+- **Motifs:** the handcrafted **MTT arena ring** (SVG, `ArenaStatic.tsx`),
+  notched panels, halftone + grain textures, technical grids, market-inspired
+  ornament, asymmetric editorial layouts, sharp corners.
+
+### 6.4 Startup animation — ENTER THE ARENA
+
+`components/tournament/ArenaLoader.tsx` + `arena/arenaScene.ts` (Three.js).
+
+1. **Power on (0–0.5 s)** — technical grid, a thin orange light sweeps across,
+   the centre point ignites.
+2. **The arena awakens (0.5–1.2 s)** — 28 ring segments complete the circle,
+   the ring rotates in 3D, particles appear.
+3. **Market ignition (1.2–1.9 s)** — candlesticks and a market line converge
+   on the ring.
+4. **Brand reveal (1.9–2.5 s)** — typography + "POWERED BY QUANT RELIC".
+5. **Enter the arena (2.5–2.8 s)** — the ring expands past the frame and
+   reveals the already-loaded hero.
+
+Technical guarantees: one `requestAnimationFrame` loop with no React state
+writes; Three.js is dynamically imported (it never blocks first paint) and
+geometries/materials/textures are disposed on unmount; rendering pauses when
+the canvas is off-screen or the tab is hidden; the sequence plays **once per
+browser session** (`sessionStorage`), is **skippable** (button, Esc, click),
+is **skipped entirely under `prefers-reduced-motion`**, falls back to the
+handcrafted SVG arena when WebGL is unavailable, on data-saver and on small
+screens, and never autoplays sound.
+
+The same scene runs in `ambient` mode as the persistent hero ring.
+
+### 6.5 Registration journey
+
+`Identity → Your details → College → Review`
+
+- **Identity:** passwordless six-digit email code. Verifying the code both
+  signs the participant in and satisfies the email-verification requirement.
+  No passwords are stored. Clerk is supported when
+  `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` + `CLERK_ISSUER`/`CLERK_JWKS_URL` are
+  set; otherwise the built-in flow is used.
+- **College:** a searchable, keyboard-accessible picker driven by
+  `GET /api/v1/tournament/colleges`. Free-text college names are impossible —
+  the backend rejects any id that is not an active, onboarded college.
+- **Review:** mandatory consent for event participation and the privacy policy;
+  marketing consent is optional and stored separately.
+- **Submit:** spam screen → strict validation → Turnstile (when configured) →
+  per-IP/per-email rate limits → idempotency replay → transactional insert.
+  The success state is only shown after the backend commits.
+
+Registration statuses: `draft`, `email_verification_pending`, `submitted`,
+`under_review`, `approved`, `rejected`, `waitlisted`, `cancelled`. By default
+entries arrive as **under review** (`AUTO_APPROVE_REGISTRATIONS` is
+configurable), so a submission never implies an approved slot.
+
+### 6.6 Admin console (`/admin/tournament`)
+
+Overview · Registrations (search, filter, approve/reject, CSV export) ·
+Colleges (add, edit, upload logo, activate/deactivate, registrations per
+college) · Sponsors (tier, order, logo, active) · Event configuration (prize
+pool, dates, venue, eligibility, rules, switches) · Announcements ·
+Leaderboard (add standings, publish/hide) · Audit log.
+
+Authorization is enforced on the **server** (`require_admin`): every admin
+endpoint verifies the session and the administrator role; hiding a link grants
+nothing. Administrators come from `TOURNAMENT_ADMIN_EMAILS` (granted the role
+on first sign-in) or the `tournament_admin_roles` table. Every privileged
+action writes an audit row with the acting administrator's email.
+
+### 6.7 Data model (new tables)
+
+`tournament_events`, `tournament_configs`, `tournament_colleges`,
+`tournament_sponsors`, `tournament_participants`, `tournament_otp_codes`,
+`tournament_sessions`, `tournament_registrations`,
+`tournament_registration_consents`, `tournament_leaderboard_entries`,
+`tournament_announcements`, `tournament_admin_roles`, `tournament_audit_log`.
+
+Duplicate registrations are prevented by **partial-unique indexes** on
+`(tournament_id, participant_id)` and `(tournament_id, email_normalized)`
+where `status != 'cancelled'`, backed by an `IntegrityError` path that returns
+the existing entry with `already_registered: true`.
+
+**Migrations:** the platform creates its schema with SQLAlchemy
+(`Base.metadata.create_all` at startup — idempotent). Local development uses
+SQLite (`DATABASE_URL=sqlite:///./data/qra.db`); production targets
+PostgreSQL by changing `DATABASE_URL` only. For an audited migration history,
+point Alembic at `backend/app/models.py:Base.metadata` (shared by the
+tournament models) — no application change is required.
+
+### 6.8 Tournament API
+
+Public
+
+| Endpoint | Notes |
+|---|---|
+| `GET /api/v1/tournament` | Configuration + real college/sponsor/registration counts |
+| `GET /api/v1/tournament/colleges` | Active, onboarded colleges (drives the dropdown) |
+| `GET /api/v1/tournament/sponsors` | Active sponsors, ordered by tier |
+| `GET /api/v1/tournament/announcements` | Published announcements |
+| `GET /api/v1/tournament/leaderboard` | `enabled: false` until results are published |
+| `GET /api/v1/tournament/files/{category}/{filename}` | Stored logos (path-traversal safe) |
+
+Identity
+
+| Endpoint | Notes |
+|---|---|
+| `POST /api/v1/tournament/auth/otp/request` | Sends a one-time code (rate-limited) |
+| `POST /api/v1/tournament/auth/otp/verify` | Exchanges it for an httpOnly session |
+| `GET /api/v1/tournament/auth/session` | Current identity + own registration |
+| `POST /api/v1/tournament/auth/logout` | Revokes the session |
+
+Participant (requires a verified session)
+
+| Endpoint | Notes |
+|---|---|
+| `POST /api/v1/tournament/register` | Idempotent (`Idempotency-Key`), duplicate-safe |
+| `GET /api/v1/tournament/me/registration` | Own registration only |
+| `PATCH /api/v1/tournament/me/registration` | Edit while the entry is under review |
+
+Admin (requires the admin role)
+
+| Endpoint | Notes |
+|---|---|
+| `GET /api/v1/admin/tournament/overview` | Metrics computed from the database |
+| `GET /api/v1/admin/tournament/registrations` | `q`, `college_id`, `status`, paging |
+| `GET /api/v1/admin/tournament/registrations/export.csv` | CSV export (optionally per college) |
+| `PATCH /api/v1/admin/tournament/registrations/{id}` | Status decision |
+| `POST` / `PATCH /api/v1/admin/tournament/colleges[/{id}]` | CRUD + `POST /colleges/{id}/logo` |
+| `POST` / `PATCH /api/v1/admin/tournament/sponsors[/{id}]` | CRUD + `POST /sponsors/{id}/logo` |
+| `GET` / `PATCH /api/v1/admin/tournament/config` | All event fields, prize reconciliation |
+| `POST` / `PATCH` / `DELETE /api/v1/admin/tournament/announcements[/{id}]` | Publishing |
+| `POST /api/v1/admin/tournament/leaderboard/entries`, `POST /leaderboard/publish` | Standings |
+| `GET /api/v1/admin/tournament/audit-log` | Administrative history |
+
+### 6.9 Local setup for the tournament
+
+```bash
+cp backend/.env.example backend/.env      # then edit:
+#   TOURNAMENT_ADMIN_EMAILS=you@quantrelic.in
+#   MTT_EXPOSE_OTP_IN_RESPONSE=true        # dev only: prints the sign-in code
+#   MIN_SUBMIT_TIME_SECONDS=0              # dev only: skip the submit-time screen
+cp frontend/.env.example frontend/.env.local
+
+make setup && make dev                     # backend :8000, frontend :3008
+```
+
+1. Open `/tournament` — the intro plays once.
+2. Sign in at `/admin/tournament` with the admin email (the code is returned in
+   the response while `MTT_EXPOSE_OTP_IN_RESPONSE=true`, otherwise it is logged
+   by the backend).
+3. Add colleges and sponsors in the console. They appear immediately on the
+   public wall and in the registration dropdown.
+4. Register a participant in a second browser session (or an incognito window)
+   and watch the entry land in the console.
+
+Email delivery is optional: with `SMTP_HOST` empty, confirmation emails and
+one-time codes are **logged** by the backend and every journey still completes.
+
+### 6.10 Security & privacy notes
+
+- Server-side validation, strict schemas (unknown keys rejected), length caps.
+- httpOnly, SameSite=Lax sessions (opaque random tokens, only hashes stored);
+  `Secure` is forced in production.
+- Admin authorization enforced per request; audit log for privileged actions.
+- Rate limits on OTP requests, registrations and public reads (all `.env`
+  tunable).
+- Logos: PNG/JPG/WebP only (SVG is refused because it can carry script),
+  size-capped, magic-byte sniffed, stored under a generated filename; serving
+  is path-traversal safe and sends `X-Content-Type-Options: nosniff`.
+- No payment flow exists — no fee has been announced and none is collected.
+- Participants only ever read their own registration.
+
+---
+
+## 7. Repository layout
 
 ```
 qra-landing/
@@ -224,19 +455,20 @@ qra-landing/
 │   │   ├── models.py        # SQLAlchemy schema (UUIDv7 PKs, partial-unique dedupe)
 │   │   ├── schemas.py       # strict Pydantic I/O contract
 │   │   ├── db.py            # engine + seed content
-│   │   └── routers/         # health, products/team/updates, waitlist, feedback, careers
-│   └── tests/               # 54 tests
+│   │   ├── routers/         # health, products/team/updates, waitlist, feedback, careers
+│   │   └── tournament/      # MTT module: models, schemas, services, routers
+│   └── tests/               # backend tests (+ tournament suites)
 └── frontend/
     ├── .env.example
     ├── next.config.js       # /api/* → FastAPI rewrite + prod security headers
-    ├── app/                 # all public routes from §6.1 (+ robots/sitemap/security.txt)
+    ├── app/                 # all public routes from §6.1 (+ /tournament/*, robots/sitemap)
     ├── public/image.png     # brand mark (placeholder — replace with official)
-    ├── components/          # Nav, Footer, home sections, forms (waitlist/feedback/apply), Markdown
-    ├── lib/                 # API client w/ fallback seed, zod schemas, constants
-    └── __tests__/           # 20 tests
+    ├── components/          # Nav, Footer, home sections, forms, tournament/, arena/
+    ├── lib/                 # API client w/ fallback seed, zod schemas, constants, tournament/
+    └── __tests__/           # frontend tests (+ tournament suites)
 ```
 
-## 7. API surface (implemented)
+## 8. API surface (implemented)
 
 | Endpoint | Method | Notes |
 |---|---|---|
@@ -247,15 +479,21 @@ qra-landing/
 | `/api/v1/careers/{slug}/apply` | POST (multipart) | PDF resume ≤ `MAX_RESUME_SIZE_MB`, dedupe per email |
 | `/api/v1/waitlist` | POST | Rate-limited, idempotent, duplicate-free, consent-recorded |
 | `/api/v1/feedback` | POST | Category allowlist, fingerprint dedupe, spam-screened |
+| `/api/v1/tournament*` | GET | Public tournament config, colleges, sponsors, announcements, leaderboard (§6.8) |
+| `/api/v1/tournament/auth/*` | POST/GET | Passwordless identity (one-time code), session |
+| `/api/v1/tournament/register`, `/me/registration` | POST/GET/PATCH | Individual registration |
+| `/api/v1/admin/tournament/*` | GET/POST/PATCH/DELETE | Admin-only; server-enforced role check (§6.8) |
 
 All errors use the §13.1 envelope `{"error": {"code", "message", "request_id"}}`;
 all rate limits return `429` + `Retry-After` + `X-RateLimit-*` headers.
 
-## 8. What's intentionally not here yet (per the roadmap)
+## 9. What's intentionally not here yet (per the roadmap)
 
-- **Identity/auth (Phase 4):** Clerk, Google/email/phone OTP — the `OTP_*` /
-  `SIGNIN_*` env vars are already defined but only take effect once those flows land.
-- **Admin dashboard (Phase 4+):** `/admin/*`, audit log UI, exports.
+- **Corporate identity/auth (Phase 4):** the *tournament* has its own
+  passwordless auth (§6.5); the corporate site still has no sign-in, and the
+  `OTP_*` / `SIGNIN_*` env vars for it are defined but unused.
+- **Corporate admin dashboard (Phase 4+):** the tournament admin console
+  (`/admin/tournament`) is implemented; a company-wide `/admin/*` is not.
 - **Object storage & scanning (Phase 5):** CVs are stored locally under
   `backend/uploads/` (git-ignored); production targets Cloudflare R2 + ClamAV.
 - **Redis sharing:** optional via `REDIS_URL`; local default is per-process memory.
@@ -263,7 +501,7 @@ all rate limits return `429` + `Retry-After` + `X-RateLimit-*` headers.
   review (§16.1), and `company.com` / `security@company.com` references are
   placeholders (§24, open question O1).
 
-## 9. Troubleshooting (WSL)
+## 10. Troubleshooting (WSL)
 
 | Problem | Fix |
 |---|---|

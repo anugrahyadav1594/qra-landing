@@ -54,3 +54,43 @@ export function retryAfterSeconds(response: Response): number | null {
   const seconds = Number(value);
   return Number.isFinite(seconds) ? seconds : null;
 }
+
+// ── Mumbai Trading Tournament registration (mirrors backend/app/tournament/schemas.py) ──
+
+export const mobileSchema = z
+  .string()
+  .trim()
+  .transform((value) => value.replace(/[^0-9]/g, ""))
+  .refine((digits) => {
+    const trimmed = digits.startsWith("91") && digits.length === 12 ? digits.slice(2) : digits;
+    return /^[0-9]{10,15}$/.test(trimmed);
+  }, "Enter a valid 10-digit mobile number")
+  .transform((digits) =>
+    digits.startsWith("91") && digits.length === 12 ? digits.slice(2) : digits,
+  );
+
+export const tournamentRegistrationSchema = z.object({
+  full_name: z
+    .string()
+    .trim()
+    .min(2, "Enter your full name")
+    .max(200, "Name must be at most 200 characters"),
+  email: emailSchema,
+  mobile: mobileSchema,
+  college_id: z.string().min(1, "Select your college from the onboarded list"),
+  course: z.string().trim().max(120, "Keep this under 120 characters").optional(),
+  academic_year: z.string().trim().max(40).optional(),
+  city: z.string().trim().max(120).optional(),
+});
+
+export type TournamentRegistrationInput = z.infer<typeof tournamentRegistrationSchema>;
+
+export const ACADEMIC_YEAR_OPTIONS = [
+  "First year",
+  "Second year",
+  "Third year",
+  "Fourth year",
+  "Fifth year",
+  "Postgraduate",
+  "Other",
+] as const;

@@ -266,3 +266,260 @@ body {
     transform: scaleY(1);
   }
 }
+
+/* ══════════════════════════════════════════════════════════════════════
+   MUMBAI TRADING TOURNAMENT — arena design system
+   Layered dark surfaces, hairline borders, halftone/grain textures and
+   market-inspired ornament. Deliberately low-radius: sharp engineering
+   edges, not generic rounded cards.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.arena-grid-mask {
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+}
+
+.arena-surface {
+  background:
+    radial-gradient(120% 90% at 50% -10%, rgba(244, 124, 53, 0.12), transparent 60%),
+    radial-gradient(80% 60% at 85% 10%, rgba(244, 124, 53, 0.06), transparent 70%),
+    linear-gradient(180deg, #090a0d 0%, #0b0c10 45%, #090a0d 100%);
+}
+
+.arena-technical {
+  background-image:
+    linear-gradient(rgba(244, 124, 53, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(244, 124, 53, 0.055) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, black, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 35%, black, transparent 100%);
+}
+
+/* Halftone dot texture — print-inspired, used sparsely on large surfaces */
+.arena-halftone::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: radial-gradient(rgba(244, 124, 53, 0.16) 1px, transparent 1.4px);
+  background-size: 7px 7px;
+  mask-image: radial-gradient(ellipse 60% 60% at 50% 40%, black, transparent 85%);
+  -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 40%, black, transparent 85%);
+}
+
+/* Fine grain (procedural SVG noise, no image asset) */
+.arena-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: 0.055;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/></filter><rect width='120' height='120' filter='url(%23n)' opacity='0.6'/></svg>");
+}
+
+/* Angled panel with a cut corner — the tournament's structural motif */
+.arena-panel {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(180deg, rgba(25, 26, 32, 0.92), rgba(17, 18, 22, 0.92));
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+}
+
+.arena-panel-sm {
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+
+/* Primary action: solid orange with an inner hairline and a lift on hover */
+.btn-flare {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: linear-gradient(180deg, #ff9250, #f47c35);
+  color: #14100c;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 12px 34px -18px rgba(244, 124, 53, 0.9);
+  transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.btn-flare:hover {
+  transform: translateY(-1px);
+  filter: saturate(1.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 18px 44px -18px rgba(244, 124, 53, 1);
+}
+
+.btn-flare:active {
+  transform: translateY(0);
+}
+
+.btn-ghost {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #f4f0e9;
+  transition: border-color 0.18s ease, background-color 0.18s ease, transform 0.18s ease;
+}
+
+.btn-ghost:hover {
+  border-color: rgba(244, 124, 53, 0.7);
+  background: rgba(244, 124, 53, 0.08);
+  transform: translateY(-1px);
+}
+
+/* Section eyebrow rule */
+.rule-flare {
+  background: linear-gradient(90deg, #f47c35, rgba(244, 124, 53, 0));
+}
+
+/* Numeric ticker / mono readout */
+.mono-readout {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.16em;
+}
+
+/* Ticker marquee (market strip) */
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 46s linear infinite;
+}
+
+@keyframes ticker-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Prize podium entrance, gated on .is-visible */
+.podium-step {
+  opacity: 0;
+  transform: translateY(26px);
+}
+
+.is-visible .podium-step {
+  animation: podium-in 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.is-visible .podium-step:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.is-visible .podium-step:nth-child(3) {
+  animation-delay: 0.2s;
+}
+
+@keyframes podium-in {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Timeline nodes */
+.timeline-node {
+  opacity: 0;
+  transform: translateX(-14px);
+}
+
+.is-visible .timeline-node {
+  animation: node-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes node-in {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* College / sponsor logo hover: lift the mark, dim the frame */
+.logo-tile {
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease,
+    background-color 0.25s ease;
+}
+
+.logo-tile:hover {
+  transform: translateY(-3px);
+  border-color: rgba(244, 124, 53, 0.45);
+  background-color: rgba(244, 124, 53, 0.05);
+}
+
+.logo-tile img {
+  transition: filter 0.25s ease, opacity 0.25s ease;
+  filter: grayscale(1) contrast(1.05);
+  opacity: 0.72;
+}
+
+.logo-tile:hover img {
+  filter: grayscale(0);
+  opacity: 1;
+}
+
+/* Focus ring shared by every interactive tournament element */
+.arena-focus:focus-visible {
+  outline: 2px solid #f47c35;
+  outline-offset: 2px;
+}
+
+.input-arena {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f4f0e9;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.95rem;
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease;
+}
+
+.input-arena::placeholder {
+  color: rgba(150, 151, 158, 0.55);
+}
+
+.input-arena:focus {
+  outline: none;
+  border-color: rgba(244, 124, 53, 0.85);
+  box-shadow: 0 0 0 3px rgba(244, 124, 53, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.input-arena[aria-invalid="true"] {
+  border-color: rgba(248, 113, 113, 0.8);
+  box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.14);
+}
+
+/* Screen-reader-only live region helper */
+.sr-only-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+  }
+
+  .podium-step,
+  .timeline-node {
+    opacity: 1;
+    transform: none;
+  }
+
+  .btn-flare:hover,
+  .btn-ghost:hover,
+  .logo-tile:hover {
+    transform: none;
+  }
+}
