@@ -1,39 +1,57 @@
-import { Reveal } from "@/components/Reveal";
+import { QRAAtmosphere } from "@/components/motion/QRAAtmosphere";
+import { QRASectionTransition } from "@/components/motion/QRASectionTransition";
+import { QRAReveal } from "@/components/motion/QRAReveal";
 import { WaitlistForm } from "@/components/WaitlistForm";
-import { Eyebrow } from "@/components/ui";
+import { Section, SectionLabel } from "@/components/ui";
+import { EARLY_ACCESS } from "@/lib/content";
 
+/**
+ * Early access — the end of the story.
+ *
+ * Every line the site has drawn converges here and then stops: the field is
+ * quiet, nothing behind the form moves, and the form itself is left alone. The
+ * calm is the design; after seven sections of motion it reads as resolution.
+ */
 export function WaitlistSection() {
   return (
-    <section id="waitlist" className="relative mx-auto max-w-6xl scroll-mt-24 overflow-hidden px-6 py-24">
-      <div
-        className="absolute right-[-15%] top-[-30%] h-[380px] w-[380px] rounded-full bg-signal-600/10 blur-[120px] motion-safe:block"
-        aria-hidden="true"
-      />
-      <div className="relative grid gap-14 lg:grid-cols-2 lg:gap-20">
-        <Reveal>
-          <Eyebrow>Early access</Eyebrow>
-          <h2 className="mt-5 font-display text-4xl font-semibold leading-[1.08] tracking-tightest text-paper sm:text-5xl">
-            Your next
-            <br />
-            <span className="bg-gradient-to-r from-signal-300 to-aqua-300 bg-clip-text text-transparent">
-              research
-            </span>
-            <br />
-            starts here.
-          </h2>
-          <p className="mt-7 max-w-md text-base leading-relaxed text-paper-dim/75">
-            We're building a new way to research companies — one that helps investors move from
-            scattered information to a clearer investment thesis. Early access opens in cohorts,
-            in waitlist order.
-          </p>
-        </Reveal>
+    <Section id="waitlist" labelledBy="waitlist-heading" className="relative overflow-hidden">
+      <QRASectionTransition label="Convergence" />
 
-        <Reveal delay={140}>
-          <div className="rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-7 sm:p-9">
+      {/* The last environment: everything drawing toward one point. */}
+      <QRAAtmosphere variant="waitlist" />
+
+
+      <div className="relative z-10 grid gap-12 lg:grid-cols-[1fr_minmax(0,520px)] lg:gap-20">
+        <QRAReveal>
+          <SectionLabel tone="brand">{EARLY_ACCESS.label}</SectionLabel>
+          <h2
+            id="waitlist-heading"
+            className="mt-5 font-display text-[2.5rem] font-semibold leading-[1.03] tracking-tightest text-paper sm:text-6xl lg:text-[4rem]"
+          >
+            {EARLY_ACCESS.statement.map((line, index) => (
+              <span key={line} className="block">
+                {line}
+                {index < EARLY_ACCESS.statement.length - 1 ? " " : null}
+              </span>
+            ))}
+          </h2>
+          <p className="mt-6 text-lg leading-relaxed text-paper-dim">{EARLY_ACCESS.support}</p>
+          <ul className="mt-8 space-y-3">
+            {EARLY_ACCESS.points.map((point) => (
+              <li key={point} className="flex gap-3 text-sm text-paper-mute">
+                <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 rounded-full bg-positive" />
+                {point}
+              </li>
+            ))}
+          </ul>
+        </QRAReveal>
+
+        <QRAReveal delay={120} variant="scale">
+          <div className="panel-float card-edge rounded-xl border border-line-strong bg-ink-900/97 p-6 sm:p-7">
             <WaitlistForm />
           </div>
-        </Reveal>
+        </QRAReveal>
       </div>
-    </section>
+    </Section>
   );
 }

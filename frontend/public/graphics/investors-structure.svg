@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 260" width="760" height="260" fill="none" role="img">
+<style>
+  /* Drawn once, when the image starts. An SVG loaded as an image animates in
+     its own context: this never touches the page's script or its scroll. */
+  .draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: draw 2200ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  @keyframes draw {
+    to { stroke-dashoffset: 0; }
+  }
+  /* A slow halo, so a node has a pulse rather than a hard edge. */
+  .halo {
+    animation: pulse 2600ms ease-in-out infinite;
+    transform-origin: center;
+    transform-box: fill-box;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.35; transform: scale(0.9); }
+    50%      { opacity: 0.75; transform: scale(1.25); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .draw, .halo { animation: none; }
+    .draw { stroke-dashoffset: 0; }
+  }
+</style>
+<line x1="86" y1="150" x2="280" y2="74" stroke="rgba(245,247,250,0.10)" stroke-width="1"/><line x1="280" y1="74" x2="474" y2="150" stroke="rgba(245,247,250,0.10)" stroke-width="1"/><line x1="474" y1="150" x2="668" y2="74" stroke="rgba(245,247,250,0.10)" stroke-width="1"/><line x1="86" y1="150" x2="474" y2="150" stroke="rgba(245,247,250,0.10)" stroke-width="1"/><circle cx="86" cy="150" r="16" stroke="rgba(245,247,250,0.09)" stroke-width="1"/><circle cx="86" cy="150" r="3.6" fill="rgba(245,247,250,0.8)"/><circle cx="280" cy="74" r="16" stroke="rgba(245,247,250,0.09)" stroke-width="1"/><circle cx="280" cy="74" r="3.6" fill="rgba(245,247,250,0.8)"/><circle cx="474" cy="150" r="16" stroke="rgba(245,247,250,0.09)" stroke-width="1"/><circle cx="474" cy="150" r="3.6" fill="rgba(245,247,250,0.8)"/><circle cx="668" cy="74" r="16" stroke="rgba(245,247,250,0.09)" stroke-width="1"/><circle cx="668" cy="74" r="3.6" fill="rgba(245,247,250,0.8)"/></svg>

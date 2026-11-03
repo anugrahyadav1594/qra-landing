@@ -31,7 +31,7 @@ export function useTurnstile(siteKey: string, onToken: (token: string) => void) 
       if (cancelled || !containerRef.current || widgetIdRef.current) return;
       widgetIdRef.current = window.turnstile!.render(containerRef.current, {
         sitekey: siteKey,
-        theme: "dark",
+        theme: "light",
         callback: (token: string) => onTokenRef.current(token),
       });
       setReady(true);

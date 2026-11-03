@@ -5,7 +5,7 @@
 import { useRef, useState } from "react";
 
 import { CONTACT_TOPICS, FEEDBACK_CATEGORIES, HONEYPOT_FIELD_NAME, TURNSTILE_SITE_KEY } from "@/lib/constants";
-import { emailSchema, errorMessage, retryAfterSeconds, feedbackSchema } from "@/lib/schemas";
+import { errorMessage, feedbackSchema, retryAfterSeconds } from "@/lib/schemas";
 import { FieldError, inputClass, labelClass } from "@/components/ui";
 import { useTurnstile } from "@/components/useTurnstile";
 
@@ -109,14 +109,14 @@ export function FeedbackForm({
       <div
         data-testid="feedback-success"
         role="status"
-        className="rounded-xl border border-aqua-500/30 bg-aqua-500/10 p-5 text-sm text-aqua-300"
+        className="rounded-lg border border-positive/30 bg-positive/[0.08] p-5 text-sm"
       >
-        <p className="font-semibold">
+        <p className="font-semibold text-paper">
           {mode === "contact" ? "Message sent." : "Thanks for the feedback!"}
         </p>
-        <p className="mt-1 text-zinc-300">
+        <p className="mt-1.5 leading-relaxed text-paper-dim">
           {mode === "contact"
-            ? "We read everything and reply to every message, usually within two working days."
+            ? "A person at Quantrelic Analytics will read this. We usually reply within two working days."
             : "Every submission lands in our queue and is read by a human."}
         </p>
       </div>
@@ -124,12 +124,12 @@ export function FeedbackForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} noValidate className="space-y-4">
+    <form onSubmit={handleSubmit} noValidate className="space-y-5">
       {mode === "contact" && (
         <>
           <div>
             <label htmlFor="contact-name" className={labelClass}>
-              Your name
+              Name
             </label>
             <input
               id="contact-name"
@@ -138,13 +138,13 @@ export function FeedbackForm({
               autoComplete="name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Jane Doe"
+              placeholder="Your name"
               className={inputClass}
             />
           </div>
           <div>
             <label htmlFor="contact-email" className={labelClass}>
-              Your email
+              Email
             </label>
             <input
               id="contact-email"
@@ -162,7 +162,7 @@ export function FeedbackForm({
           </div>
           <div>
             <label htmlFor="contact-topic" className={labelClass}>
-              What is this about?
+              Topic
             </label>
             <select
               id="contact-topic"
@@ -172,7 +172,7 @@ export function FeedbackForm({
               className={inputClass}
             >
               {CONTACT_TOPICS.map((option) => (
-                <option key={option.value} value={option.value} className="bg-ink-900">
+                <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
               ))}
@@ -184,7 +184,7 @@ export function FeedbackForm({
       {mode === "feedback" && (
         <div>
           <label htmlFor="feedback-category" className={labelClass}>
-            Category
+            Topic
           </label>
           <select
             id="feedback-category"
@@ -194,7 +194,7 @@ export function FeedbackForm({
             className={inputClass}
           >
             {FEEDBACK_CATEGORIES.map((option) => (
-              <option key={option.value} value={option.value} className="bg-ink-900">
+              <option key={option.value} value={option.value}>
                 {option.label}
               </option>
             ))}
@@ -209,13 +209,13 @@ export function FeedbackForm({
         <textarea
           id="feedback-message"
           data-testid="feedback-message"
-          rows={5}
+          rows={mode === "contact" ? 7 : 5}
           required
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder={
             mode === "contact"
-              ? "How can we help?"
+              ? "Tell us what you'd like to ask or discuss."
               : "Found a bug? Have an idea? Tell us — details help."
           }
           className={inputClass}
@@ -228,7 +228,7 @@ export function FeedbackForm({
       {mode === "feedback" && (
         <fieldset>
           <legend className={labelClass}>Rating (optional)</legend>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {RATINGS.map((value) => (
               <button
                 key={value}
@@ -237,10 +237,10 @@ export function FeedbackForm({
                 onClick={() => setRating(value)}
                 aria-pressed={rating === value}
                 aria-label={`Rate ${value} out of 5`}
-                className={`h-10 w-10 rounded-lg border text-sm font-semibold transition ${
+                className={`h-11 w-11 rounded-md border text-sm font-semibold transition-colors ${
                   rating === value
-                    ? "border-signal-500 bg-signal-500/20 text-paper"
-                    : "border-white/10 bg-white/5 text-paper-dim/60 hover:border-white/25"
+                    ? "border-brand-500 bg-brand-500/[0.12] text-brand-300"
+                    : "border-line-strong bg-ink-850 text-paper-mute hover:border-line-strong"
                 }`}
               >
                 {value}
@@ -250,7 +250,7 @@ export function FeedbackForm({
               <button
                 type="button"
                 onClick={() => setRating(null)}
-                className="ml-2 text-sm text-zinc-500 underline hover:text-zinc-300"
+                className="ml-2 text-sm text-paper-mute underline hover:text-paper"
               >
                 clear
               </button>
@@ -273,13 +273,13 @@ export function FeedbackForm({
         type="submit"
         data-testid="feedback-submit"
         disabled={submitting}
-        className="inline-flex items-center justify-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-ink-950 transition hover:bg-zinc-200 focus:outline-none focus:ring-2 focus:ring-white/40 disabled:opacity-60"
+        className="inline-flex w-full items-center justify-center rounded-md bg-brand-500 px-6 py-3.5 text-base font-semibold text-white transition-colors hover:bg-brand-600 disabled:opacity-60 sm:w-auto"
       >
         {submitting ? "Sending…" : mode === "contact" ? "Send message" : "Submit feedback"}
       </button>
 
       {state.kind === "error" && (
-        <p data-testid="feedback-error" role="alert" className="text-sm text-red-400">
+        <p data-testid="feedback-error" role="alert" className="text-sm text-danger">
           {state.message}
         </p>
       )}
