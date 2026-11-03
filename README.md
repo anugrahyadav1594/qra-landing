@@ -321,6 +321,42 @@ the brief's `#66676E`, which measured 3.6:1 on `#090A0C` and failed WCAG AA
 for 9px labels. All entrance transitions are CSS-only, gated on
 `prefers-reduced-motion`.
 
+#### 6.5.1 Premium interaction pass (Phase 2)
+
+Two parts were taken to championship interaction quality:
+
+**MTT Command Bar** (`components/tournament/TournamentNavbar.tsx`) — a fixed
+bar over an 80px reserved spacer (so the 66px compact state cannot shift the
+page), graphite surface with restrained blur and an orange edge when
+scrolled, an MTT emblem and wordmark, eight links on one line, a shared
+orange indicator that moves between links (IntersectionObserver, never a
+scroll handler), a primary Register capsule with a single light sweep and a
+secondary Sign in. The link row is measured on mount and on resize: it drops
+to *compact*, then *tight* spacing, and only falls back to the full-screen
+overlay menu when it genuinely cannot fit. Below `lg` the overlay is the
+intended pattern — indexed vertical links, Escape to close, scroll lock,
+`aria-expanded` / `aria-controls`, focus moved into the panel.
+
+**Championship Prize Arena** (`components/tournament/PrizePool.tsx`) — four
+layers: technical environment (grid, radial measurement rings, coordinate
+marks, platform baseline), editorial intro with the total allocation display
+(₹1,00,000 counted up with thousand-snapping, precision corner brackets,
+measurement rule, 60/40 allocation bar), the cash podium (champion elevated
+and illuminated, runner-ups lower, baseline drawn centre-outward, one light
+sweep), and the merit / merchandise panels with a reconciliation line.
+
+Motion is **GSAP 3 + ScrollTrigger** (`lib/gsap.ts`, dynamically imported,
+registered once): four independent once-only timelines, each created inside a
+`gsap.context()` and reverted on unmount. Everything is transform/opacity
+only, the number is written straight to the DOM (no per-frame React state),
+`will-change` is cleared after each timeline, and `prefers-reduced-motion`
+bypasses GSAP entirely so the section renders in its final state. The
+section is never pinned and never scroll-speed dependent.
+
+**Accessibility note:** the same `#82838A` muted token is used for
+annotations (see above). All prize values are present in the server-rendered
+HTML — if GSAP never loads, nothing is hidden.
+
 ### 6.6 Registration journey
 
 `Identity → Your details → College → Review`

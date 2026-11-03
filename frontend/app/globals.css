@@ -844,6 +844,397 @@ body {
 }
 
 
+/* ══════════════════════════════════════════════════════════════════════
+   MTT COMMAND BAR — the persistent tournament navigation
+   Fixed bar over a reserved spacer (no layout shift on the compact
+   state), restrained blur, orange edge illumination, shared active
+   indicator and an orange capsule CTA with a single light sweep.
+   ══════════════════════════════════════════════════════════════════════ */
+
+.mtt-nav {
+  --nav-h: 80px;
+}
+
+.mtt-nav-surface {
+  background: linear-gradient(180deg, rgba(8, 9, 11, 0.86), rgba(8, 9, 11, 0.62));
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+.mtt-nav-surface[data-scrolled="true"] {
+  background: linear-gradient(180deg, rgba(8, 9, 11, 0.96), rgba(10, 12, 16, 0.88));
+  border-bottom-color: rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 18px 40px -28px rgba(0, 0, 0, 0.95),
+    inset 0 -1px 0 rgba(255, 121, 47, 0.16);
+}
+
+/* Brand emblem: thin orange outline, inner tick ring, refined MTT mark */
+.mtt-emblem {
+  position: relative;
+  display: grid;
+  height: 40px;
+  width: 40px;
+  place-items: center;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 121, 47, 0.45);
+  background: radial-gradient(circle at 50% 40%, rgba(255, 121, 47, 0.16), rgba(8, 9, 11, 0.9) 70%);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mtt-emblem-ring {
+  position: absolute;
+  inset: 4px;
+  border-radius: 999px;
+  border: 1px dashed rgba(255, 121, 47, 0.35);
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.3s ease;
+}
+
+.mtt-emblem-text {
+  position: relative;
+  font-family: var(--font-display, "Space Grotesk", sans-serif);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #ffc08e;
+}
+
+.mtt-emblem:hover {
+  border-color: rgba(255, 145, 74, 0.9);
+  box-shadow: 0 0 0 1px rgba(255, 121, 47, 0.2), 0 10px 26px -14px rgba(255, 121, 47, 0.8);
+  transform: translateY(-1px);
+}
+
+.mtt-emblem:hover .mtt-emblem-ring {
+  transform: rotate(90deg);
+  border-color: rgba(255, 145, 74, 0.7);
+}
+
+.mtt-wordmark {
+  font-family: var(--font-display, "Space Grotesk", sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f4f0ea;
+  transition: color 0.2s ease;
+}
+
+.mtt-wordmark:hover {
+  color: #ffc08e;
+}
+
+.mtt-nav-divider {
+  width: 1px;
+  height: 26px;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.18), transparent);
+}
+
+/* ── Navigation links ───────────────────────────────────────────────── */
+.mtt-navlinks {
+  gap: 0.25rem;
+}
+
+.mtt-navlink {
+  height: 34px;
+  color: #a1a0a2;
+}
+
+/* Density tiers — driven by the measured data attribute on the row */
+.mtt-navlinks[data-density="compact"] .mtt-navlink {
+  height: 32px;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}
+
+.mtt-navlinks[data-density="tight"] .mtt-navlink {
+  height: 30px;
+  padding-left: 0.375rem;
+  padding-right: 0.375rem;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}
+
+/* Out-of-flow copy used only for measuring whether the row fits */
+.mtt-navlinks-measure {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  display: flex;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.mtt-navlink:hover {
+  color: #f4f0ea;
+}
+
+/* Fine orange underline expanding from the centre */
+.mtt-navlink::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  height: 1px;
+  width: calc(100% - 1.25rem);
+  transform: translateX(-50%) scaleX(0);
+  transform-origin: center;
+  background: linear-gradient(90deg, rgba(255, 121, 47, 0.2), #ff914a, rgba(255, 121, 47, 0.2));
+  opacity: 0;
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+}
+
+.mtt-navlink:hover::after {
+  transform: translateX(-50%) scaleX(1);
+  opacity: 0.7;
+}
+
+.mtt-navlink.is-active {
+  color: #ffc08e;
+}
+
+.mtt-nav-indicator {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 100px;
+  opacity: 0;
+  transform: translateX(0) scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(90deg, rgba(255, 121, 47, 0.35), #ff914a 45%, rgba(255, 121, 47, 0.35));
+  box-shadow: 0 0 12px -2px rgba(255, 121, 47, 0.9);
+  pointer-events: none;
+}
+
+/* ── Register CTA ──────────────────────────────────────────────────── */
+.mtt-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  border-radius: 999px;
+  padding: 0.6rem 1.15rem;
+  font-family: var(--font-display, "Space Grotesk", sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  color: #17120c;
+  background: linear-gradient(180deg, #ffb27a, #ff914a 45%, #ff792f);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12),
+    0 12px 28px -16px rgba(255, 121, 47, 0.9);
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease,
+    filter 0.22s ease;
+}
+
+.mtt-cta-sweep {
+  position: absolute;
+  inset: 0;
+  transform: translateX(-120%);
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 80%
+  );
+  pointer-events: none;
+}
+
+.mtt-cta:hover {
+  transform: translateY(-2px);
+  filter: saturate(1.05) brightness(1.03);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 18px 36px -18px rgba(255, 121, 47, 1);
+}
+
+.mtt-cta:hover .mtt-cta-sweep {
+  animation: mtt-sweep 0.62s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mtt-cta:hover .mtt-cta-arrow {
+  transform: translateX(3px);
+}
+
+.mtt-cta:active {
+  transform: translateY(0) scale(0.985);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.22),
+    0 8px 18px -14px rgba(255, 121, 47, 0.9);
+}
+
+.mtt-cta-arrow {
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes mtt-sweep {
+  to {
+    transform: translateX(120%);
+  }
+}
+
+/* Secondary action — keeps the AccountMenu contract, restyled here */
+.mtt-signin > a,
+.mtt-signin > div > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-radius: 999px !important;
+  padding: 0.55rem 1rem !important;
+  font-family: var(--font-mono, ui-monospace, monospace) !important;
+  font-size: 10px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+  color: #a1a0a2 !important;
+  transition: border-color 0.22s ease, color 0.22s ease, background-color 0.22s ease;
+}
+
+.mtt-signin > a:hover,
+.mtt-signin > div > button:hover {
+  border-color: rgba(255, 121, 47, 0.55) !important;
+  background: rgba(255, 121, 47, 0.08) !important;
+  color: #f4f0ea !important;
+}
+
+/* ── Burger ────────────────────────────────────────────────────────── */
+.mtt-burger {
+  display: grid;
+  height: 38px;
+  width: 38px;
+  place-content: center;
+  gap: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.22s ease, background-color 0.22s ease;
+}
+
+.mtt-burger:hover {
+  border-color: rgba(255, 121, 47, 0.5);
+  background: rgba(255, 121, 47, 0.06);
+}
+
+.mtt-burger-line {
+  display: block;
+  height: 1px;
+  width: 16px;
+  background: #f4f0ea;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s ease;
+}
+
+.mtt-burger-line:nth-child(1)[data-open] {
+  transform: translateY(5px) rotate(45deg);
+}
+
+.mtt-burger-line:nth-child(2)[data-open] {
+  opacity: 0;
+}
+
+.mtt-burger-line:nth-child(3)[data-open] {
+  transform: translateY(-5px) rotate(-45deg);
+}
+
+/* ── Overlay menu ──────────────────────────────────────────────────── */
+.mtt-menu {
+  background: rgba(8, 9, 11, 0.98);
+}
+
+.mtt-menu-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 20%, black, transparent 90%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 20%, black, transparent 90%);
+}
+
+.mtt-menu-link {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-block: 1rem;
+  font-family: var(--font-display, "Space Grotesk", sans-serif);
+  font-size: 1.375rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  color: #f4f0ea;
+  transition: color 0.2s ease, padding-left 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mtt-menu-link:hover {
+  color: #ffc08e;
+  padding-left: 0.35rem;
+}
+
+.mtt-menu-link[data-active="true"] {
+  color: #ff914a;
+}
+
+.mtt-menu-arrow {
+  font-size: 0.9rem;
+  color: rgba(255, 121, 47, 0.6);
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mtt-menu-link:hover .mtt-menu-arrow {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   CHAMPIONSHIP PRIZE ARENA — allocation display and podium detailing
+   ══════════════════════════════════════════════════════════════════════ */
+
+.mtt-prize {
+  isolation: isolate;
+}
+
+/* The total allocation display: a calibrated panel with lit corners */
+.mtt-allocation {
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0) 40%),
+    linear-gradient(180deg, #171a20 0%, #0d0f12 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 40px 90px -60px rgba(255, 121, 47, 0.75);
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+}
+
+.mtt-allocation-frame {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 121, 47, 0.07), transparent 42%);
+}
+
+.mtt-allocation-corner {
+  position: absolute;
+  height: 14px;
+  width: 14px;
+  border-style: solid;
+  border-color: rgba(255, 145, 74, 0.95);
+  pointer-events: none;
+}
+
+
 @media (prefers-reduced-motion: reduce) {
   .ticker-track {
     animation: none;
@@ -872,5 +1263,31 @@ body {
 
   .mtt-journey-row:hover .mtt-node {
     transform: none;
+  }
+
+  .mtt-cta:hover {
+    transform: none;
+    filter: none;
+  }
+
+  .mtt-cta:hover .mtt-cta-sweep {
+    animation: none;
+  }
+
+  .mtt-emblem:hover,
+  .mtt-emblem:hover .mtt-emblem-ring {
+    transform: none;
+  }
+
+  .mtt-menu-link:hover {
+    padding-left: 0;
+  }
+
+  .mtt-navlink::after {
+    transition: none;
+  }
+
+  .mtt-burger-line {
+    transition: opacity 0.2s ease;
   }
 }

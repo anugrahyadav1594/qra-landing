@@ -416,3 +416,162 @@ export function BriefingMotif({ className = "" }: MotifProps) {
     </svg>
   );
 }
+
+/* ── Prize pool motifs (Phase 2) ──────────────────────────────────────── */
+
+/** Radial measurement rings: calibrated circles with radial tick marks. */
+export function MeasurementRings({ className = "" }: MotifProps) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 600 600" className={className} fill="none">
+      {[290, 232, 174, 116].map((radius, index) => (
+        <circle
+          key={radius}
+          cx="300"
+          cy="300"
+          r={radius}
+          stroke="currentColor"
+          strokeWidth="0.7"
+          strokeDasharray={index % 2 === 0 ? "0" : "2 8"}
+          opacity={0.1 + index * 0.05}
+        />
+      ))}
+      {Array.from({ length: 72 }).map((_, index) => {
+        const angle = (index * Math.PI) / 36;
+        const long = index % 6 === 0;
+        return (
+          <line
+            key={index}
+            x1={300 + Math.cos(angle) * 290}
+            y1={300 + Math.sin(angle) * 290}
+            x2={300 + Math.cos(angle) * (long ? 262 : 278)}
+            y2={300 + Math.sin(angle) * (long ? 262 : 278)}
+            stroke="currentColor"
+            strokeWidth="0.7"
+            opacity={long ? 0.4 : 0.16}
+          />
+        );
+      })}
+      <circle cx="300" cy="300" r="58" stroke="currentColor" strokeWidth="0.8" opacity="0.3" />
+      <circle cx="300" cy="300" r="3" fill="currentColor" opacity="0.7" />
+      <path d="M300 8 V40 M300 560 V592 M8 300 H40 M560 300 H592" stroke="currentColor" strokeWidth="0.7" opacity="0.35" />
+    </svg>
+  );
+}
+
+/**
+ * Custom championship emblem — an abstract mark built from layered geometry
+ * and radial light, deliberately not a trophy: no clipart, no literal cup.
+ */
+export function ChampionEmblem({ className = "" }: MotifProps) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 120 120" className={className} fill="none">
+      <defs>
+        <linearGradient id="mtt-champion-face" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ffc08e" />
+          <stop offset="55%" stopColor="#ff914a" />
+          <stop offset="100%" stopColor="#ff792f" />
+        </linearGradient>
+      </defs>
+      {/* outer calibration ring */}
+      <circle cx="60" cy="58" r="52" stroke="currentColor" strokeWidth="0.7" opacity="0.28" />
+      {Array.from({ length: 24 }).map((_, index) => {
+        const rad = (index * Math.PI) / 12;
+        return (
+          <line
+            key={index}
+            x1={60 + Math.cos(rad) * 44}
+            y1={58 + Math.sin(rad) * 44}
+            x2={60 + Math.cos(rad) * (index % 2 === 0 ? 52 : 48)}
+            y2={58 + Math.sin(rad) * (index % 2 === 0 ? 52 : 48)}
+            stroke="currentColor"
+            strokeWidth="0.8"
+            opacity={index % 2 === 0 ? 0.5 : 0.22}
+          />
+        );
+      })}
+      {/* faceted championship face */}
+      <path
+        d="M60 14 L96 32 V70 L60 96 L24 70 V32 Z"
+        fill="url(#mtt-champion-face)"
+        fillOpacity="0.16"
+        stroke="currentColor"
+        strokeWidth="1.1"
+        opacity="0.95"
+      />
+      <path d="M60 14 L96 32 L60 50 L24 32 Z" fill="currentColor" fillOpacity="0.18" stroke="currentColor" strokeWidth="0.7" opacity="0.8" />
+      <path d="M24 70 L60 50 V96 Z" fill="currentColor" fillOpacity="0.08" />
+      <path d="M96 70 L60 50 V96 Z" fill="currentColor" fillOpacity="0.05" />
+      <circle cx="60" cy="52" r="9" stroke="currentColor" strokeWidth="1" opacity="0.9" />
+      <path d="M60 43 L63 52 L60 61 L57 52 Z" fill="currentColor" opacity="0.9" />
+      {/* plinth */}
+      <path d="M38 104 H82 L76 96 H44 Z" stroke="currentColor" strokeWidth="0.9" opacity="0.5" />
+      <path d="M28 110 H92" stroke="currentColor" strokeWidth="0.9" opacity="0.35" />
+    </svg>
+  );
+}
+
+/** Three-level geometric podium foundation that the cards stand on. */
+export function PodiumPlatform({ className = "" }: MotifProps) {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 900 60"
+      className={className}
+      fill="none"
+      preserveAspectRatio="none"
+    >
+      <path d="M0 26 H900" stroke="currentColor" strokeWidth="1" opacity="0.35" />
+      <path d="M300 26 V0 M600 26 V0" stroke="currentColor" strokeWidth="0.7" opacity="0.2" />
+      <path d="M300 26 H600 V60 H300 Z" fill="currentColor" fillOpacity="0.06" stroke="currentColor" strokeWidth="0.9" opacity="0.6" />
+      <path d="M180 26 H300 V46 H180 Z" fill="currentColor" fillOpacity="0.03" stroke="currentColor" strokeWidth="0.7" opacity="0.4" />
+      <path d="M600 26 H720 V46 H600 Z" fill="currentColor" fillOpacity="0.03" stroke="currentColor" strokeWidth="0.7" opacity="0.4" />
+      {Array.from({ length: 31 }).map((_, index) => (
+        <line
+          key={index}
+          x1={index * 30}
+          y1="26"
+          x2={index * 30}
+          y2={index % 5 === 0 ? 16 : 21}
+          stroke="currentColor"
+          strokeWidth="0.5"
+          opacity="0.18"
+        />
+      ))}
+    </svg>
+  );
+}
+
+/**
+ * Abstract merchandise composition: package silhouettes and inventory
+ * forms. Decorative only — no branded products, no claimed inclusions.
+ */
+export function MerchandiseStack({ className = "" }: MotifProps) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 200 140" className={className} fill="none">
+      {/* stacked cartons */}
+      <path d="M14 96 L52 82 L90 96 L52 110 Z" stroke="currentColor" strokeWidth="1" opacity="0.6" />
+      <path d="M14 96 V68 L52 54 V82" stroke="currentColor" strokeWidth="1" opacity="0.45" />
+      <path d="M90 96 V68 L52 54" stroke="currentColor" strokeWidth="1" opacity="0.45" />
+      <path d="M62 66 L100 52 L138 66 L100 80 Z" stroke="currentColor" strokeWidth="1" opacity="0.75" />
+      <path d="M62 66 V38 L100 24 V52" stroke="currentColor" strokeWidth="1" opacity="0.5" />
+      <path d="M138 66 V38 L100 24" stroke="currentColor" strokeWidth="1" opacity="0.5" />
+      <path d="M110 36 L148 22 L186 36 L148 50 Z" stroke="currentColor" strokeWidth="1" opacity="0.9" />
+      <path d="M110 36 V14 L148 0 V22" stroke="currentColor" strokeWidth="1" opacity="0.55" />
+      <path d="M186 36 V14 L148 0" stroke="currentColor" strokeWidth="1" opacity="0.55" />
+      {/* inventory rule + ticks */}
+      <path d="M10 128 H190" stroke="currentColor" strokeWidth="0.8" opacity="0.3" />
+      {Array.from({ length: 19 }).map((_, index) => (
+        <line
+          key={index}
+          x1={10 + index * 10}
+          y1="128"
+          x2={10 + index * 10}
+          y2={index % 3 === 0 ? 120 : 124}
+          stroke="currentColor"
+          strokeWidth="0.6"
+          opacity="0.25"
+        />
+      ))}
+    </svg>
+  );
+}

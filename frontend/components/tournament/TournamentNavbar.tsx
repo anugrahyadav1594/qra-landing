@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { AccountMenu } from "@/components/auth/AccountMenu";
 import { Logo } from "@/components/Logo";
+import { loadGsap, prefersReducedMotion, useIsomorphicLayoutEffect } from "@/lib/gsap";
 
 export const TOURNAMENT_LINKS = [
   { href: "/tournament", label: "Overview" },
@@ -16,120 +17,522 @@ export const TOURNAMENT_LINKS = [
   { href: "/tournament#event-details", label: "Event Details" },
   { href: "/tournament/rules", label: "Rules" },
   { href: "/tournament/faq", label: "FAQ" },
-];
+] as const;
 
+/** Sections observed for the active indicator (anchor links only). */
+const SECTION_IDS = ["competition", "prize-pool", "colleges", "sponsors", "event-details"] as const;
+
+/** Nav height in px — default and compact (scrolled) states. */
+const NAV_HEIGHT = { base: 80, scrolled: 66 };
+
+/** Base width of the shared indicator; scaleX maps it to the active link. */
+const INDICATOR_BASE = 100;
+
+/**
+ * MTT COMMAND BAR
+ *
+ * The persistent identity of the tournament: a fixed bar with a reserved
+ * spacer (so the compact scrolled state never shifts the page), a measured
+ * link row that degrades to the overlay menu before it can wrap, a shared
+ * active-section indicator driven by IntersectionObserver, and a single
+ * GSAP entrance timeline. No scroll-linked React state — the scrolled state
+ * toggles one data attribute.
+ */
 export function TournamentNavbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [activeHref, setActiveHref] = useState<string>("/tournament");
+  const [density, setDensity] = useState<"comfortable" | "compact" | "tight">("comfortable");
+  const [useMenu, setUseMenu] = useState(false);
 
+  const headerRef = useRef<HTMLElement | null>(null);
+  const barRef = useRef<HTMLDivElement | null>(null);
+  const navRef = useRef<HTMLDivElement | null>(null);
+  const indicatorRef = useRef<HTMLSpanElement | null>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const toggleRef = useRef<HTMLButtonElement | null>(null);
+  const menuLinksRef = useRef<HTMLDivElement | null>(null);
+  const readyRef = useRef(false);
+
+  const onTournamentHome = pathname === "/tournament";
+
+  useEffect(() => setOpen(false), [pathname]);
+
+  /* ── Scrolled state: one passive listener, one boolean ─────────────── */
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 16);
+    const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => setOpen(false), [pathname]);
+  /* ── Active section (IntersectionObserver, not a scroll handler) ───── */
+  useEffect(() => {
+    if (!onTournamentHome) {
+      const match = TOURNAMENT_LINKS.find(
+        (link) => link.href !== "/tournament" && !link.href.includes("#") && link.href === pathname,
+      );
+      setActiveHref(match ? match.href : pathname);
+      return;
+    }
 
-  function isActive(href: string) {
-    if (href.includes("#")) return false;
-    if (href === "/tournament") return pathname === "/tournament";
-    return pathname === href || pathname.startsWith(`${href}/`);
-  }
+    const sections = SECTION_IDS.map((id) => document.getElementById(id)).filter(
+      (element): element is HTMLElement => Boolean(element),
+    );
+    if (sections.length === 0 || typeof IntersectionObserver === "undefined") {
+      setActiveHref("/tournament");
+      return;
+    }
+
+    const visible = new Set<string>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) visible.add(entry.target.id);
+          else visible.delete(entry.target.id);
+        }
+        if (window.scrollY < 120) {
+          setActiveHref("/tournament");
+          return;
+        }
+        const current = SECTION_IDS.find((id) => visible.has(id));
+        if (current) setActiveHref(`/tournament#${current}`);
+      },
+      { rootMargin: "-45% 0px -50% 0px", threshold: 0 },
+    );
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, [onTournamentHome, pathname]);
+
+  /* ── Anchor navigation: smooth scroll + history support ────────────── */
+  const scrollToHash = useCallback((hash: string, smooth = true) => {
+    const element = document.getElementById(hash);
+    if (!element) return false;
+    element.scrollIntoView({
+      behavior: smooth && !prefersReducedMotion() ? "smooth" : "auto",
+      block: "start",
+    });
+    return true;
+  }, []);
+
+  useEffect(() => {
+    const onHistoryChange = () => {
+      const hash = window.location.hash.replace("#", "");
+      if (hash) scrollToHash(hash, false);
+    };
+    window.addEventListener("popstate", onHistoryChange);
+    window.addEventListener("hashchange", onHistoryChange);
+    return () => {
+      window.removeEventListener("popstate", onHistoryChange);
+      window.removeEventListener("hashchange", onHistoryChange);
+    };
+  }, [scrollToHash]);
+
+  const handleNavigate = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    const [path, hash] = href.split("#");
+    setOpen(false);
+    if (!hash) return;
+    if (path && path !== pathname) return; // let the router navigate
+    const target = document.getElementById(hash);
+    if (!target) return;
+    event.preventDefault();
+    setActiveHref(href);
+    scrollToHash(hash);
+    window.history.pushState(null, "", href);
+  };
+
+  /* ── Fit measurement: reduce density, then fall back to the menu ───── */
+  useIsomorphicLayoutEffect(() => {
+    const bar = barRef.current;
+    const nav = navRef.current;
+    if (!bar || !nav) return;
+
+    const measure = () => {
+      // Below lg the overlay menu is the intended pattern — never measure.
+      const desktop = window.matchMedia?.("(min-width: 1024px)").matches ?? true;
+      if (!desktop) {
+        setUseMenu(true);
+        return;
+      }
+      const links = Array.from(nav.querySelectorAll<HTMLElement>("[data-nav-link]"));
+      if (links.length === 0) return;
+      const barWidth = bar.clientWidth;
+      if (barWidth === 0) return; // hidden / jsdom
+      const brandWidth = bar.querySelector<HTMLElement>("[data-nav-brand]")?.offsetWidth ?? 0;
+      const actionsWidth = bar.querySelector<HTMLElement>("[data-nav-actions]")?.offsetWidth ?? 0;
+      const available = barWidth - brandWidth - actionsWidth - 72;
+
+      const tiers: Array<"comfortable" | "compact" | "tight"> = ["comfortable", "compact", "tight"];
+      for (const tier of tiers) {
+        // The data attribute drives the density CSS, so widths really change.
+        nav.dataset.density = tier;
+        const needed = links.reduce((sum, link) => sum + link.offsetWidth, 0);
+        if (needed <= available) {
+          setDensity(tier);
+          setUseMenu(false);
+          return;
+        }
+      }
+      setDensity("comfortable");
+      setUseMenu(true);
+    };
+
+    measure();
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => measure());
+    observer.observe(bar);
+    return () => observer.disconnect();
+  }, []);
+
+  /* ── Entrance + indicator motion (GSAP) ────────────────────────────── */
+  useIsomorphicLayoutEffect(() => {
+    let ctx: { revert: () => void } | undefined;
+    let cancelled = false;
+
+    loadGsap().then((mod) => {
+      if (!mod || cancelled || !headerRef.current) return;
+      const { gsap } = mod;
+      ctx = gsap.context(() => {
+        if (prefersReducedMotion()) {
+          gsap.set("[data-nav-anim]", { opacity: 1, y: 0, scale: 1 });
+          readyRef.current = true;
+          return;
+        }
+        const timeline = gsap.timeline({ defaults: { ease: "power3.out" } });
+        timeline
+          .fromTo("[data-nav-anim='bar']", { opacity: 0 }, { opacity: 1, duration: 0.5 })
+          .fromTo(
+            "[data-nav-anim='emblem']",
+            { opacity: 0, scale: 0.92 },
+            { opacity: 1, scale: 1, duration: 0.55 },
+            0.05,
+          )
+          .fromTo(
+            "[data-nav-anim='wordmark']",
+            { opacity: 0, y: 8 },
+            { opacity: 1, y: 0, duration: 0.5 },
+            0.12,
+          )
+          .fromTo(
+            "[data-nav-anim='link']",
+            { opacity: 0, y: 10 },
+            { opacity: 1, y: 0, duration: 0.45, stagger: 0.045 },
+            0.2,
+          )
+          .fromTo(
+            "[data-nav-anim='powered']",
+            { opacity: 0 },
+            { opacity: 1, duration: 0.4 },
+            0.34,
+          )
+          .fromTo(
+            "[data-nav-anim='cta']",
+            { opacity: 0, y: 8, scale: 0.97 },
+            { opacity: 1, y: 0, scale: 1, duration: 0.5 },
+            0.38,
+          )
+          .fromTo(
+            "[data-nav-anim='signin']",
+            { opacity: 0 },
+            { opacity: 1, duration: 0.4 },
+            0.46,
+          );
+        readyRef.current = true;
+      }, headerRef);
+    });
+
+    return () => {
+      cancelled = true;
+      ctx?.revert();
+    };
+  }, []);
+
+  /* ── Shared indicator: transform-only, moved on active change ──────── */
+  useIsomorphicLayoutEffect(() => {
+    const nav = navRef.current;
+    const indicator = indicatorRef.current;
+    if (!nav || !indicator) return;
+
+    const apply = (x: number, width: number) => {
+      indicator.style.transform = `translateX(${x}px) scaleX(${width / INDICATOR_BASE})`;
+    };
+
+    const move = (animate: boolean) => {
+      const link = nav.querySelector<HTMLElement>(`[data-nav-link][data-href="${activeHref}"]`);
+      if (!link) {
+        indicator.style.opacity = "0";
+        return;
+      }
+      indicator.style.opacity = "1";
+      const x = link.offsetLeft;
+      const width = link.offsetWidth;
+      if (!animate) {
+        apply(x, width);
+        return;
+      }
+      loadGsap().then((mod) => {
+        if (!mod) return apply(x, width);
+        mod.gsap.to(indicator, {
+          x,
+          scaleX: width / INDICATOR_BASE,
+          duration: prefersReducedMotion() ? 0 : 0.42,
+          ease: "power3.out",
+          overwrite: true,
+        });
+      });
+    };
+
+    move(readyRef.current && !prefersReducedMotion());
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => move(false));
+    observer.observe(nav);
+    return () => observer.disconnect();
+  }, [activeHref, density, useMenu]);
+
+  /* ── Mobile menu: escape, focus, scroll lock, animated panel ───────── */
+  useEffect(() => {
+    if (!open) return;
+    // Move keyboard focus into the panel so Escape and Tab behave as expected.
+    menuLinksRef.current?.querySelector<HTMLAnchorElement>("a")?.focus();
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        toggleRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
+
+  useIsomorphicLayoutEffect(() => {
+    if (!open || !panelRef.current) return;
+    let ctx: { revert: () => void } | undefined;
+    let cancelled = false;
+    loadGsap().then((mod) => {
+      if (!mod || cancelled || !panelRef.current) return;
+      const { gsap } = mod;
+      ctx = gsap.context(() => {
+        if (prefersReducedMotion()) return;
+        gsap
+          .timeline({ defaults: { ease: "power3.out" } })
+          .fromTo(panelRef.current, { opacity: 0, y: -12 }, { opacity: 1, y: 0, duration: 0.32 })
+          .fromTo(
+            menuLinksRef.current?.children ?? [],
+            { opacity: 0, x: -14 },
+            { opacity: 1, x: 0, duration: 0.34, stagger: 0.045 },
+            0.08,
+          );
+      }, panelRef);
+    });
+    return () => {
+      cancelled = true;
+      ctx?.revert();
+    };
+  }, [open]);
+
+  const linkClass = useMemo(
+    () =>
+      [
+        "mtt-navlink relative flex items-center whitespace-nowrap font-mono uppercase tracking-[0.16em] transition-colors duration-200",
+        density === "tight"
+          ? "px-1.5 text-[10px] tracking-[0.1em]"
+          : density === "compact"
+            ? "px-2 text-[11px] tracking-[0.12em]"
+            : "px-2.5 text-[11.5px]",
+      ].join(" "),
+    [density],
+  );
 
   return (
-    <header
-      className={`sticky top-0 z-50 border-b transition-colors duration-300 ${
-        scrolled ? "border-white/10 bg-arena-950/92 backdrop-blur-xl" : "border-white/5 bg-arena-950/70 backdrop-blur-md"
-      }`}
-    >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6">
-        <Link href="/tournament" className="flex shrink-0 items-center gap-3">
-          <span className="relative grid h-9 w-9 place-items-center">
-            <span className="absolute inset-0 rounded-full border border-flare-500/50" />
-            <span className="absolute inset-[3px] rounded-full border border-flare-500/25" />
-            <span className="font-display text-[13px] font-bold tracking-tight text-flare-300">MTT</span>
-          </span>
-          <span className="hidden font-display text-sm font-semibold uppercase tracking-[0.16em] text-bone sm:block">
-            Mumbai Trading Tournament
-          </span>
-        </Link>
+    <>
+      {/* Reserved space: the bar is fixed, so the compact state never shifts content */}
+      <div style={{ height: NAV_HEIGHT.base }} aria-hidden="true" />
 
-        <nav aria-label="Tournament" className="hidden items-center gap-1 xl:flex">
-          {TOURNAMENT_LINKS.map((link) => {
-            const active = isActive(link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                aria-current={active ? "page" : undefined}
-                className={`arena-focus rounded-full px-3 py-1.5 text-[13px] transition ${
-                  active ? "bg-flare-500/12 text-flare-300" : "text-ash hover:bg-white/5 hover:text-bone"
-                }`}
-              >
-                {link.label}
+      <header
+        ref={headerRef}
+        data-nav-anim="bar"
+        className="fixed inset-x-0 top-0 z-50 mtt-nav"
+        data-scrolled={scrolled ? "true" : "false"}
+      >
+        <div
+          className="mtt-nav-surface absolute inset-0 border-b transition-all duration-300 ease-out"
+          data-scrolled={scrolled ? "true" : "false"}
+        />
+        <div
+          ref={barRef}
+          className="relative mx-auto flex w-full max-w-[1600px] items-center gap-3 px-4 transition-[height] duration-300 ease-out sm:px-6 xl:gap-5"
+          style={{ height: scrolled ? NAV_HEIGHT.scrolled : NAV_HEIGHT.base }}
+        >
+          {/* ── Brand ───────────────────────────────────────────────── */}
+          <div data-nav-brand className="flex min-w-0 items-center gap-3">
+            <Link
+              href="/tournament"
+              data-nav-anim="emblem"
+              className="mtt-emblem group arena-focus"
+              aria-label="Mumbai Trading Tournament — home"
+            >
+              <span className="mtt-emblem-ring" aria-hidden="true" />
+              <span className="mtt-emblem-text" aria-hidden="true">
+                MTT
+              </span>
+            </Link>
+            <div data-nav-anim="wordmark" className="min-w-0">
+              <Link href="/tournament" className="mtt-wordmark arena-focus block">
+                <span className="block truncate">Mumbai Trading</span>
+                <span className="block truncate">Tournament</span>
               </Link>
-            );
-          })}
-        </nav>
-
-        <div className="flex items-center gap-3">
-          <Link
-            href="/tournament"
-            className="hidden font-mono text-[10px] uppercase tracking-[0.26em] text-ash/70 transition hover:text-bone lg:block"
-          >
-            Powered by Quant Relic
-          </Link>
-          <Link
-            href="/tournament/register"
-            className="btn-flare arena-focus rounded-full px-4 py-2 text-[13px] sm:px-5"
-          >
-            Register now
-          </Link>
-          <div className="hidden sm:block">
-            <AccountMenu />
+              <span className="mtt-coord hidden lg:block">MTT / Season 01</span>
+            </div>
+            <span className="mtt-nav-divider hidden xl:block" aria-hidden="true" />
           </div>
-          <button
-            type="button"
-            className="arena-focus rounded-lg border border-white/10 p-2 text-ash xl:hidden"
-            aria-expanded={open}
-            aria-label={open ? "Close tournament menu" : "Open tournament menu"}
-            onClick={() => setOpen((value) => !value)}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              {open ? <path d="M6 6l12 12M18 6L6 18" /> : <path d="M4 7h16M4 12h16M4 17h16" />}
-            </svg>
-          </button>
-        </div>
-      </div>
 
-      {open && (
-        <div className="border-t border-white/5 px-4 py-4 xl:hidden">
-          <div className="flex flex-col">
-            {TOURNAMENT_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setOpen(false)}
-                className="border-b border-white/5 py-3 text-sm text-bone/85 last:border-0"
-              >
-                {link.label}
+          {/* ── Links ───────────────────────────────────────────────── */}
+          <div
+            ref={navRef}
+            data-density={density}
+            aria-hidden={useMenu || undefined}
+            className={`mtt-navlinks relative hidden items-center justify-center lg:flex ${
+              useMenu ? "mtt-navlinks-measure" : "flex-1"
+            }`}
+          >
+              {TOURNAMENT_LINKS.map((link) => {
+                const active = link.href === activeHref;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    data-nav-link
+                    data-href={link.href}
+                    data-nav-anim="link"
+                    data-active={active ? "true" : "false"}
+                    aria-current={active ? "page" : undefined}
+                    onClick={(event) => handleNavigate(event, link.href)}
+                    className={`${linkClass} ${active ? "is-active" : ""}`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+            <span ref={indicatorRef} className="mtt-nav-indicator" aria-hidden="true" />
+          </div>
+          {useMenu && <div className="flex-1" />}
+
+          {/* ── Actions ─────────────────────────────────────────────── */}
+          <div data-nav-actions className="flex shrink-0 items-center gap-2 sm:gap-3">
+            <span
+              data-nav-anim="powered"
+              className="mtt-coord hidden items-center gap-2 2xl:flex"
+            >
+              <Logo className="h-4 w-auto object-contain opacity-60" />
+              Powered by Quant Relic
+            </span>
+
+            <div data-nav-anim="cta" className="mtt-cta-wrap">
+              <Link href="/tournament/register" className="mtt-cta arena-focus">
+                <span className="mtt-cta-sweep" aria-hidden="true" />
+                <span className="relative">Register now</span>
+                <svg
+                  className="mtt-cta-arrow relative"
+                  viewBox="0 0 16 16"
+                  width="12"
+                  height="12"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                  aria-hidden="true"
+                >
+                  <path d="M2 8h11M9 4l4 4-4 4" />
+                </svg>
               </Link>
-            ))}
-            <div className="mt-4 flex items-center justify-between gap-3">
+            </div>
+
+            <div data-nav-anim="signin" className="mtt-signin hidden sm:block">
               <AccountMenu />
-              <Link
-                href="/"
-                className="text-xs text-ash underline underline-offset-4"
-              >
-                Quant Relic home
+            </div>
+
+            <button
+              ref={toggleRef}
+              type="button"
+              className={`mtt-burger arena-focus ${useMenu ? "" : "lg:hidden"}`}
+              aria-expanded={open}
+              aria-controls="mtt-mobile-menu"
+              aria-label={open ? "Close tournament menu" : "Open tournament menu"}
+              onClick={() => setOpen((value) => !value)}
+            >
+              <span className="mtt-burger-line" data-open={open || undefined} />
+              <span className="mtt-burger-line" data-open={open || undefined} />
+              <span className="mtt-burger-line" data-open={open || undefined} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* ── Overlay menu (tablet / mobile, and any width that needs it) ── */}
+      {open && (
+        <div
+          id="mtt-mobile-menu"
+          ref={panelRef}
+          className={`mtt-menu fixed inset-0 z-40 ${useMenu ? "" : "lg:hidden"}`}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Tournament navigation"
+        >
+          <div className="mtt-menu-grid absolute inset-0" aria-hidden="true" />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(120% 70% at 50% 0%, rgba(255,121,47,0.10), transparent 60%)",
+            }}
+            aria-hidden="true"
+          />
+          <div
+            className="relative flex h-full flex-col overflow-y-auto px-4 pb-10 sm:px-6"
+            style={{ paddingTop: NAV_HEIGHT.scrolled + 16 }}
+          >
+            <div className="mtt-coord mb-6">Navigation · MTT</div>
+            <div ref={menuLinksRef} className="flex flex-col">
+              {TOURNAMENT_LINKS.map((link, index) => {
+                const active = link.href === activeHref;
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    data-active={active ? "true" : "false"}
+                    aria-current={active ? "page" : undefined}
+                    onClick={(event) => handleNavigate(event, link.href)}
+                    className="mtt-menu-link group"
+                  >
+                    <span className="mtt-figure font-mono text-[10px] text-flare-500/80">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <span className="flex-1">{link.label}</span>
+                    <span className="mtt-menu-arrow" aria-hidden="true">
+                      →
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className="mt-8 flex flex-col gap-4 border-t border-white/10 pt-6">
+              <div className="mtt-signin w-full">
+                <AccountMenu />
+              </div>
+              <Link href="/" className="mtt-coord hover:text-bone">
+                ← Quant Relic home
               </Link>
             </div>
           </div>
         </div>
       )}
-    </header>
+    </>
   );
 }
 

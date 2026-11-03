@@ -208,10 +208,10 @@ describe("PrizePool — allocation", () => {
     expect(screen.getByText(/₹60,000 cash \+ ₹40,000 goodies =/)).toBeInTheDocument();
   });
 
-  it("renders the merit block as ten markers", () => {
+  it("renders the merit block as ten individually indexed markers", () => {
     const { container } = render(<PrizePool config={config} />);
-    const markers = container.querySelectorAll(".mtt-bar, span[style*='height']");
-    expect(markers.length).toBeGreaterThanOrEqual(10);
+    const markers = container.querySelectorAll("[data-merit-marker]");
+    expect(markers).toHaveLength(config.merit_prize_count);
   });
 });
 
