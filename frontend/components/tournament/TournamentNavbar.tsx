@@ -133,32 +133,71 @@ export function TournamentNavbar() {
   );
 }
 
-/** Compact footer strip that repeats the brand relationship. */
+/** Footer strip: closes the page with the same technical language used by
+ * the redesigned sections — measurement rule, arena mark, brand line. */
 export function TournamentFooterStrip() {
   return (
-    <div className="border-t border-white/5 bg-arena-950">
-      <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-4 px-4 py-8 sm:flex-row sm:items-center sm:px-6">
-        <div className="flex items-center gap-3">
-          <Logo className="h-6 w-auto object-contain opacity-70" />
-          <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-ash">
-            Powered by Quant Relic Analytics Private Limited
-          </p>
+    <footer className="relative overflow-hidden border-t border-white/[0.08] bg-arena-950">
+      <div className="mtt-ticks opacity-30" aria-hidden="true" />
+      <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-12">
+        <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr]">
+          <div className="flex items-start gap-4">
+            <span
+              aria-hidden="true"
+              className="relative mt-1 grid h-10 w-10 shrink-0 place-items-center"
+            >
+              <span className="absolute inset-0 rounded-full border border-flare-500/45" />
+              <span className="absolute inset-[4px] rounded-full border border-flare-500/25" />
+              <span className="font-display text-[10px] font-bold tracking-tight text-flare-300">
+                MTT
+              </span>
+            </span>
+            <div>
+              <p className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-bone">
+                Quantrelic&apos;s Mumbai Trading Tournament
+              </p>
+              <div className="mt-3 flex items-center gap-3">
+                <Logo className="h-6 w-auto object-contain opacity-70" />
+                <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-muted">
+                  Powered by Quant Relic Analytics Private Limited
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4 lg:items-end">
+            <nav
+              aria-label="Tournament footer"
+              className="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[9px] uppercase tracking-[0.24em]"
+            >
+              <Link href="/tournament/rules" className="text-ash transition hover:text-bone">
+                Rules
+              </Link>
+              <Link href="/tournament/faq" className="text-ash transition hover:text-bone">
+                FAQ
+              </Link>
+              <Link href="/tournament/leaderboard" className="text-ash transition hover:text-bone">
+                Leaderboard
+              </Link>
+              <Link href="/privacy" className="text-ash transition hover:text-bone">
+                Privacy
+              </Link>
+              <Link href="/contact" className="text-ash transition hover:text-bone">
+                Contact
+              </Link>
+            </nav>
+            <p className="max-w-sm text-[11px] leading-relaxed text-muted lg:text-right">
+              An educational trading competition for college students in Mumbai. Trading involves
+              risk; nothing here is investment advice.
+            </p>
+          </div>
         </div>
-        <div className="flex flex-wrap gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ash/70">
-          <Link href="/tournament/rules" className="hover:text-bone">
-            Rules
-          </Link>
-          <Link href="/tournament/faq" className="hover:text-bone">
-            FAQ
-          </Link>
-          <Link href="/privacy" className="hover:text-bone">
-            Privacy
-          </Link>
-          <Link href="/contact" className="hover:text-bone">
-            Contact
-          </Link>
+
+        <div className="mt-10 flex flex-col gap-3 border-t border-white/[0.06] pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <span className="mtt-coord">MTT / Mumbai · Individual participation</span>
+          <span className="mtt-coord">End of briefing</span>
         </div>
       </div>
-    </div>
+    </footer>
   );
 }

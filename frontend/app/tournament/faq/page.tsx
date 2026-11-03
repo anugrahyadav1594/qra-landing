@@ -42,7 +42,7 @@ export default async function FaqPage() {
         />
 
         <div className="mt-12">
-          <TournamentFAQ config={config} />
+          <TournamentFAQ config={config} layout="stacked" />
         </div>
 
         <div className="mt-14 flex flex-wrap items-center gap-4 border-t border-white/8 pt-8">

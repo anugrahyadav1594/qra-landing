@@ -14,6 +14,7 @@ import {
   type SelectHTMLAttributes,
 } from "react";
 
+import { SectionIntro, Surface } from "@/components/tournament/primitives";
 import { STATUS_LABELS, STATUS_TONES, type RegistrationStatus } from "@/lib/tournament";
 
 /* ── Section headers (editorial, asymmetric) ─────────────────────────── */
@@ -23,32 +24,34 @@ export function SectionHeader({
   eyebrow,
   title,
   description,
+  meta,
   align = "left",
+  className = "",
+  titleClassName = "",
 }: {
   index?: string;
   eyebrow: string;
   title: ReactNode;
   description?: ReactNode;
+  meta?: ReactNode;
   align?: "left" | "center";
+  className?: string;
+  titleClassName?: string;
 }) {
+  // Single source of truth for section intros: the shared SectionIntro
+  // primitive renders the index badge, eyebrow rule and editorial heading
+  // used across every tournament surface.
   return (
-    <div className={align === "center" ? "mx-auto max-w-2xl text-center" : "max-w-3xl"}>
-      <div className={`flex items-center gap-3 ${align === "center" ? "justify-center" : ""}`}>
-        {index && (
-          <span className="font-mono text-[11px] tracking-[0.3em] text-flare-500/80">{index}</span>
-        )}
-        <span className="h-px w-10 rule-flare" />
-        <span className="font-mono text-[11px] uppercase tracking-[0.32em] text-flare-300/90">
-          {eyebrow}
-        </span>
-      </div>
-      <h2 className="mt-5 font-display text-3xl font-semibold uppercase leading-[1.04] tracking-tightest text-bone sm:text-4xl lg:text-[2.9rem]">
-        {title}
-      </h2>
-      {description && (
-        <p className="mt-5 max-w-2xl text-[15px] leading-relaxed text-ash">{description}</p>
-      )}
-    </div>
+    <SectionIntro
+      index={index}
+      eyebrow={eyebrow}
+      title={title}
+      description={description}
+      meta={meta}
+      align={align}
+      className={className}
+      titleClassName={titleClassName}
+    />
   );
 }
 
@@ -240,8 +243,8 @@ export function EmptyState({
   icon?: "ring" | "grid" | "trophy";
 }) {
   return (
-    <div className="arena-panel arena-panel-sm relative overflow-hidden px-6 py-10 text-center">
-      <div className="mx-auto mb-5 h-16 w-16 opacity-70">
+    <Surface notch={false} className="overflow-hidden px-6 py-10 text-center">
+      <div className="mx-auto mb-5 h-16 w-16 text-flare-500/70 opacity-80">
         {icon === "ring" && <RingGlyph />}
         {icon === "grid" && <GridGlyph />}
         {icon === "trophy" && <TrophyGlyph />}
@@ -249,7 +252,7 @@ export function EmptyState({
       <p className="font-display text-lg font-semibold text-bone">{title}</p>
       <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ash">{description}</p>
       {action && <div className="mt-6 flex justify-center">{action}</div>}
-    </div>
+    </Surface>
   );
 }
 

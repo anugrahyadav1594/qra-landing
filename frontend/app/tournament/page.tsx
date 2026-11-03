@@ -11,6 +11,7 @@ import { Reveal } from "@/components/Reveal";
 import { SponsorWall } from "@/components/tournament/SponsorWall";
 import { TournamentFAQ } from "@/components/tournament/TournamentFAQ";
 import { TournamentTimeline } from "@/components/tournament/TournamentTimeline";
+import { CoordNote, Surface, TechLabel } from "@/components/tournament/primitives";
 import { SITE_URL } from "@/lib/constants";
 import {
   DEFAULT_TOURNAMENT_CONFIG,
@@ -84,23 +85,32 @@ export default async function TournamentPage() {
       <SponsorWall sponsors={sponsors.sponsors} />
 
       {announcements.announcements.length > 0 && (
-        <section className="border-t border-white/8 bg-arena-900 py-16">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6">
-            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-flare-300">
-              Announcements
-            </p>
-            <ul className="mt-6 grid gap-4 lg:grid-cols-3">
+        <section className="mtt-section scroll-mt-20 overflow-hidden bg-arena-900 py-14 sm:py-16">
+          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6">
+            <div className="flex flex-wrap items-center gap-4">
+              <span className="inline-flex h-7 min-w-7 items-center justify-center border border-flare-500/35 bg-flare-500/10 px-1.5 font-mono text-[11px] tracking-[0.12em] text-flare-300">
+                07
+              </span>
+              <span className="font-mono text-[10px] uppercase tracking-[0.34em] text-flare-300/90">
+                Announcements
+              </span>
+              <span className="h-px flex-1 bg-white/[0.09]" aria-hidden="true" />
+              <span className="mtt-coord">MTT / Live updates</span>
+            </div>
+            <ul className="mt-7 grid gap-4 lg:grid-cols-3">
               {announcements.announcements.slice(0, 3).map((announcement) => (
-                <li
-                  key={announcement.id}
-                  className="arena-panel arena-panel-sm border-l-2 border-l-flare-500/60 p-5"
-                >
-                  <p className="font-display text-base font-semibold text-bone">
-                    {announcement.title}
-                  </p>
-                  <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-ash">
-                    {announcement.body_md}
-                  </p>
+                <li key={announcement.id}>
+                  <Surface className="h-full p-5 sm:p-6">
+                    <div className="flex items-center gap-2 border-l-2 border-flare-500 pl-3">
+                      <TechLabel>{announcement.category?.replace(/_/g, " ") ?? "General"}</TechLabel>
+                    </div>
+                    <p className="mt-4 font-display text-base font-semibold leading-snug text-bone">
+                      {announcement.title}
+                    </p>
+                    <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-ash">
+                      {announcement.body_md}
+                    </p>
+                  </Surface>
                 </li>
               ))}
             </ul>
@@ -110,45 +120,49 @@ export default async function TournamentPage() {
 
       <EventDetails config={config} />
 
-      <section className="border-t border-white/8 bg-arena-900 py-20">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6">
-          <TournamentFAQ config={config} />
-          <div className="mt-8 text-center">
-            <Link
-              href="/tournament/faq"
-              className="arena-focus rounded font-mono text-[11px] uppercase tracking-[0.22em] text-flare-300 underline underline-offset-4"
-            >
-              Read every frequently asked question
-            </Link>
-          </div>
-        </div>
-      </section>
+      <TournamentFAQ
+        config={config}
+        footerAction={
+          <Link
+            href="/tournament/faq"
+            className="arena-focus rounded font-mono text-[10px] uppercase tracking-[0.24em] text-flare-300 underline decoration-flare-500/40 underline-offset-4 transition hover:text-flare-200"
+          >
+            Read every frequently asked question
+          </Link>
+        }
+      />
 
       {/* Closing CTA */}
-      <section className="relative overflow-hidden border-t border-white/8 bg-arena-950 py-24">
+      <section className="mtt-section mtt-grid relative overflow-hidden bg-arena-950">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute left-1/2 top-0 h-[32rem] w-[52rem] -translate-x-1/2 opacity-50"
+          className="pointer-events-none absolute left-1/2 top-0 h-[30rem] w-[48rem] -translate-x-1/2 opacity-80"
           style={{
             background:
-              "radial-gradient(ellipse at center, rgba(244,124,53,0.22), transparent 65%)",
+              "radial-gradient(ellipse at center, rgba(255,121,47,0.16), transparent 66%)",
           }}
         />
-        <div className="relative mx-auto max-w-4xl px-4 text-center sm:px-6">
+        <div className="relative mx-auto w-full max-w-4xl px-4 text-center sm:px-6">
           <Reveal>
-            <p className="font-mono text-[10px] uppercase tracking-[0.32em] text-flare-300">
-              {formatINR(config.prize_pool_total)} prize pool · {config.participation_type}{" "}
-              participation
-            </p>
-            <h2 className="mt-6 font-display text-4xl font-semibold uppercase leading-[0.98] tracking-tightest text-bone sm:text-6xl">
-              Take your position
-              <br />
-              in the arena.
+            <div className="flex items-center justify-center gap-3">
+              <span className="h-px w-10 bg-gradient-to-l from-flare-500 to-transparent" aria-hidden="true" />
+              <span className="font-mono text-[10px] uppercase tracking-[0.34em] text-flare-300/90">
+                Take your position
+              </span>
+              <span className="h-px w-10 bg-gradient-to-r from-flare-500 to-transparent" aria-hidden="true" />
+            </div>
+            <h2 className="mt-7 font-display text-4xl font-semibold uppercase leading-[0.98] tracking-tightest text-bone sm:text-5xl lg:text-[3.4rem]">
+              Enter the arena.
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-[15px] leading-relaxed text-ash">
               Register individually, represent your college, and compete with the sharpest student
-              traders across Mumbai.
+              traders across {config.location_context || "Mumbai"}.
             </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
+              <CoordNote>{formatINR(config.prize_pool_total)} prize pool</CoordNote>
+              <CoordNote>{config.participation_type} participation</CoordNote>
+              <CoordNote>{config.qualifying_format}</CoordNote>
+            </div>
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link href="/tournament/register" className="btn-flare arena-focus rounded-full px-8 py-4 text-base">
                 Register now

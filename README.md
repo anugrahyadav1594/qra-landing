@@ -292,7 +292,36 @@ screens, and never autoplays sound.
 
 The same scene runs in `ambient` mode as the persistent hero ring.
 
-### 6.5 Registration journey
+### 6.5 Landing-page compositions (Phase 1)
+
+The six content sections below the hero were art-directed as one system with
+six different compositions. Shared primitives live in
+`components/tournament/primitives.tsx` (section intro with index badge,
+status tags, indexed surfaces, premium empty states) and the original vector
+motifs in `components/tournament/motifs.tsx`; the CSS layer is the
+`mtt-*` block in `app/globals.css`.
+
+| # | Section | Composition |
+|---|---|---|
+| 01 | How the tournament works | **Tournament Journey** — a continuous rail through the seven stages, each with an index, a node marker, a stage glyph and a confirmed / to-be-announced status; a progression meter shows how much of the structure is locked. Vertical on mobile, three-column rows from `lg`. |
+| 02 | Prize pool | **Championship Prize Experience** — the oversized ₹1,00,000 total on a technical prize plate, a derived 60/40 allocation bar, a three-place podium with an illuminated baseline, ten merit markers and a separate goodies allocation panel with a reconciliation line. |
+| 03 | Participating colleges | **Campus Network** — a lattice of connected nodes around the arena. The empty state is the designed network with open slots; onboarded colleges take over the same lattice and are marked with node indices. |
+| 04 | Sponsors & partners | **Partner Exhibition Wall** — hanging wires, spotlit frames and plinths, with fixed logo frame heights per tier, grayscale-until-hover marks and empty frames when no partnership is confirmed. |
+| 05 | Event details | **Tournament Briefing Board** — a status panel (registration state, participation, qualifiers, location, pool) beside an indexed eight-row information sheet; the countdown only exists once a real date is configured, otherwise a designed "date not set" state is shown. |
+| 06 | FAQ | **Editorial layout** — sticky left column (index, heading, arena schematic) beside a grouped accordion (Registration, Participation, Colleges, Competition, Prizes, Event information) with plus/minus indicators and CSS grid-template-rows transitions. `layout="stacked"` keeps a single column on `/tournament/faq`. |
+
+Detailing rules: index numbers and section identifiers, registration marks
+and corner brackets, measurement rules and tick strips, tiny uppercase
+labels, coordinate-style annotations and per-section microcopy. Orange is
+reserved for the prize figure, live status, active states and the podium —
+everything else is graphite, hairline and type.
+
+**Accessibility note:** the muted annotation colour is `#82838A` rather than
+the brief's `#66676E`, which measured 3.6:1 on `#090A0C` and failed WCAG AA
+for 9px labels. All entrance transitions are CSS-only, gated on
+`prefers-reduced-motion`.
+
+### 6.6 Registration journey
 
 `Identity → Your details → College → Review`
 
@@ -315,7 +344,7 @@ Registration statuses: `draft`, `email_verification_pending`, `submitted`,
 entries arrive as **under review** (`AUTO_APPROVE_REGISTRATIONS` is
 configurable), so a submission never implies an approved slot.
 
-### 6.6 Admin console (`/admin/tournament`)
+### 6.7 Admin console (`/admin/tournament`)
 
 Overview · Registrations (search, filter, approve/reject, CSV export) ·
 Colleges (add, edit, upload logo, activate/deactivate, registrations per
@@ -329,7 +358,7 @@ nothing. Administrators come from `TOURNAMENT_ADMIN_EMAILS` (granted the role
 on first sign-in) or the `tournament_admin_roles` table. Every privileged
 action writes an audit row with the acting administrator's email.
 
-### 6.7 Data model (new tables)
+### 6.8 Data model (new tables)
 
 `tournament_events`, `tournament_configs`, `tournament_colleges`,
 `tournament_sponsors`, `tournament_participants`, `tournament_otp_codes`,
@@ -349,7 +378,7 @@ PostgreSQL by changing `DATABASE_URL` only. For an audited migration history,
 point Alembic at `backend/app/models.py:Base.metadata` (shared by the
 tournament models) — no application change is required.
 
-### 6.8 Tournament API
+### 6.9 Tournament API
 
 Public
 
@@ -394,7 +423,7 @@ Admin (requires the admin role)
 | `POST /api/v1/admin/tournament/leaderboard/entries`, `POST /leaderboard/publish` | Standings |
 | `GET /api/v1/admin/tournament/audit-log` | Administrative history |
 
-### 6.9 Local setup for the tournament
+### 6.10 Local setup for the tournament
 
 ```bash
 cp backend/.env.example backend/.env      # then edit:
@@ -418,7 +447,7 @@ make setup && make dev                     # backend :8000, frontend :3008
 Email delivery is optional: with `SMTP_HOST` empty, confirmation emails and
 one-time codes are **logged** by the backend and every journey still completes.
 
-### 6.10 Security & privacy notes
+### 6.11 Security & privacy notes
 
 - Server-side validation, strict schemas (unknown keys rejected), length caps.
 - httpOnly, SameSite=Lax sessions (opaque random tokens, only hashes stored);
@@ -490,7 +519,7 @@ all rate limits return `429` + `Retry-After` + `X-RateLimit-*` headers.
 ## 9. What's intentionally not here yet (per the roadmap)
 
 - **Corporate identity/auth (Phase 4):** the *tournament* has its own
-  passwordless auth (§6.5); the corporate site still has no sign-in, and the
+  passwordless auth (§6.6); the corporate site still has no sign-in, and the
   `OTP_*` / `SIGNIN_*` env vars for it are defined but unused.
 - **Corporate admin dashboard (Phase 4+):** the tournament admin console
   (`/admin/tournament`) is implemented; a company-wide `/admin/*` is not.

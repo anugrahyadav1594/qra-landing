@@ -26,7 +26,7 @@ export default function TournamentOpengraphImage() {
           height: "100%",
           display: "flex",
           position: "relative",
-          background: "#090A0D",
+          background: "#090A0C",
           color: "#F4F0E9",
         }}
       >
@@ -40,7 +40,7 @@ export default function TournamentOpengraphImage() {
             height: 900,
             borderRadius: 900,
             opacity: 0.32,
-            background: "radial-gradient(circle, #F47C35 0%, #F47C35 42%, #090A0D 72%)",
+            background: "radial-gradient(circle, #FF792F 0%, #FF792F 42%, #090A0C 72%)",
           }}
         />
         {/* Technical grid */}
@@ -53,7 +53,7 @@ export default function TournamentOpengraphImage() {
             height: 630,
             opacity: 0.09,
             backgroundImage:
-              "linear-gradient(#F47C35 1px, transparent 1px), linear-gradient(90deg, #F47C35 1px, transparent 1px)",
+              "linear-gradient(#FF792F 1px, transparent 1px), linear-gradient(90deg, #FF792F 1px, transparent 1px)",
             backgroundSize: "72px 72px",
           }}
         />
@@ -71,12 +71,12 @@ export default function TournamentOpengraphImage() {
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{ width: 44, height: 2, background: "#F47C35" }} />
+            <div style={{ width: 44, height: 2, background: "#FF792F" }} />
             <div
               style={{
                 fontSize: 20,
                 letterSpacing: 6,
-                color: "#FFAA70",
+                color: "#FF9B55",
                 textTransform: "uppercase",
               }}
             >
@@ -108,7 +108,7 @@ export default function TournamentOpengraphImage() {
               gap: 18,
             }}
           >
-            <div style={{ fontSize: 54, fontWeight: 700, color: "#F47C35" }}>
+            <div style={{ fontSize: 54, fontWeight: 700, color: "#FF792F" }}>
               {"1,00,000"}
             </div>
             <div style={{ fontSize: 20, letterSpacing: 4, color: "#96979E" }}>
@@ -153,7 +153,7 @@ export default function TournamentOpengraphImage() {
               width: 420,
               height: 420,
               borderRadius: 420,
-              border: "12px solid #F47C35",
+              border: "12px solid #FF792F",
             }}
           />
           <div
@@ -162,7 +162,7 @@ export default function TournamentOpengraphImage() {
               width: 470,
               height: 470,
               borderRadius: 470,
-              border: "1px solid #FFAA70",
+              border: "1px solid #FF9B55",
               opacity: 0.35,
             }}
           />
@@ -172,7 +172,7 @@ export default function TournamentOpengraphImage() {
               width: 330,
               height: 330,
               borderRadius: 330,
-              border: "2px solid #F47C35",
+              border: "2px solid #FF792F",
               opacity: 0.45,
             }}
           />
@@ -183,7 +183,7 @@ export default function TournamentOpengraphImage() {
               height: 250,
               borderRadius: 250,
               opacity: 0.6,
-              background: "radial-gradient(circle, #FFAA70 0%, #F47C35 45%, #090A0D 72%)",
+              background: "radial-gradient(circle, #FF9B55 0%, #FF792F 45%, #090A0C 72%)",
             }}
           />
           <div
@@ -202,7 +202,7 @@ export default function TournamentOpengraphImage() {
                 position: "absolute",
                 width: 2,
                 height: 470,
-                background: "#F47C35",
+                background: "#FF792F",
                 opacity: 0.28,
                 transform: `rotate(${angle}deg)`,
               }}
@@ -227,7 +227,7 @@ export default function TournamentOpengraphImage() {
           <div style={{ fontSize: 18, letterSpacing: 5, color: "#96979E" }}>
             {`${config.short_name} · POWERED BY QUANT RELIC`}
           </div>
-          <div style={{ fontSize: 18, letterSpacing: 3, color: "#F47C35" }}>
+          <div style={{ fontSize: 18, letterSpacing: 3, color: "#FF792F" }}>
             {config.location_context.toUpperCase()}
           </div>
         </div>

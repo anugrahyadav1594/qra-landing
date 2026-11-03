@@ -36,28 +36,31 @@ const config: Config = {
         },
         // ── Mumbai Trading Tournament palette ──────────────────────────
         arena: {
-          950: "#090A0D", // primary background
-          900: "#111216", // secondary background
+          950: "#090A0C", // primary background
+          900: "#101114", // secondary background
           850: "#141519",
-          800: "#191A20", // card background
-          700: "#23252E",
+          800: "#17191D", // elevated surface / card
+          750: "#1D1F25",
+          700: "#23262D",
           600: "#2E313C",
         },
         flare: {
           100: "#FFE9DC",
           200: "#FFD3B8",
-          300: "#FFAA70", // secondary orange
-          400: "#FF9250",
-          500: "#F47C35", // primary orange
-          600: "#D9631F",
-          700: "#A94A16",
+          300: "#FF9B55", // warm highlight
+          400: "#FF8A40",
+          500: "#FF792F", // primary orange
+          600: "#E8601A",
+          700: "#B4460D",
           800: "#6B2F0E",
         },
-        bone: "#F4F0E9", // primary text
-        ash: "#96979E", // secondary text
+        bone: "#F2EFEA", // primary text
+        ash: "#99999F", // secondary text
+        muted: "#82838A", // tertiary / annotation text (AA on #090A0C; brief value #66676E measured 3.6:1)
       },
       borderColor: {
-        hairline: "rgba(255,255,255,0.10)",
+        hairline: "rgba(255,255,255,0.12)",
+        faint: "rgba(255,255,255,0.06)",
       },
       letterSpacing: {
         tightest: "-0.045em",
