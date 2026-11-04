@@ -345,6 +345,24 @@ measurement rule, 60/40 allocation bar), the cash podium (champion elevated
 and illuminated, runner-ups lower, baseline drawn centre-outward, one light
 sweep), and the merit / merchandise panels with a reconciliation line.
 
+**Background artwork (replaceable).** The prize section is a six-layer
+environment: designed fallback atmosphere → replaceable artwork → dark
+readability veil → orange atmospheric lighting → technical grid → content.
+Drop the generated artwork here and it is used automatically, with no other
+change:
+
+```
+frontend/public/images/mtt-prize-background.png
+```
+
+The path lives in exactly one declaration (`--mtt-prize-artwork` in
+`app/globals.css`); breakpoint-specific `background-position` and veil
+strength are variables too. Until the file exists the designed fallback
+(graphite gradient, abstract Mumbai waterfront, orange market wave, radial
+measurement rings) keeps the section looking finished. Recommended source
+spec and the WebP/AVIF delivery recommendation are in
+`frontend/public/images/README.md`.
+
 Motion is **GSAP 3 + ScrollTrigger** (`lib/gsap.ts`, dynamically imported,
 registered once): four independent once-only timelines, each created inside a
 `gsap.context()` and reverted on unmount. Everything is transform/opacity

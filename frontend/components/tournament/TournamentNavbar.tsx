@@ -387,7 +387,9 @@ export function TournamentNavbar() {
                 <span className="block truncate">Mumbai Trading</span>
                 <span className="block truncate">Tournament</span>
               </Link>
-              <span className="mtt-coord hidden lg:block">MTT / Season 01</span>
+              <span className="mtt-coord block truncate !text-[8px] !tracking-[0.3em]">
+                By Quant Relic
+              </span>
             </div>
             <span className="mtt-nav-divider hidden xl:block" aria-hidden="true" />
           </div>

@@ -8,12 +8,17 @@
  * paint. No image assets, no icon dependency.
  */
 
-type MotifProps = { className?: string };
+type MotifProps = {
+  className?: string;
+  /** Animation hooks — GSAP targets these; they never alter the artwork. */
+  [key: `data-${string}`]: string | undefined;
+};
 
 /** Registration marks: four corner brackets on a panel. */
-export function CornerMarks({ className = "" }: MotifProps) {
+export function CornerMarks({ className = "", ...rest }: MotifProps) {
   return (
     <svg
+      {...rest}
       aria-hidden="true"
       viewBox="0 0 100 100"
       preserveAspectRatio="none"
@@ -28,9 +33,10 @@ export function CornerMarks({ className = "" }: MotifProps) {
 }
 
 /** A measurement scale: baseline with ticks, used as a section detail. */
-export function TickRule({ className = "", ticks = 24 }: MotifProps & { ticks?: number }) {
+export function TickRule({ className = "", ticks = 24 , ...rest }: MotifProps & { ticks?: number }) {
   return (
     <svg
+      {...rest}
       aria-hidden="true"
       viewBox={`0 0 ${ticks * 10} 12`}
       className={`h-3 w-full ${className}`}
@@ -54,9 +60,10 @@ export function TickRule({ className = "", ticks = 24 }: MotifProps & { ticks?: 
 }
 
 /** The arena: concentric rings, radial spokes and a crosshair. */
-export function ArenaSchematic({ className = "" }: MotifProps) {
+export function ArenaSchematic({ className = "", ...rest }: MotifProps) {
   return (
-    <svg aria-hidden="true" viewBox="0 0 200 200" className={className} fill="none">
+    <svg aria-hidden="true" viewBox="0 0 200 200" className={className} fill="none"
+      {...rest}>
       <circle cx="100" cy="100" r="88" stroke="currentColor" strokeWidth="0.6" opacity="0.22" />
       <circle cx="100" cy="100" r="70" stroke="currentColor" strokeWidth="0.8" opacity="0.4" />
       <circle cx="100" cy="100" r="52" stroke="currentColor" strokeWidth="0.6" opacity="0.28" />
@@ -89,7 +96,7 @@ export function ArenaSchematic({ className = "" }: MotifProps) {
 }
 
 /** Market candlesticks — a restrained trading motif for ambient detailing. */
-export function CandleTicker({ className = "" }: MotifProps) {
+export function CandleTicker({ className = "", ...rest }: MotifProps) {
   const candles = [
     { x: 8, open: 62, close: 34, wickTop: 26, wickBottom: 70 },
     { x: 30, open: 40, close: 58, wickTop: 30, wickBottom: 64 },
@@ -99,7 +106,8 @@ export function CandleTicker({ className = "" }: MotifProps) {
     { x: 118, open: 40, close: 22, wickTop: 16, wickBottom: 46 },
   ];
   return (
-    <svg aria-hidden="true" viewBox="0 0 132 80" className={className} fill="none">
+    <svg aria-hidden="true" viewBox="0 0 132 80" className={className} fill="none"
+      {...rest}>
       {candles.map((candle, index) => {
         const top = Math.min(candle.open, candle.close);
         const height = Math.abs(candle.close - candle.open);
@@ -214,7 +222,7 @@ export function StageGlyph({ index, className = "" }: MotifProps & { index: numb
 }
 
 /** Campus network: a lattice of open nodes waiting to be filled. */
-export function NetworkLattice({ className = "" }: MotifProps) {
+export function NetworkLattice({ className = "", ...rest }: MotifProps) {
   const nodes = [
     { x: 120, y: 40 },
     { x: 200, y: 78 },
@@ -237,7 +245,8 @@ export function NetworkLattice({ className = "" }: MotifProps) {
     [4, 6],
   ];
   return (
-    <svg aria-hidden="true" viewBox="0 0 280 230" className={className} fill="none">
+    <svg aria-hidden="true" viewBox="0 0 280 230" className={className} fill="none"
+      {...rest}>
       {/* connecting lattice */}
       {links.map(([a, b], index) => (
         <line
@@ -294,9 +303,10 @@ export function NetworkLattice({ className = "" }: MotifProps) {
 }
 
 /** Exhibition wall: empty plinths and hanging wires for the partner wall. */
-export function ExhibitionWall({ className = "" }: MotifProps) {
+export function ExhibitionWall({ className = "", ...rest }: MotifProps) {
   return (
-    <svg aria-hidden="true" viewBox="0 0 320 160" className={className} fill="none">
+    <svg aria-hidden="true" viewBox="0 0 320 160" className={className} fill="none"
+      {...rest}>
       {/* gallery rail */}
       <path d="M10 18 H310" stroke="currentColor" strokeWidth="0.8" opacity="0.35" />
       {[70, 160, 250].map((x, index) => (
@@ -352,9 +362,10 @@ export function ExhibitionWall({ className = "" }: MotifProps) {
 }
 
 /** Prize index crest: a plinth with radial detailing, no trophy clipart. */
-export function PrizeCrest({ className = "" }: MotifProps) {
+export function PrizeCrest({ className = "", ...rest }: MotifProps) {
   return (
-    <svg aria-hidden="true" viewBox="0 0 120 120" className={className} fill="none">
+    <svg aria-hidden="true" viewBox="0 0 120 120" className={className} fill="none"
+      {...rest}>
       <circle cx="60" cy="52" r="34" stroke="currentColor" strokeWidth="0.7" opacity="0.28" />
       <circle cx="60" cy="52" r="24" stroke="currentColor" strokeWidth="0.9" opacity="0.5" />
       <circle cx="60" cy="52" r="12" stroke="currentColor" strokeWidth="0.6" opacity="0.35" />
@@ -382,9 +393,10 @@ export function PrizeCrest({ className = "" }: MotifProps) {
 }
 
 /** Thin podium silhouette used behind the champion figure. */
-export function PodiumSilhouette({ className = "" }: MotifProps) {
+export function PodiumSilhouette({ className = "", ...rest }: MotifProps) {
   return (
-    <svg aria-hidden="true" viewBox="0 0 300 90" className={className} fill="none" preserveAspectRatio="none">
+    <svg aria-hidden="true" viewBox="0 0 300 90" className={className} fill="none" preserveAspectRatio="none"
+      {...rest}>
       <rect x="112" y="18" width="76" height="60" stroke="currentColor" strokeWidth="0.8" opacity="0.5" />
       <rect x="26" y="46" width="86" height="32" stroke="currentColor" strokeWidth="0.8" opacity="0.3" />
       <rect x="188" y="56" width="86" height="22" stroke="currentColor" strokeWidth="0.8" opacity="0.3" />
@@ -394,9 +406,10 @@ export function PodiumSilhouette({ className = "" }: MotifProps) {
 }
 
 /** Briefing board motif: indexed document lines with a status stem. */
-export function BriefingMotif({ className = "" }: MotifProps) {
+export function BriefingMotif({ className = "", ...rest }: MotifProps) {
   return (
-    <svg aria-hidden="true" viewBox="0 0 160 160" className={className} fill="none">
+    <svg aria-hidden="true" viewBox="0 0 160 160" className={className} fill="none"
+      {...rest}>
       <rect x="18" y="14" width="124" height="132" stroke="currentColor" strokeWidth="0.7" opacity="0.28" />
       <path d="M18 34 H142" stroke="currentColor" strokeWidth="0.7" opacity="0.35" />
       <circle cx="27" cy="24" r="2" fill="currentColor" opacity="0.6" />
@@ -420,9 +433,10 @@ export function BriefingMotif({ className = "" }: MotifProps) {
 /* ── Prize pool motifs (Phase 2) ──────────────────────────────────────── */
 
 /** Radial measurement rings: calibrated circles with radial tick marks. */
-export function MeasurementRings({ className = "" }: MotifProps) {
+export function MeasurementRings({ className = "", ...rest }: MotifProps) {
   return (
-    <svg aria-hidden="true" viewBox="0 0 600 600" className={className} fill="none">
+    <svg aria-hidden="true" viewBox="0 0 600 600" className={className} fill="none"
+      {...rest}>
       {[290, 232, 174, 116].map((radius, index) => (
         <circle
           key={radius}
@@ -462,9 +476,10 @@ export function MeasurementRings({ className = "" }: MotifProps) {
  * Custom championship emblem — an abstract mark built from layered geometry
  * and radial light, deliberately not a trophy: no clipart, no literal cup.
  */
-export function ChampionEmblem({ className = "" }: MotifProps) {
+export function ChampionEmblem({ className = "", ...rest }: MotifProps) {
   return (
-    <svg aria-hidden="true" viewBox="0 0 120 120" className={className} fill="none">
+    <svg aria-hidden="true" viewBox="0 0 120 120" className={className} fill="none"
+      {...rest}>
       <defs>
         <linearGradient id="mtt-champion-face" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#ffc08e" />
@@ -511,9 +526,10 @@ export function ChampionEmblem({ className = "" }: MotifProps) {
 }
 
 /** Three-level geometric podium foundation that the cards stand on. */
-export function PodiumPlatform({ className = "" }: MotifProps) {
+export function PodiumPlatform({ className = "", ...rest }: MotifProps) {
   return (
     <svg
+      {...rest}
       aria-hidden="true"
       viewBox="0 0 900 60"
       className={className}
@@ -545,28 +561,247 @@ export function PodiumPlatform({ className = "" }: MotifProps) {
  * Abstract merchandise composition: package silhouettes and inventory
  * forms. Decorative only — no branded products, no claimed inclusions.
  */
-export function MerchandiseStack({ className = "" }: MotifProps) {
+
+
+/* ── Championship arena motifs (Phase 3) ─────────────────────────────── */
+
+/**
+ * Abstract laurel crest — two stroked branches around a championship mark.
+ * Every stroke carries `pathLength={100}`, so the drawing animation is a
+ * single strokeDashoffset tween and the resting state is the drawn state.
+ */
+export function LaurelCrest({ className = "", ...rest }: MotifProps) {
+  const branch = (side: 1 | -1) =>
+    Array.from({ length: 6 }).map((_, index) => {
+      const t = index / 5;
+      const x = side * (16 + t * 34);
+      const y = 62 - t * 46;
+      return (
+        <path
+          key={`${side}-${index}`}
+          d={`M${side * 6} ${74 - t * 6} Q${x} ${y - 8} ${side * (24 + t * 12)} ${y}`}
+          stroke="currentColor"
+          strokeWidth="1.1"
+          fill="none"
+          opacity={0.35 + t * 0.5}
+          pathLength={100}
+        />
+      );
+    });
+
   return (
-    <svg aria-hidden="true" viewBox="0 0 200 140" className={className} fill="none">
-      {/* stacked cartons */}
-      <path d="M14 96 L52 82 L90 96 L52 110 Z" stroke="currentColor" strokeWidth="1" opacity="0.6" />
-      <path d="M14 96 V68 L52 54 V82" stroke="currentColor" strokeWidth="1" opacity="0.45" />
-      <path d="M90 96 V68 L52 54" stroke="currentColor" strokeWidth="1" opacity="0.45" />
-      <path d="M62 66 L100 52 L138 66 L100 80 Z" stroke="currentColor" strokeWidth="1" opacity="0.75" />
-      <path d="M62 66 V38 L100 24 V52" stroke="currentColor" strokeWidth="1" opacity="0.5" />
-      <path d="M138 66 V38 L100 24" stroke="currentColor" strokeWidth="1" opacity="0.5" />
-      <path d="M110 36 L148 22 L186 36 L148 50 Z" stroke="currentColor" strokeWidth="1" opacity="0.9" />
-      <path d="M110 36 V14 L148 0 V22" stroke="currentColor" strokeWidth="1" opacity="0.55" />
-      <path d="M186 36 V14 L148 0" stroke="currentColor" strokeWidth="1" opacity="0.55" />
-      {/* inventory rule + ticks */}
-      <path d="M10 128 H190" stroke="currentColor" strokeWidth="0.8" opacity="0.3" />
-      {Array.from({ length: 19 }).map((_, index) => (
+    <svg
+      {...rest}
+      aria-hidden="true"
+      viewBox="0 0 120 90"
+      className={`mtt-laurel ${className}`}
+      fill="none"
+    >
+      {branch(-1)}
+      {branch(1)}
+      <path
+        d="M60 10 L66 22 L60 34 L54 22 Z"
+        stroke="currentColor"
+        strokeWidth="1.1"
+        fill="none"
+        pathLength={100}
+        opacity="0.95"
+      />
+      <path
+        d="M34 16 L60 4 L86 16"
+        stroke="currentColor"
+        strokeWidth="0.9"
+        fill="none"
+        pathLength={100}
+        opacity="0.6"
+      />
+      <path
+        d="M22 78 H98"
+        stroke="currentColor"
+        strokeWidth="0.9"
+        fill="none"
+        pathLength={100}
+        opacity="0.5"
+      />
+    </svg>
+  );
+}
+
+/**
+ * Fallback environment: an abstract Mumbai waterfront — a domed structure
+ * left, a skyline right, a reflective water band. Purely atmospheric; it
+ * makes no claim about the venue or the view from it.
+ */
+export function MumbaiHorizon({ className = "", ...rest }: MotifProps) {
+  return (
+    <svg
+      {...rest}
+      aria-hidden="true"
+      viewBox="0 0 1440 520"
+      className={className}
+      fill="none"
+      preserveAspectRatio="xMidYMax slice"
+    >
+      <defs>
+        <linearGradient id="mtt-horizon-fade" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#0b0e13" stopOpacity="0.1" />
+          <stop offset="100%" stopColor="#08090b" stopOpacity="0.95" />
+        </linearGradient>
+        <linearGradient id="mtt-water" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ff792f" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#08090b" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+
+      {/* Left: domed waterfront structure and spire */}
+      <g opacity="0.5">
+        <path d="M120 330 V250 H170 V330" stroke="currentColor" strokeWidth="1" />
+        <path d="M124 250 Q145 206 166 250 Z" stroke="currentColor" strokeWidth="1" />
+        <path d="M145 206 V176" stroke="currentColor" strokeWidth="1" />
+        <path d="M139 176 h12" stroke="currentColor" strokeWidth="1" />
+        <path d="M200 330 V272 H232 V330" stroke="currentColor" strokeWidth="1" />
+        <path d="M216 272 V244" stroke="currentColor" strokeWidth="1" />
+        <path d="M212 244 q4 -14 8 0" stroke="currentColor" strokeWidth="1" />
+      </g>
+
+      {/* Right: skyline */}
+      <g opacity="0.42">
+        {[
+          [1010, 214],
+          [1060, 168],
+          [1096, 246],
+          [1140, 130],
+          [1180, 292],
+          [1236, 186],
+          [1282, 244],
+          [1330, 152],
+          [1364, 208],
+        ].map(([x, height]) => (
+          <path key={x} d={`M${x} 330 V${330 - height}`} stroke="currentColor" strokeWidth="6" />
+        ))}
+        {[1180, 1282].map((x) => (
+          <path key={`mast-${x}`} d={`M${x} 38 v-26`} stroke="currentColor" strokeWidth="1" />
+        ))}
+      </g>
+
+      {/* Civic blocks between the two */}
+      <g opacity="0.3">
+        {Array.from({ length: 18 }).map((_, index) => {
+          const x = 300 + index * 38;
+          const h = 22 + ((index * 37) % 46);
+          return <path key={x} d={`M${x} 330 V${330 - h}`} stroke="currentColor" strokeWidth="5" />;
+        })}
+      </g>
+
+      {/* Waterfront line + reflection */}
+      <path d="M0 330 H1440" stroke="currentColor" strokeWidth="1" opacity="0.35" />
+      <rect x="0" y="330" width="1440" height="120" fill="url(#mtt-water)" />
+      {Array.from({ length: 24 }).map((_, index) => {
+        const y = 340 + index * 4;
+        const inset = index * 14;
+        return (
+          <path
+            key={y}
+            d={`M${inset} ${y} H${1440 - inset}`}
+            stroke="currentColor"
+            strokeWidth="0.6"
+            opacity={0.15 - index * 0.005}
+          />
+        );
+      })}
+      <rect x="0" y="300" width="1440" height="220" fill="url(#mtt-horizon-fade)" />
+    </svg>
+  );
+}
+
+/** Orange market wave: layered market paths for the lower atmosphere. */
+export function MarketWave({ className = "", ...rest }: MotifProps) {
+  return (
+    <svg
+      {...rest}
+      aria-hidden="true"
+      viewBox="0 0 1200 300"
+      className={className}
+      fill="none"
+      preserveAspectRatio="none"
+    >
+      {[0, 1, 2].map((row) => (
+        <path
+          key={row}
+          d={`M0 ${210 - row * 34} C 140 ${150 - row * 40}, 240 ${250 - row * 30}, 380 ${
+            180 - row * 36
+          } S 620 ${90 - row * 26}, 760 ${160 - row * 32} S 1000 ${230 - row * 28}, 1200 ${
+            120 - row * 30
+          }`}
+          stroke="currentColor"
+          strokeWidth={1.2 - row * 0.25}
+          opacity={0.5 - row * 0.14}
+          pathLength={100}
+        />
+      ))}
+      {Array.from({ length: 40 }).map((_, index) => {
+        const x = 8 + index * 30;
+        const h = 18 + ((index * 53) % 60);
+        return (
+          <line
+            key={x}
+            x1={x}
+            y1="286"
+            x2={x}
+            y2={286 - h}
+            stroke="currentColor"
+            strokeWidth="2"
+            opacity="0.32"
+          />
+        );
+      })}
+    </svg>
+  );
+}
+
+/**
+ * Merchandise composition: stacked geometric packages under an abstract
+ * championship emblem. Illustrative only — it does not depict, name or
+ * promise any specific item.
+ */
+export function MerchCrest({ className = "", ...rest }: MotifProps) {
+  return (
+    <svg
+      {...rest}
+      aria-hidden="true"
+      viewBox="0 0 200 120"
+      className={className}
+      fill="none"
+    >
+      <path d="M20 100 L58 78 L96 100 L58 122 Z" stroke="currentColor" pathLength={100} strokeWidth="1" opacity="0.5" />
+      <path d="M20 100 V58 L58 36 V78" stroke="currentColor" pathLength={100} strokeWidth="1" opacity="0.35" />
+      <path d="M96 100 V58 L58 36" stroke="currentColor" pathLength={100} strokeWidth="1" opacity="0.35" />
+      <path
+        d="M70 66 L104 46 L138 66 L104 86 Z"
+        stroke="currentColor"
+        pathLength={100} strokeWidth="1.1"
+        opacity="0.8"
+      />
+      <path d="M70 66 V30 L104 10 V46" stroke="currentColor" pathLength={100} strokeWidth="1" opacity="0.45" />
+      <path d="M138 66 V30 L104 10" stroke="currentColor" pathLength={100} strokeWidth="1" opacity="0.45" />
+      <path
+        d="M118 34 L152 14 L186 34 L152 54 Z"
+        stroke="currentColor"
+        pathLength={100} strokeWidth="1.2"
+        opacity="0.95"
+      />
+      <path d="M118 34 V4 L152 -16 V14" stroke="currentColor" pathLength={100} strokeWidth="1" opacity="0.45" />
+      <path d="M118 34 L152 14 L186 34 L152 54 Z" fill="currentColor" fillOpacity="0.08" />
+      <circle cx="152" cy="34" r="7" stroke="currentColor" pathLength={100} strokeWidth="1" opacity="0.9" />
+      <path d="M152 27 v14 M145 34 h14" stroke="currentColor" pathLength={100} strokeWidth="0.8" opacity="0.7" />
+      <path d="M6 112 H194" stroke="currentColor" pathLength={100} strokeWidth="0.8" opacity="0.25" />
+      {Array.from({ length: 20 }).map((_, index) => (
         <line
           key={index}
-          x1={10 + index * 10}
-          y1="128"
-          x2={10 + index * 10}
-          y2={index % 3 === 0 ? 120 : 124}
+          x1={6 + index * 10}
+          y1="112"
+          x2={6 + index * 10}
+          y2={index % 3 === 0 ? 106 : 109}
           stroke="currentColor"
           strokeWidth="0.6"
           opacity="0.25"

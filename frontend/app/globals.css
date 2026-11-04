@@ -517,19 +517,48 @@ body {
 
 /* Variables — single source of truth for the refined palette */
 :root {
-  --mtt-bg: #090a0c;
-  --mtt-bg-alt: #101114;
-  --mtt-surface: #17191d;
-  --mtt-orange: #ff792f;
-  --mtt-orange-warm: #ff9b55;
-  --mtt-text: #f2efea;
-  --mtt-text-dim: #99999f;
-  --mtt-text-mute: #82838a;
-  --mtt-line: rgba(255, 255, 255, 0.12);
+  /* ── MTT championship palette ─────────────────────────────────────── */
+  --mtt-bg: #08090b; /* primary background */
+  --mtt-bg-alt: #111318; /* secondary surface */
+  --mtt-surface: #181b21; /* elevated surface */
+  --mtt-surface-raised: #1f232a;
+  --mtt-orange: #ff792f; /* primary orange */
+  --mtt-orange-bright: #ff974e; /* bright orange */
+  --mtt-orange-warm: #ffc18c; /* warm highlight */
+  --mtt-text: #f5f0ea; /* primary text */
+  --mtt-text-dim: #a5a2a0; /* secondary text */
+  --mtt-text-mute: #82838a; /* annotation text — 5.3:1 on --mtt-bg */
+  --mtt-graphite: #6f7076; /* decorative marks / rules only (4.0:1) */
+  --mtt-line: rgba(255, 255, 255, 0.13);
   --mtt-line-faint: rgba(255, 255, 255, 0.06);
+
+  /* ── Replaceable prize-section artwork ──────────────────────────────
+     Drop the file at frontend/public/images/mtt-prize-background.png and
+     it is used automatically. Until then the designed fallback shows.
+     This is the ONLY place the asset path appears. */
+  --mtt-prize-artwork: url("/images/mtt-prize-background.png");
+  --mtt-prize-artwork-position: center center;
+  --mtt-prize-artwork-size: cover;
+  --mtt-prize-veil: 0.66; /* dark readability overlay strength */
 }
 
 /* ── Section shell ──────────────────────────────────────────────────── */
+/* Artwork tuning per breakpoint: keep the busy skyline away from the copy. */
+@media (max-width: 767px) {
+  :root {
+    --mtt-prize-artwork-position: 58% 26%;
+    --mtt-prize-veil: 0.74;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1279px) {
+  :root {
+    --mtt-prize-artwork-position: center 38%;
+    --mtt-prize-veil: 0.7;
+  }
+}
+
+
 .mtt-section {
   position: relative;
   border-top: 1px solid var(--mtt-line-faint);
@@ -1232,6 +1261,250 @@ body {
   border-style: solid;
   border-color: rgba(255, 145, 74, 0.95);
   pointer-events: none;
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════
+   THE MTT CHAMPIONSHIP ARENA — layered environment
+   ──────────────────────────────────────────────────────────────────────
+   Stack (back to front):
+     1 .mtt-prize-fallback   designed atmosphere (used when no artwork)
+     2 .mtt-prize-artwork    the replaceable photograph  (auto-detected)
+     3 .mtt-prize-veil       dark readability overlay + localized bands
+     4 .mtt-prize-light      orange atmospheric lighting (screen blend)
+     5 .mtt-prize-grid       fine technical grid
+     6 content (relative z-10)
+   ══════════════════════════════════════════════════════════════════════ */
+
+.mtt-prize {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background-color: var(--mtt-bg);
+}
+
+/* ── 1. Designed fallback atmosphere ────────────────────────────────── */
+.mtt-prize-fallback {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 80% at 50% 0%, #141821 0%, #0c0f14 45%, var(--mtt-bg) 100%),
+    linear-gradient(180deg, #0a0c10 0%, #101319 55%, #090b0e 100%);
+}
+
+/* ── 2. Replaceable artwork ─────────────────────────────────────────── */
+.mtt-prize-artwork {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-color: transparent;
+  background-image: var(--mtt-prize-artwork);
+  background-position: var(--mtt-prize-artwork-position);
+  background-size: var(--mtt-prize-artwork-size);
+  background-repeat: no-repeat;
+  /* Deliberately not fixed: mobile rendering + paint cost. */
+  background-attachment: scroll;
+}
+
+/* ── 3. Readability veil ────────────────────────────────────────────── */
+.mtt-prize-veil {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    /* Localized scrim under the content column so type always holds */
+    radial-gradient(
+      62% 50% at 50% 42%,
+      rgba(8, 9, 11, 0.6) 0%,
+      rgba(8, 9, 11, 0.28) 58%,
+      transparent 80%
+    ),
+    /* Vertical shaping: dark at the seams with the sections above and below */
+    linear-gradient(
+      180deg,
+      rgba(8, 9, 11, 0.9) 0%,
+      rgba(8, 9, 11, 0.7) 20%,
+      rgba(8, 9, 11, var(--mtt-prize-veil)) 55%,
+      rgba(8, 9, 11, 0.9) 100%
+    ),
+    /* Corner vignette so the busiest artwork areas stay dark */
+    radial-gradient(
+      120% 90% at 50% 45%,
+      rgba(8, 9, 11, 0.12) 0%,
+      rgba(8, 9, 11, 0.58) 76%,
+      rgba(8, 9, 11, 0.88) 100%
+    );
+}
+
+/* ── 4. Atmospheric orange lighting ─────────────────────────────────── */
+.mtt-prize-light {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(46% 40% at 50% 12%, rgba(255, 121, 47, 0.22), transparent 70%),
+    radial-gradient(38% 34% at 50% 52%, rgba(255, 151, 78, 0.14), transparent 72%),
+    radial-gradient(60% 30% at 50% 96%, rgba(255, 121, 47, 0.1), transparent 76%);
+}
+
+/* ── 5. Technical grid ──────────────────────────────────────────────── */
+.mtt-prize-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 96px 96px;
+  mask-image: radial-gradient(ellipse 85% 75% at 50% 40%, black 10%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 40%, black 10%, transparent 100%);
+}
+
+/* ── Total prize display ────────────────────────────────────────────── */
+.mtt-laurel {
+  overflow: visible;
+}
+
+/* Strokes that draw themselves in: GSAP animates strokeDashoffset from 100
+   to 0. The resting state (dashoffset 0) is the drawn state, so the artwork
+   is complete without JavaScript. */
+.mtt-laurel path,
+.mtt-laurel line,
+.mtt-draw path,
+.mtt-draw line {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;
+}
+
+.mtt-prize-amount {
+  line-height: 0.82;
+  letter-spacing: -0.04em;
+}
+
+.mtt-alloc-track {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+/* Fine diagonal hatching over the allocation segments */
+.mtt-alloc-hatch {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.55;
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(8, 9, 11, 0.35) 0 1px,
+    transparent 1px 7px
+  );
+}
+
+.mtt-alloc-seg {
+  position: relative;
+  transform-origin: left center;
+}
+
+/* ── Championship podium ────────────────────────────────────────────── */
+.mtt-podium-base {
+  position: relative;
+  transform-origin: bottom center;
+}
+
+.mtt-podium-block {
+  position: relative;
+  background: linear-gradient(180deg, #23262e 0%, #14171c 60%, #0e1115 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.mtt-podium-block[data-rank="1"] {
+  background: linear-gradient(180deg, #3a2a1d 0%, #1c1712 55%, #100d0a 100%);
+  border-color: rgba(255, 121, 47, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 193, 140, 0.35),
+    0 -18px 40px -24px rgba(255, 121, 47, 0.9);
+}
+
+/* Metallic light catching the front face of each block */
+.mtt-podium-block::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 255, 255, 0.07) 0%,
+    transparent 32%,
+    transparent 68%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+}
+
+.mtt-podium-plate {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--mtt-text-mute);
+}
+
+.mtt-podium-block[data-rank="1"] .mtt-podium-plate {
+  color: rgba(255, 193, 140, 0.9);
+}
+
+/* ── Merit markers ──────────────────────────────────────────────────── */
+.mtt-merit-marker {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #2c2f37 0%, #1b1e24 55%, #101317 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 151, 78, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.07),
+    0 10px 22px -16px rgba(0, 0, 0, 0.9);
+  transform-origin: bottom center;
+}
+
+.mtt-merit-marker::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    rgba(255, 151, 78, 0.16) 0%,
+    transparent 34%,
+    transparent 66%,
+    rgba(255, 121, 47, 0.1) 100%
+  );
+}
+
+.mtt-merit-index {
+  position: relative;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: rgba(245, 240, 234, 0.72);
+  padding-bottom: 5px;
+}
+
+/* ── Reconciliation ─────────────────────────────────────────────────── */
+.mtt-recon {
+  position: relative;
+  border: 1px solid var(--mtt-line);
+  background: linear-gradient(180deg, rgba(24, 27, 33, 0.9), rgba(13, 15, 19, 0.9));
+  box-shadow: 0 30px 70px -50px rgba(255, 121, 47, 0.8);
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
 }
 
 

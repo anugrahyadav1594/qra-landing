@@ -36,30 +36,31 @@ const config: Config = {
         },
         // ── Mumbai Trading Tournament palette ──────────────────────────
         arena: {
-          950: "#090A0C", // primary background
-          900: "#101114", // secondary background
-          850: "#141519",
-          800: "#17191D", // elevated surface / card
-          750: "#1D1F25",
-          700: "#23262D",
-          600: "#2E313C",
+          950: "#08090B", // primary background
+          900: "#111318", // secondary surface
+          850: "#14171E",
+          800: "#181B21", // elevated surface / card
+          750: "#1F232A",
+          700: "#262A33",
+          600: "#323742",
         },
         flare: {
-          100: "#FFE9DC",
-          200: "#FFD3B8",
-          300: "#FF9B55", // warm highlight
-          400: "#FF8A40",
+          100: "#FFEDE2",
+          200: "#FFD9C2",
+          300: "#FFC18C", // warm highlight
+          400: "#FF974E", // bright orange
           500: "#FF792F", // primary orange
           600: "#E8601A",
           700: "#B4460D",
           800: "#6B2F0E",
         },
-        bone: "#F2EFEA", // primary text
-        ash: "#99999F", // secondary text
-        muted: "#82838A", // tertiary / annotation text (AA on #090A0C; brief value #66676E measured 3.6:1)
+        bone: "#F5F0EA", // primary text
+        ash: "#A5A2A0", // secondary text
+        muted: "#82838A", // annotation text (AA on #08090B at 5.3:1)
+        graphite: "#6F7076", // decorative marks / rules only (brief "muted"; 4.0:1 — not used for text)
       },
       borderColor: {
-        hairline: "rgba(255,255,255,0.12)",
+        hairline: "rgba(255,255,255,0.13)",
         faint: "rgba(255,255,255,0.06)",
       },
       letterSpacing: {
