@@ -345,26 +345,33 @@ measurement rule, 60/40 allocation bar), the cash podium (champion elevated
 and illuminated, runner-ups lower, baseline drawn centre-outward, one light
 sweep), and the merit / merchandise panels with a reconciliation line.
 
-**Background artwork (replaceable).** The prize section is a six-layer
-environment: designed fallback atmosphere → replaceable artwork → dark
-readability veil → orange atmospheric lighting → technical grid → content.
-Drop the generated artwork here and it is used automatically, with no other
-change:
+**Background artwork (replaceable, portrait).** The prize section is a
+five-layer environment: dark fallback → **portrait artwork stack** → dark
+readability veil (with a localized scrim under the content column) → orange
+atmospheric lighting → content. There is deliberately no grid layer: the
+artwork supplies the atmosphere, the radial geometry and the financial
+linework.
+
+The supplied asset is a 3:4 portrait, so it is shown as one — a real image
+element at 100% of a centred 1280px artwork column, `height: auto`,
+`object-fit: contain`, `object-position: center top`. No `cover`, no crop,
+no stretch, no tiling, no zoom-to-fill; the section is allowed to be as tall
+as the artwork. Drop the file here and it is used automatically:
 
 ```
 frontend/public/images/mtt-prize-background.png
 ```
 
-The path lives in exactly one declaration (`--mtt-prize-artwork` in
-`app/globals.css`); breakpoint-specific `background-position` and veil
-strength are variables too. Until the file exists the designed fallback
-(graphite gradient, abstract Mumbai waterfront, orange market wave, radial
-measurement rings) keeps the section looking finished. Recommended source
-spec and the WebP/AVIF delivery recommendation are in
+Segments are configured in one file (`frontend/lib/prizeArtwork.ts`) as an
+ordered vertical stack — `upper` / `main` / `lower` — so more artwork can be
+stacked above or below later by flipping a flag; disabled segments render
+nothing at all, and each segment keeps its own aspect ratio. Source spec,
+seam handling and the WebP/AVIF recommendation are in
 `frontend/public/images/README.md`.
 
 Motion is **GSAP 3 + ScrollTrigger** (`lib/gsap.ts`, dynamically imported,
-registered once): four independent once-only timelines, each created inside a
+registered once): five independent once-only timelines (prize display, podium,
+merit, merchandise, reconciliation), each created inside a
 `gsap.context()` and reverted on unmount. Everything is transform/opacity
 only, the number is written straight to the DOM (no per-frame React state),
 `will-change` is cleared after each timeline, and `prefers-reduced-motion`
