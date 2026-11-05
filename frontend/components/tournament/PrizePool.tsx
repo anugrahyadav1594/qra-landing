@@ -1,16 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 import {
   CandleTicker,
   ChampionEmblem,
   LaurelCrest,
-  MarketWave,
   MeasurementRings,
   MerchCrest,
-  MumbaiHorizon,
   TickRule,
 } from "@/components/tournament/motifs";
 import {
@@ -21,6 +19,14 @@ import {
   TechLabel,
 } from "@/components/tournament/primitives";
 import { loadGsap, useIsomorphicLayoutEffect } from "@/lib/gsap";
+import { ACTIVE_PRIZE_ARTWORK } from "@/lib/prizeArtwork";
+
+/* The prize artwork is decorative, supplied manually and permitted to be
+   absent at build time. It has to render at its own 3:4 ratio with
+   `object-fit: contain`, so it uses a plain image element rather than
+   next/image: the optimizer would rewrite the request, needs `sharp` in
+   production, and cannot express "show the file exactly as supplied". */
+/* eslint-disable @next/next/no-img-element */
 import { formatINR, type TournamentConfig } from "@/lib/tournament";
 
 /** Champion first on mobile, centre of the podium from sm upwards. */
@@ -58,6 +64,8 @@ const PLINTH: Record<string, string> = {
  */
 export function PrizePool({ config }: { config: TournamentConfig }) {
   const root = useRef<HTMLElement | null>(null);
+  /** Segments whose file is not present yet — they simply do not render. */
+  const [missingArtwork, setMissingArtwork] = useState<Record<string, boolean>>({});
 
   const cash = config.cash_prize_pool;
   const goodies = config.goodies_and_merchandise;
@@ -401,26 +409,36 @@ export function PrizePool({ config }: { config: TournamentConfig }) {
 
   return (
     <section id="prize-pool" ref={root} className="mtt-prize scroll-mt-20 border-t border-white/[0.06]">
-      {/* ── 1 · Designed fallback atmosphere ──────────────────────────── */}
-      <div className="mtt-prize-fallback" aria-hidden="true">
-        <MeasurementRings
-          className="absolute left-1/2 top-[2%] h-[42rem] w-[42rem] -translate-x-1/2 text-flare-400 opacity-[0.16]"
-        />
-        <MumbaiHorizon className="absolute inset-x-0 bottom-0 h-[54%] w-full text-white/[0.32]" />
-        <MarketWave className="absolute inset-x-0 bottom-[3%] h-44 w-full text-flare-500 opacity-90" />
-      </div>
+      {/* ── 1 · Fallback atmosphere (graphite + orange lighting) ──────── */}
+      <div className="mtt-prize-fallback" aria-hidden="true" />
 
-      {/* ── 2 · Replaceable artwork (auto-detected; see globals.css) ──── */}
-      <div className="mtt-prize-artwork" aria-hidden="true" />
+      {/* ── 2 · The portrait artwork, in its own proportions ──────────── */}
+      <div className="mtt-prize-stack" aria-hidden="true">
+        <div className="mtt-prize-stack-inner">
+          {ACTIVE_PRIZE_ARTWORK.filter((segment) => !missingArtwork[segment.id]).map((segment) => (
+            <img
+              key={segment.id}
+              src={segment.src}
+              alt=""
+              width={segment.width}
+              height={segment.height}
+              loading="lazy"
+              decoding="async"
+              className="mtt-prize-artwork"
+              style={{ aspectRatio: `${segment.width} / ${segment.height}` }}
+              onError={() =>
+                setMissingArtwork((current) => ({ ...current, [segment.id]: true }))
+              }
+            />
+          ))}
+        </div>
+      </div>
 
       {/* ── 3 · Dark readability veil ─────────────────────────────────── */}
       <div className="mtt-prize-veil" aria-hidden="true" />
 
       {/* ── 4 · Orange atmospheric lighting ───────────────────────────── */}
       <div className="mtt-prize-light" aria-hidden="true" />
-
-      {/* ── 5 · Technical grid ────────────────────────────────────────── */}
-      <div className="mtt-prize-grid" aria-hidden="true" />
 
       {/* ── 6 · Content ───────────────────────────────────────────────── */}
       <div className="relative z-10 mx-auto w-full max-w-7xl px-4 py-20 sm:px-6 sm:py-24 lg:py-28">

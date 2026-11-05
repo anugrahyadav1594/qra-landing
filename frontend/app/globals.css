@@ -532,13 +532,11 @@ body {
   --mtt-line: rgba(255, 255, 255, 0.13);
   --mtt-line-faint: rgba(255, 255, 255, 0.06);
 
-  /* ── Replaceable prize-section artwork ──────────────────────────────
-     Drop the file at frontend/public/images/mtt-prize-background.png and
-     it is used automatically. Until then the designed fallback shows.
-     This is the ONLY place the asset path appears. */
-  --mtt-prize-artwork: url("/images/mtt-prize-background.png");
-  --mtt-prize-artwork-position: center center;
-  --mtt-prize-artwork-size: cover;
+  /* ── Prize-section artwork environment ──────────────────────────────
+     The image paths live in lib/prizeArtwork.ts (one place, per segment).
+     These variables only control how the artwork column is presented and
+     how strongly the readability veil sits over it. */
+  --mtt-prize-artwork-max: 1280px; /* artwork column width == content column */
   --mtt-prize-veil: 0.66; /* dark readability overlay strength */
 }
 
@@ -546,14 +544,12 @@ body {
 /* Artwork tuning per breakpoint: keep the busy skyline away from the copy. */
 @media (max-width: 767px) {
   :root {
-    --mtt-prize-artwork-position: 58% 26%;
     --mtt-prize-veil: 0.74;
   }
 }
 
 @media (min-width: 768px) and (max-width: 1279px) {
   :root {
-    --mtt-prize-artwork-position: center 38%;
     --mtt-prize-veil: 0.7;
   }
 }
@@ -1268,12 +1264,14 @@ body {
    THE MTT CHAMPIONSHIP ARENA — layered environment
    ──────────────────────────────────────────────────────────────────────
    Stack (back to front):
-     1 .mtt-prize-fallback   designed atmosphere (used when no artwork)
-     2 .mtt-prize-artwork    the replaceable photograph  (auto-detected)
-     3 .mtt-prize-veil       dark readability overlay + localized bands
+     1 .mtt-prize-fallback   dark graphite + orange lighting (no artwork yet)
+     2 .mtt-prize-stack      the portrait artwork, in its own proportions
+     3 .mtt-prize-veil       dark readability overlay + localized scrim
      4 .mtt-prize-light      orange atmospheric lighting (screen blend)
-     5 .mtt-prize-grid       fine technical grid
-     6 content (relative z-10)
+     5 content (relative z-10)
+
+   There is deliberately no grid / graph-paper layer: the artwork supplies
+   the atmosphere, the radial geometry and the financial linework.
    ══════════════════════════════════════════════════════════════════════ */
 
 .mtt-prize {
@@ -1281,6 +1279,14 @@ body {
   isolation: isolate;
   overflow: hidden;
   background-color: var(--mtt-bg);
+  /* Reserved height for the stacked artwork so the image cannot shift the
+     layout when it loads. One term per active segment: a 3:4 portrait
+     segment at the artwork column width. Add a term when another segment
+     is switched on in lib/prizeArtwork.ts. */
+  --mtt-prize-artwork-height: calc(
+    min(100vw, var(--mtt-prize-artwork-max)) * 4 / 3
+  );
+  min-height: var(--mtt-prize-artwork-height);
 }
 
 /* ── 1. Designed fallback atmosphere ────────────────────────────────── */
@@ -1290,23 +1296,61 @@ body {
   overflow: hidden;
   pointer-events: none;
   background:
+    radial-gradient(90% 55% at 50% 8%, rgba(255, 121, 47, 0.16), transparent 68%),
     radial-gradient(120% 80% at 50% 0%, #141821 0%, #0c0f14 45%, var(--mtt-bg) 100%),
     linear-gradient(180deg, #0a0c10 0%, #101319 55%, #090b0e 100%);
 }
 
 /* ── 2. Replaceable artwork ─────────────────────────────────────────── */
-.mtt-prize-artwork {
+.mtt-prize-stack {
   position: absolute;
-  inset: 0;
+  inset-inline: 0;
+  top: 0;
+  z-index: 0;
   pointer-events: none;
-  background-color: transparent;
-  background-image: var(--mtt-prize-artwork);
-  background-position: var(--mtt-prize-artwork-position);
-  background-size: var(--mtt-prize-artwork-size);
-  background-repeat: no-repeat;
-  /* Deliberately not fixed: mobile rendering + paint cost. */
-  background-attachment: scroll;
+  /* Feathered seams: the first image eases in from the section edge and the
+     last eases out into the base colour, so stacked artwork reads as one
+     continuous environment rather than a set of tiles. */
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 2%,
+    black 6%,
+    black 86%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 0, 0, 0.35) 2%,
+    black 6%,
+    black 86%,
+    transparent 100%
+  );
 }
+
+.mtt-prize-stack-inner {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--mtt-prize-artwork-max);
+  margin-inline: auto;
+}
+
+/* The artwork itself — portrait, untouched, never a wide hero background. */
+.mtt-prize-artwork {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  object-position: center top;
+}
+
+/* Guard against a sub-pixel seam between vertically stacked segments. */
+.mtt-prize-artwork + .mtt-prize-artwork {
+  margin-top: -1px;
+}
+
 
 /* ── 3. Readability veil ────────────────────────────────────────────── */
 .mtt-prize-veil {
@@ -1351,17 +1395,6 @@ body {
 }
 
 /* ── 5. Technical grid ──────────────────────────────────────────────── */
-.mtt-prize-grid {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 96px 96px;
-  mask-image: radial-gradient(ellipse 85% 75% at 50% 40%, black 10%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 85% 75% at 50% 40%, black 10%, transparent 100%);
-}
 
 /* ── Total prize display ────────────────────────────────────────────── */
 .mtt-laurel {
